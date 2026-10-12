@@ -19,6 +19,7 @@ import (
 	"github.com/iMookatayou/homeservice-backend/internal/httpx"
 	"github.com/iMookatayou/homeservice-backend/internal/medicine"
 	"github.com/iMookatayou/homeservice-backend/internal/notes"
+	"github.com/iMookatayou/homeservice-backend/internal/places"
 	"github.com/iMookatayou/homeservice-backend/internal/purchases"
 	"github.com/iMookatayou/homeservice-backend/internal/storage"
 	"github.com/iMookatayou/homeservice-backend/internal/user"
@@ -63,6 +64,28 @@ func main() {
 	ctrRepo := contractors.NewRepo(pool)
 	ctrSvc := contractors.NewService(ctrRepo)
 	ctrH := contractors.NewHandler(ctrSvc)
+
+	// Google Places (off unless GOOGLE_PLACES_API_KEY is set)
+	placesLimits := places.DefaultLimits()
+	if cfg.GooglePlacesDailyLimit > 0 {
+		placesLimits.DailyCalls = cfg.GooglePlacesDailyLimit
+	}
+	if cfg.GooglePlacesRatePerMin > 0 {
+		placesLimits.RatePerMin = cfg.GooglePlacesRatePerMin
+	}
+	if cfg.GooglePlacesMaxRadiusM > 0 {
+		placesLimits.MaxRadiusM = float64(cfg.GooglePlacesMaxRadiusM)
+	}
+	placesLimits.AllowAllTrades = cfg.GooglePlacesAllowAllTrades
+	placesSvc := places.NewService(
+		places.NewClient(cfg.GooglePlacesAPIKey, cfg.GooglePlacesBaseURL),
+		places.NewPGStore(pool),
+		placesLimits,
+	)
+	placesH := places.NewHandler(placesSvc)
+	if !placesSvc.Enabled() {
+		logger.Info("google places disabled: GOOGLE_PLACES_API_KEY not set")
+	}
 
 	// Medicine
 	mRepo := medicine.NewRepo(pool)
@@ -110,6 +133,10 @@ func main() {
 
 			pr.Route("/contractors", func(r chi.Router) {
 				ctrH.RegisterRoutes(r)
+			})
+
+			pr.Route("/places", func(r chi.Router) {
+				placesH.RegisterRoutes(r)
 			})
 		})
 	})

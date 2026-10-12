@@ -144,6 +144,12 @@ make run              # Run API server
 | `R2_SECRET_ACCESS_KEY` | Cloudflare R2 Secret Key | - |
 | `R2_BUCKET` | Cloudflare R2 Bucket name | - |
 | `R2_PUBLIC_URL` | Cloudflare R2 Public URL | - |
+| `GOOGLE_PLACES_API_KEY` | Google Places API (New) key. Empty = Google lookups off | - |
+| `GOOGLE_PLACES_BASE_URL` | Override Google's endpoint (tests / local fake) | Google production |
+| `GOOGLE_PLACES_DAILY_LIMIT` | Outbound Google calls per day, all users (0 = unlimited) | `300` |
+| `GOOGLE_PLACES_RATE_PER_MIN` | Google-backed requests per user per minute | `20` |
+| `GOOGLE_PLACES_MAX_RADIUS_M` | Largest search radius accepted (Google's own cap is 50000) | `20000` |
+| `GOOGLE_PLACES_ALLOW_ALL_TRADES` | Allow a search with no trade and no text (fans out to 4 calls) | `false` |
 
 ---
 
@@ -235,6 +241,36 @@ make run              # Run API server
 | DELETE | `/api/v1/contractors/:id` | Delete contractor |
 | POST | `/api/v1/contractors/:id/favorite` | Toggle favorite |
 | GET | `/api/v1/contractors/favorites` | List favorites |
+
+### Places (Google, optional)
+Off unless `GOOGLE_PLACES_API_KEY` is set; then Google-backed calls answer
+`503 google_places_disabled`. Auth required.
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/places/status` | `{enabled, daily_used, daily_limit}`. Always answers, costs no Google call |
+| GET | `/api/v1/places/nearby?lat=&lng=&radius=&type=&q=&limit=` | Businesses near a point, nearest first. Needs `type` (`electrician`, `plumber`, `carpenter`, `hvac`) or `q`; each result has `starred` |
+| GET | `/api/v1/places/starred?lat=&lng=` | The household's starred places, looked up by id (1 cheap Google call each, max 20) |
+| GET | `/api/v1/places/:place_id` | Phone, rating, website, opening status for one place |
+| PUT | `/api/v1/places/:place_id/star` | Star a place. Body `{"trade":"plumber"}` is optional. Works with Google off |
+| DELETE | `/api/v1/places/:place_id/star` | Remove the star |
+
+How the load is kept down:
+- A search without a trade or text is refused (`400 type_or_q_required`), so
+  "browse all" never reaches Google.
+- One search = one Google call; results per search default to 20, max 40;
+  radius is capped (default 20 km).
+- Per user: 20 requests/min (`429 rate_limited`). Across everyone: a daily
+  call budget (`429 daily_limit`), reset at midnight Asia/Bangkok. It is
+  in-memory, so a restart resets it; move it to the database if it ever has
+  to be a hard financial limit across several instances.
+- A fan-out is reserved all-or-nothing, so a refused request never half-spends.
+
+Notes: only a `place_id` (and our own trade label) is stored, never Google's
+content; the list call requests cheap fields and phone/rating/website is a
+separate call because those fields bill at a higher rate; Google's terms don't
+allow these results on a non-Google map, so the app lists them without pinning
+them on OpenStreetMap.
 
 ### Files
 | Method | Endpoint | Description |
