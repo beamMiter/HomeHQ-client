@@ -5,6 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../state/auth_state.dart';
 import '../shared/app_colors.dart';
+import '../widgets/toast.dart';
+import '../l10n/l10n.dart';
 
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -50,19 +52,17 @@ class _ForgotPasswordState extends ConsumerState<ForgotPasswordScreen> {
         });
       } else {
         setState(() => _busy = false);
-        _showError('Could not send reset email. Please try again.');
+        _showError(context.l10n.authResetSendFailed);
       }
     } catch (_) {
       if (!mounted) return;
       setState(() => _busy = false);
-      _showError('Something went wrong. Please try again.');
+      _showError(context.l10n.authGenericFailed);
     }
   }
 
   void _showError(String msg) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(msg, style: GoogleFonts.inter())));
+    AppToast.error(msg);
   }
 
   InputDecoration _input(String label, {Widget? prefix, Widget? suffix}) {
@@ -101,12 +101,12 @@ class _ForgotPasswordState extends ConsumerState<ForgotPasswordScreen> {
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          tooltip: 'Back',
+          tooltip: context.l10n.commonBack,
           icon: const Icon(Icons.chevron_left_rounded, color: AppColors.textMain),
           onPressed: () => context.pop(),
         ),
         title: Text(
-          'Forgot Password',
+          context.l10n.authForgotTitle,
           style: GoogleFonts.inter(
             color: AppColors.textMain,
             fontWeight: FontWeight.w700,
@@ -168,7 +168,7 @@ class _ForgotPasswordState extends ConsumerState<ForgotPasswordScreen> {
             ),
             const SizedBox(height: 14),
             Text(
-              'Reset your password',
+              context.l10n.authResetTitle,
               style: GoogleFonts.inter(
                 fontSize: 24,
                 fontWeight: FontWeight.w800,
@@ -178,7 +178,7 @@ class _ForgotPasswordState extends ConsumerState<ForgotPasswordScreen> {
             ),
             const SizedBox(height: 6),
             Text(
-              'Enter your email address and we’ll send you a reset link.',
+              context.l10n.authResetHint,
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(fontSize: 13.5, color: AppColors.textMuted),
             ),
@@ -196,14 +196,14 @@ class _ForgotPasswordState extends ConsumerState<ForgotPasswordScreen> {
               textInputAction: TextInputAction.done,
               onFieldSubmitted: (_) => _submit(),
               decoration: _input(
-                'Email',
+                context.l10n.authEmail,
                 prefix: const Icon(Icons.email_rounded, size: 20),
               ),
               validator: (v) {
                 final s = v?.trim() ?? '';
-                if (s.isEmpty) return 'Please enter your email';
+                if (s.isEmpty) return context.l10n.authEmailRequired;
                 final ok = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(s);
-                if (!ok) return 'Invalid email format';
+                if (!ok) return context.l10n.authEmailInvalid;
                 return null;
               },
               style: GoogleFonts.inter(fontSize: 15, color: AppColors.textMain),
@@ -227,7 +227,7 @@ class _ForgotPasswordState extends ConsumerState<ForgotPasswordScreen> {
                       )
                     : const Icon(Icons.send_rounded, size: 18),
                 label: Text(
-                  _busy ? 'Sending...' : 'Send reset link',
+                  _busy ? context.l10n.authSending : context.l10n.authSendLink,
                   style: GoogleFonts.inter(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
@@ -250,7 +250,7 @@ class _ForgotPasswordState extends ConsumerState<ForgotPasswordScreen> {
               icon: const Icon(Icons.arrow_back_rounded),
               style: TextButton.styleFrom(foregroundColor: AppColors.softBlue),
               label: Text(
-                'Back to sign in',
+                context.l10n.authBackToSignIn,
                 style: GoogleFonts.inter(fontWeight: FontWeight.w600),
               ),
             ),
@@ -281,7 +281,7 @@ class _ForgotPasswordState extends ConsumerState<ForgotPasswordScreen> {
         ),
         const SizedBox(height: 16),
         Text(
-          'Check your inbox',
+          context.l10n.authCheckInbox,
           style: GoogleFonts.inter(
             fontSize: 22,
             fontWeight: FontWeight.w800,
@@ -290,7 +290,7 @@ class _ForgotPasswordState extends ConsumerState<ForgotPasswordScreen> {
         ),
         const SizedBox(height: 6),
         Text(
-          'We’ve sent a password reset link to your email.\nIf you don’t see it, check your spam folder.',
+          context.l10n.authSentBody,
           textAlign: TextAlign.center,
           style: GoogleFonts.inter(
             fontSize: 13.5,
@@ -316,7 +316,7 @@ class _ForgotPasswordState extends ConsumerState<ForgotPasswordScreen> {
                 fontWeight: FontWeight.w700,
               ),
             ),
-            child: const Text('Back to sign in'),
+            child: Text(context.l10n.authBackToSignIn),
           ),
         ),
 
@@ -330,7 +330,7 @@ class _ForgotPasswordState extends ConsumerState<ForgotPasswordScreen> {
             onPressed: _busy ? null : _submit,
             icon: const Icon(Icons.refresh_rounded, size: 18),
             label: Text(
-              _busy ? 'Sending...' : 'Resend link',
+              _busy ? context.l10n.authSending : context.l10n.authResend,
               style: GoogleFonts.inter(fontWeight: FontWeight.w700),
             ),
             style: OutlinedButton.styleFrom(
