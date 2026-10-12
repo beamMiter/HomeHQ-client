@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/medicine_api.dart';
 import '../../state/medicine_actions.dart';
+import 'toast.dart';
+import '../l10n/l10n.dart';
 
 class TxnOutSheet extends ConsumerStatefulWidget {
   final String id;
@@ -33,14 +35,13 @@ class _TxnOutSheetState extends ConsumerState<TxnOutSheet> {
     await ref.read(txnOutProvider((widget.id, p)).future);
     if (mounted) {
       Navigator.pop(context);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('เบิกยาแล้ว')));
+      AppToast.success(context.l10n.medTxnOutDone);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final bottom = MediaQuery.of(context).viewInsets.bottom;
     return Padding(
       padding: EdgeInsets.only(bottom: bottom),
@@ -62,24 +63,25 @@ class _TxnOutSheetState extends ConsumerState<TxnOutSheet> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                Text('เบิกยา', style: Theme.of(context).textTheme.titleLarge),
+                Text(
+                  l10n.medTxnOutTitle,
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _qty,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'จำนวน (ชิ้น)'),
+                  decoration: InputDecoration(labelText: l10n.medTxnQty),
                   validator: (v) {
                     final t = int.tryParse(v ?? '');
-                    if (t == null || t <= 0) return 'ใส่จำนวนให้ถูกต้อง';
+                    if (t == null || t <= 0) return l10n.medTxnQtyInvalid;
                     return null;
                   },
                 ),
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _note,
-                  decoration: const InputDecoration(
-                    labelText: 'บันทึก (ถ้ามี)',
-                  ),
+                  decoration: InputDecoration(labelText: l10n.medTxnNote),
                 ),
                 const SizedBox(height: 16),
                 SizedBox(
@@ -87,7 +89,7 @@ class _TxnOutSheetState extends ConsumerState<TxnOutSheet> {
                   child: FilledButton.icon(
                     onPressed: _submit,
                     icon: const Icon(Icons.check),
-                    label: const Text('ยืนยัน'),
+                    label: Text(l10n.commonConfirm),
                   ),
                 ),
               ],

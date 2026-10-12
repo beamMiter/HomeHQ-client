@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../state/purchase_actions.dart'; 
+import '../widgets/toast.dart';
+import '../l10n/l10n.dart';
 
 enum PurchaseFormMode { create, edit }
 
@@ -46,16 +48,18 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
   }
 
   String? _validateTitle(String? v) {
-    if (v == null || v.trim().isEmpty) return 'กรอกหัวข้อรายการ';
-    if (v.trim().length < 3) return 'อย่างน้อย 3 ตัวอักษร';
+    if (v == null || v.trim().isEmpty) {
+      return context.l10n.purchFormTitleRequired;
+    }
+    if (v.trim().length < 3) return context.l10n.purchFormTitleMin;
     return null;
   }
 
   String? _validateAmount(String? v) {
     if (v == null || v.trim().isEmpty) return null; 
     final parsed = double.tryParse(v.trim());
-    if (parsed == null) return 'ตัวเลขไม่ถูกต้อง';
-    if (parsed < 0) return 'ต้องมากกว่า 0';
+    if (parsed == null) return context.l10n.commonInvalidNumber;
+    if (parsed < 0) return context.l10n.purchFormPositive;
     return null;
   }
 
@@ -84,25 +88,21 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
       final created = await ref.read(createPurchaseProvider(payload).future);
 
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('สร้างรายการสำเร็จ')));
+      AppToast.success(context.l10n.purchFormCreated);
 
       context.go('/purchases/${created.id}');
     } catch (e) {
-      var message = 'เกิดข้อผิดพลาด';
+      var message = context.l10n.purchFormError;
       final t = e.runtimeType.toString();
       if (t == 'AuthRequired') {
-        message = 'กรุณาเข้าสู่ระบบ';
+        message = context.l10n.purchFormSignIn;
       } else if (t == 'ApiError') {
         message = e.toString();
       } else {
         message = e.toString();
       }
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(message)));
+        AppToast.error(message);
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -131,8 +131,8 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
       appBar: AppBar(
         title: Text(
           widget.mode == PurchaseFormMode.create
-              ? 'Create Purchase'
-              : 'Edit Purchase',
+              ? context.l10n.purchFormCreate
+              : context.l10n.purchFormEdit,
         ),
         actions: [
           TextButton(
@@ -142,7 +142,7 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                     FocusScope.of(context).unfocus();
                     context.pop();
                   },
-            child: const Text('ยกเลิก'),
+            child: Text(context.l10n.commonCancel),
           ),
         ],
       ),
@@ -156,7 +156,7 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               children: [
                 Text(
-                  'รายละเอียดรายการ',
+                  context.l10n.purchFormDetails,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
@@ -176,9 +176,9 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                         TextFormField(
                           controller: _title,
                           focusNode: _fnTitle,
-                          decoration: const InputDecoration(
-                            labelText: 'Title *',
-                            hintText: 'เช่น “ซื้ออุปกรณ์ทำความสะอาด”',
+                          decoration: InputDecoration(
+                            labelText: context.l10n.purchFormTitleLabel,
+                            hintText: context.l10n.purchFormTitleHint,
                             prefixIcon: Icon(Icons.assignment_outlined),
                           ),
                           textInputAction: TextInputAction.next,
@@ -190,9 +190,9 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                         TextFormField(
                           controller: _note,
                           focusNode: _fnNote,
-                          decoration: const InputDecoration(
-                            labelText: 'Note',
-                            hintText: 'รายละเอียดเพิ่มเติม (ไม่บังคับ)',
+                          decoration: InputDecoration(
+                            labelText: context.l10n.commonNote,
+                            hintText: context.l10n.purchFormNoteHint,
                             alignLabelWithHint: true,
                             prefixIcon: Icon(Icons.notes_outlined),
                           ),
@@ -209,7 +209,7 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                 const SizedBox(height: spacing),
 
                 Text(
-                  'งบประมาณคร่าว ๆ',
+                  context.l10n.purchFormBudget,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
@@ -230,8 +230,8 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                           controller: _amount,
                           focusNode: _fnAmount,
                           decoration: InputDecoration(
-                            labelText: 'Estimated Amount',
-                            hintText: 'เช่น 1,500 หรือ 1500',
+                            labelText: context.l10n.purchFormEstimated,
+                            hintText: context.l10n.purchFormEstimatedHint,
                             prefixIcon: const Icon(Icons.payments_outlined),
                             suffixText: _currency,
                           ),
@@ -249,7 +249,7 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Currency',
+                                context.l10n.purchFormCurrency,
                                 style: theme.textTheme.labelLarge,
                               ),
                               const SizedBox(height: 8),
@@ -275,7 +275,7 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                'ใส่ได้หรือเว้นว่างถ้ายังไม่แน่ใจ',
+                                context.l10n.purchFormOptional,
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   color: theme.hintColor,
                                 ),
@@ -308,7 +308,11 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                 : const Icon(Icons.save_outlined),
             label: Padding(
               padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Text(_submitting ? 'กำลังบันทึก…' : 'บันทึก'),
+              child: Text(
+                _submitting
+                    ? context.l10n.purchFormSaving
+                    : context.l10n.commonSave,
+              ),
             ),
             onPressed: _submitting ? null : _handleSubmit,
           ),

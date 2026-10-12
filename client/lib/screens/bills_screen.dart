@@ -12,6 +12,9 @@ import '../widgets/header_row.dart';
 import '../widgets/list_empty_state.dart';
 import '../widgets/page_loading.dart';
 import '../widgets/error_state.dart';
+import '../widgets/refresh.dart';
+import '../l10n/l10n.dart';
+import '../l10n/labels.dart';
 
 class BillsScreen extends ConsumerStatefulWidget {
   const BillsScreen({super.key});
@@ -43,6 +46,8 @@ class _BillsScreenState extends ConsumerState<BillsScreen> {
     });
   }
 
+  Future<void> _pull() => pullRefresh(() => ref.refresh(billsProvider.future));
+
   @override
   Widget build(BuildContext context) {
     // sync controller เมื่อ provider เปลี่ยน
@@ -55,6 +60,8 @@ class _BillsScreenState extends ConsumerState<BillsScreen> {
 
     const accent = Color(0xFF1F4E9E);
 
+    final reloading = watchReloading(ref, 'bills');
+    final l10n = context.l10n;
     return Theme(
       data: Theme.of(context).copyWith(
         colorScheme: Theme.of(context).colorScheme.copyWith(primary: accent),
@@ -66,14 +73,17 @@ class _BillsScreenState extends ConsumerState<BillsScreen> {
           title: 'Bills',
           actions: [
             IconButton(
-              tooltip: 'Summary',
+              tooltip: l10n.billsSummaryTooltip,
               onPressed: () => context.push('/bills/summary'),
               icon: const Icon(Icons.insights),
             ),
-            IconButton(
-              tooltip: 'Refresh',
-              onPressed: () => ref.invalidate(billsProvider),
-              icon: const Icon(Icons.refresh),
+            RefreshButton(
+              busy: reloading || itemsAsync.isReloadingData,
+              onPressed: () => runReload(
+                ref,
+                'bills',
+                () => ref.refresh(billsProvider.future),
+              ),
             ),
           ],
         ),
@@ -82,124 +92,129 @@ class _BillsScreenState extends ConsumerState<BillsScreen> {
           foregroundColor: Colors.white,
           onPressed: () => context.push('/bills/new'),
           icon: const Icon(Icons.add),
-          label: const Text('New Bill'),
+          label: Text(l10n.billsNew),
         ),
-        body: Column(
-          children: [
-            // Header แบบประกอบ: Search ทางซ้าย + Dropdown ทางขวา (เฉพาะ Bills)
-            HeaderRow(
-              left: SearchBarField(
-                controller: _q,
-                onChanged: _onQueryChanged,
-                onClear: () {
-                  _q.clear();
-                  ref.read(billsQueryProvider.notifier).clear();
-                },
-                hintText: 'ค้นหาบิล (หัวข้อ/หมายเหตุ/ประเภท)…',
-              ),
-              right: DropdownButtonHideUnderline(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.outlineVariant,
-                    ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: DropdownButton<BillsStatusFilter>(
-                      value: filter,
-                      onChanged: (v) {
-                        if (v != null) {
-                          ref.read(billsStatusFilterProvider.notifier).set(v);
-                        }
-                      },
-                      items: const [
-                        DropdownMenuItem(
-                          value: BillsStatusFilter.all,
-                          child: Text('All'),
-                        ),
-                        DropdownMenuItem(
-                          value: BillsStatusFilter.unpaid,
-                          child: Text('Unpaid'),
-                        ),
-                        DropdownMenuItem(
-                          value: BillsStatusFilter.paid,
-                          child: Text('Paid'),
-                        ),
-                      ],
-                    ),
-                  ),
+        body: ReloadOverlay(
+          active: reloading,
+          child: Column(
+            children: [
+              // Header แบบประกอบ: Search ทางซ้าย + Dropdown ทางขวา (เฉพาะ Bills)
+              HeaderRow(
+                left: SearchBarField(
+                  controller: _q,
+                  onChanged: _onQueryChanged,
+                  onClear: () {
+                    _q.clear();
+                    ref.read(billsQueryProvider.notifier).clear();
+                  },
+                  hintText: l10n.billsSearchHint,
                 ),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Expanded(
-              child: itemsAsync.when(
-                loading: () =>
-                    const PageLoading(),
-                error: (e, _) => ErrorState(
-                  icon: Icons.error_outline,
-                  title: e is FormatException ? e.message : e.toString(),
-                  retryLabel: 'ลองอีกครั้ง',
-                  onRetry: () => ref.invalidate(billsProvider),
-                ),
-                data: (items) {
-                  if (items.isEmpty) {
-                    return ListEmptyState(
-                      centered: true,
-                      icon: Icons.receipt_long,
-                      title: 'ยังไม่มีบิล',
-                      subtitle: 'เพิ่มบิลใหม่ หรือเคลียร์ตัวกรอง/คำค้นหา',
-                      action: Wrap(
-                        spacing: 8,
-                        children: [
-                          OutlinedButton.icon(
-                            onPressed: () {
-                              _q.clear();
-                              ref.read(billsQueryProvider.notifier).clear();
-                              ref
-                                  .read(billsStatusFilterProvider.notifier)
-                                  .set(BillsStatusFilter.all);
-                            },
-                            icon: const Icon(Icons.refresh),
-                            label: const Text('Clear filters'),
+                right: DropdownButtonHideUnderline(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surface,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: DropdownButton<BillsStatusFilter>(
+                        value: filter,
+                        onChanged: (v) {
+                          if (v != null) {
+                            ref.read(billsStatusFilterProvider.notifier).set(v);
+                          }
+                        },
+                        items: [
+                          DropdownMenuItem(
+                            value: BillsStatusFilter.all,
+                            child: Text(l10n.commonAll),
                           ),
-                          FilledButton.icon(
-                            onPressed: () => context.push('/bills/new'),
-                            icon: const Icon(Icons.add),
-                            label: const Text('New Bill'),
+                          DropdownMenuItem(
+                            value: BillsStatusFilter.unpaid,
+                            child: Text(l10n.billStatusUnpaid),
+                          ),
+                          DropdownMenuItem(
+                            value: BillsStatusFilter.paid,
+                            child: Text(l10n.billStatusPaid),
                           ),
                         ],
                       ),
-                    );
-                  }
-                  return RefreshIndicator.adaptive(
-                    onRefresh: () async {
-                      final _ = await ref.refresh(billsProvider.future);
-                    },
-                    child: ListView.separated(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      itemCount: items.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 8),
-                      itemBuilder: (ctx, i) => _BillCard(
-                        bill: items[i],
-                        onTap: () => context.push(
-                          '/bills/${items[i].id}',
-                          extra: items[i],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Expanded(
+                child: itemsAsync.when(
+                  loading: () => const PageLoading(),
+                  error: (e, _) => RefreshableFill(
+                    onRefresh: _pull,
+                    child: ErrorState(
+                      icon: Icons.error_outline,
+                      title: e is FormatException ? e.message : e.toString(),
+                      onRetry: () => ref.invalidate(billsProvider),
+                    ),
+                  ),
+                  data: (items) {
+                    if (items.isEmpty) {
+                      return RefreshableFill(
+                        onRefresh: _pull,
+                        child: ListEmptyState(
+                          centered: true,
+                          icon: Icons.receipt_long,
+                          title: l10n.billsEmptyTitle,
+                          subtitle: l10n.billsEmptyHint,
+                          action: Wrap(
+                            spacing: 8,
+                            children: [
+                              OutlinedButton.icon(
+                                onPressed: () {
+                                  _q.clear();
+                                  ref.read(billsQueryProvider.notifier).clear();
+                                  ref
+                                      .read(billsStatusFilterProvider.notifier)
+                                      .set(BillsStatusFilter.all);
+                                },
+                                icon: const Icon(Icons.refresh),
+                                label: Text(l10n.billsClearFilters),
+                              ),
+                              FilledButton.icon(
+                                onPressed: () => context.push('/bills/new'),
+                                icon: const Icon(Icons.add),
+                                label: Text(l10n.billsNew),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+                    return RefreshIndicator.adaptive(
+                      onRefresh: _pull,
+                      child: ListView.separated(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        itemCount: items.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 8),
+                        itemBuilder: (ctx, i) => _BillCard(
+                          bill: items[i],
+                          onTap: () => context.push(
+                            '/bills/${items[i].id}',
+                            extra: items[i],
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -249,15 +264,15 @@ class _BillCard extends StatelessWidget {
     return Theme.of(ctx).colorScheme.onSurfaceVariant;
   }
 
-  String _dueText(DateTime dueDate) {
+  String _dueText(AppLocalizations l10n, DateTime dueDate) {
     final d = _daysDiff(dueDate);
     final fmt = DateFormat('d MMM yyyy');
-    if (_isPaid) return 'Paid on ${fmt.format(dueDate)}';
-    if (d == 0) return 'Due today';
-    if (d == 1) return 'Due tomorrow';
-    if (d > 1 && d <= 7) return 'Due in $d days';
-    if (d < 0) return '${-d} day${d == -1 ? '' : 's'} late';
-    return 'Due ${fmt.format(dueDate)}';
+    if (_isPaid) return l10n.billsPaidOn(fmt.format(dueDate));
+    if (d == 0) return l10n.billsDueToday;
+    if (d == 1) return l10n.billsDueTomorrow;
+    if (d > 1 && d <= 7) return l10n.billsDueInDays(d);
+    if (d < 0) return l10n.billsLateDays(-d);
+    return l10n.billsDueOn(fmt.format(dueDate));
   }
 
   Widget _chip(
@@ -288,6 +303,7 @@ class _BillCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
     final money = NumberFormat.currency(locale: 'th_TH', symbol: '฿');
     final d = _daysDiff(bill.dueDate);
 
@@ -354,7 +370,9 @@ class _BillCard extends StatelessWidget {
                           color: statusFg,
                         ),
                         const SizedBox(width: 6),
-                        Text(_isPaid ? 'ชำระแล้ว' : 'ยังไม่ชำระ'),
+                        Text(
+                          _isPaid ? l10n.billStatusPaid : l10n.billStatusUnpaid,
+                        ),
                       ],
                     ),
                   ),
@@ -365,7 +383,7 @@ class _BillCard extends StatelessWidget {
                       children: [
                         Icon(_iconByType(bill.type), size: 14),
                         const SizedBox(width: 6),
-                        Text(bill.type),
+                        Text(billTypeLabel(l10n, bill.type)),
                       ],
                     ),
                   ),
@@ -381,7 +399,7 @@ class _BillCard extends StatelessWidget {
                           color: _dueColor(context, d),
                         ),
                         const SizedBox(width: 6),
-                        Text(_dueText(bill.dueDate)),
+                        Text(_dueText(l10n, bill.dueDate)),
                       ],
                     ),
                   ),
@@ -403,4 +421,3 @@ class _BillCard extends StatelessWidget {
     );
   }
 }
-

@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../state/bills_provider.dart';
+import '../widgets/toast.dart';
+import '../l10n/l10n.dart';
+import '../l10n/labels.dart';
 
 class BillFormScreen extends ConsumerStatefulWidget {
   const BillFormScreen({super.key});
@@ -46,13 +49,14 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final createState = ref.watch(billCreateProvider);
     final dateLabel = _due == null
-        ? 'เลือกวันที่ครบกำหนด'
+        ? l10n.billFormPickDue
         : DateFormat('yyyy-MM-dd 23:59').format(_due!);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('New Bill')),
+      appBar: AppBar(title: Text(l10n.billsNew)),
       body: SafeArea(
         child: Form(
           key: _formKey,
@@ -62,12 +66,18 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
               // Type
               DropdownButtonFormField<String>(
                 initialValue: _type,
-                decoration: const InputDecoration(labelText: 'Type'),
-                items: const [
-                  DropdownMenuItem(value: 'electric', child: Text('electric')),
-                  DropdownMenuItem(value: 'water', child: Text('water')),
-                  DropdownMenuItem(value: 'internet', child: Text('internet')),
-                  DropdownMenuItem(value: 'phone', child: Text('phone')),
+                decoration: InputDecoration(labelText: l10n.billFormType),
+                items: [
+                  for (final t in const [
+                    'electric',
+                    'water',
+                    'internet',
+                    'phone',
+                  ])
+                    DropdownMenuItem(
+                      value: t,
+                      child: Text(billTypeLabel(l10n, t)),
+                    ),
                 ],
                 onChanged: (v) => setState(() => _type = v ?? 'electric'),
               ),
@@ -76,9 +86,10 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
               // Title
               TextFormField(
                 controller: _title,
-                decoration: const InputDecoration(labelText: 'Title'),
-                validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'กรอกชื่อบิล' : null,
+                decoration: InputDecoration(labelText: l10n.billFormTitle),
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? l10n.billFormTitleRequired
+                    : null,
               ),
               const SizedBox(height: 12),
 
@@ -88,11 +99,11 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
-                decoration: const InputDecoration(labelText: 'Amount (THB)'),
+                decoration: InputDecoration(labelText: l10n.billFormAmount),
                 validator: (v) {
                   final x = double.tryParse((v ?? '').trim());
-                  if (x == null) return 'จำนวนเงินไม่ถูกต้อง';
-                  if (x <= 0) return 'จำนวนเงินต้องมากกว่า 0';
+                  if (x == null) return l10n.billFormAmountInvalid;
+                  if (x <= 0) return l10n.billFormAmountPositive;
                   return null;
                 },
               ),
@@ -102,7 +113,9 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
               InkWell(
                 onTap: _pickDueDate,
                 child: InputDecorator(
-                  decoration: const InputDecoration(labelText: 'Due date'),
+                  decoration: InputDecoration(
+                    labelText: l10n.billDetailDueDate,
+                  ),
                   child: Text(
                     dateLabel,
                     style: TextStyle(
@@ -118,10 +131,16 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
               // Status
               DropdownButtonFormField<String>(
                 initialValue: _status,
-                decoration: const InputDecoration(labelText: 'Status'),
-                items: const [
-                  DropdownMenuItem(value: 'unpaid', child: Text('unpaid')),
-                  DropdownMenuItem(value: 'paid', child: Text('paid')),
+                decoration: InputDecoration(labelText: l10n.billDetailStatus),
+                items: [
+                  DropdownMenuItem(
+                    value: 'unpaid',
+                    child: Text(l10n.billStatusUnpaid),
+                  ),
+                  DropdownMenuItem(
+                    value: 'paid',
+                    child: Text(l10n.billStatusPaid),
+                  ),
                 ],
                 onChanged: (v) => setState(() => _status = v ?? 'unpaid'),
               ),
@@ -132,7 +151,7 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
                 controller: _note,
                 minLines: 2,
                 maxLines: 5,
-                decoration: const InputDecoration(labelText: 'Note (optional)'),
+                decoration: InputDecoration(labelText: l10n.billFormNote),
               ),
               const SizedBox(height: 20),
 
@@ -143,19 +162,11 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
                     : () async {
                         if (!_formKey.currentState!.validate()) return;
                         if (_due == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('กรุณาเลือก Due date'),
-                            ),
-                          );
+                          AppToast.error(l10n.billFormPickDueFirst);
                           return;
                         }
                         if (_due!.isBefore(DateTime.now())) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Due date ต้องไม่เป็นอดีต'),
-                            ),
-                          );
+                          AppToast.error(l10n.billFormDuePast);
                           return;
                         }
 
@@ -175,14 +186,10 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
                         final s = ref.read(billCreateProvider);
                         if (!context.mounted) return;
                         if (!s.hasError) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('สร้างบิลสำเร็จ')),
-                          );
+                          AppToast.success(l10n.billFormCreated);
                           Navigator.of(context).pop(true);
                         } else {
-                          ScaffoldMessenger.of(
-                            context,
-                          ).showSnackBar(SnackBar(content: Text('${s.error}')));
+                          AppToast.error('${s.error}');
                         }
                       },
                 icon: createState.isLoading
@@ -192,7 +199,7 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.save),
-                label: const Text('บันทึก'),
+                label: Text(l10n.commonSave),
               ),
             ],
           ),

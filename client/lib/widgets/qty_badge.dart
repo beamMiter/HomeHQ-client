@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/l10n.dart';
+
 /// ใช้เป็นฟังก์ชัน (ตามที่คุณเรียก `q.qtyBadge(...)`)
-Widget qtyBadge(int qty, {int low = 10, bool dense = false}) {
+Widget qtyBadge(BuildContext context, int qty, {int low = 10, bool dense = false}) {
   final bool isLow = qty <= low;
   final EdgeInsets p = dense
       ? const EdgeInsets.symmetric(horizontal: 8, vertical: 4)
@@ -24,7 +26,7 @@ Widget qtyBadge(int qty, {int low = 10, bool dense = false}) {
           size: dense ? 14 : 16,
         ),
         const SizedBox(width: 6),
-        Text('คงเหลือ $qty'),
+        Text(context.l10n.medInStock('$qty')),
       ],
     ),
   );

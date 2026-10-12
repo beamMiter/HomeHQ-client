@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/l10n.dart';
+
 class SearchBarField extends StatelessWidget {
   const SearchBarField({
     super.key,
     required this.controller,
     required this.onChanged,
     this.onClear,
-    this.hintText = 'ค้นหา…',
+    this.hintText,
   });
 
   final TextEditingController controller;
   final ValueChanged<String> onChanged;
   final VoidCallback? onClear;
-  final String hintText;
+
+  /// Defaults to the translated "Search…".
+  final String? hintText;
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +27,7 @@ class SearchBarField extends StatelessWidget {
       onSubmitted: (_) => FocusScope.of(context).unfocus(),
       textInputAction: TextInputAction.search,
       decoration: InputDecoration(
-        hintText: hintText,
+        hintText: hintText ?? context.l10n.commonSearch,
         prefixIcon: const Icon(Icons.search),
         suffixIcon: controller.text.isEmpty
             ? null

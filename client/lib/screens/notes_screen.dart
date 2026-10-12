@@ -14,6 +14,9 @@ import '../widgets/top_nav_bar.dart';
 import '../widgets/header_row.dart';
 import '../widgets/error_state.dart';
 import '../widgets/page_loading.dart';
+import '../widgets/toast.dart';
+import '../widgets/refresh.dart';
+import '../l10n/l10n.dart';
 
 class NotesScreen extends ConsumerStatefulWidget {
   const NotesScreen({super.key});
@@ -41,11 +44,15 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
     super.dispose();
   }
 
+  Future<void> _pull() =>
+      pullRefresh(() => ref.refresh(notesProvider(_query).future));
+
   @override
   Widget build(BuildContext context) {
     final notes = ref.watch(notesProvider(_query));
     const accent = Color(0xFF1F4E9E);
 
+    final reloading = watchReloading(ref, 'notes');
     return Theme(
       data: Theme.of(context).copyWith(
         colorScheme: Theme.of(context).colorScheme.copyWith(primary: accent),
@@ -62,13 +69,16 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
         appBar: TopNavBar(
           title: 'Important Notes',
           actions: [
-            IconButton(
-              tooltip: 'Refresh',
-              onPressed: () async => await ref.refresh(notesProvider(_query).future),
-              icon: const Icon(Icons.refresh),
+            RefreshButton(
+              busy: reloading || notes.isReloadingData,
+              onPressed: () => runReload(
+                ref,
+                'notes',
+                () => ref.refresh(notesProvider(_query).future),
+              ),
             ),
             IconButton(
-              tooltip: 'Clear filters',
+              tooltip: context.l10n.commonClearFilters,
               onPressed: _clearAll,
               icon: const Icon(Icons.filter_alt_off),
             ),
@@ -79,149 +89,181 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
           foregroundColor: Colors.white,
           onPressed: () => _openEditor(context, ref),
           icon: const Icon(Icons.add),
-          label: const Text('New Note'),
+          label: Text(context.l10n.notesNew),
         ),
-        body: Column(
-          children: [
-            // ✅ Header เดียวกับหน้าอื่น: Search ทางซ้าย + ปุ่ม Filters ทางขวา
-            HeaderRow(
-              left: _SearchField(
-                controller: _q,
-                onChanged: (_) => setState(() {}),
-                onClear: () => setState(() {}),
-              ),
-              right: _FilterButton(
-                isOpen: _filtersOpen,
-                activeCount: _activeFilterCount(),
-                onTap: () => setState(() => _filtersOpen = !_filtersOpen),
-              ),
-            ),
-
-            // ✅ แผง Filters (กาง/หุบ) — เนื้อหาเหมือนเดิม
-            AnimatedCrossFade(
-              duration: const Duration(milliseconds: 160),
-              crossFadeState: _filtersOpen
-                  ? CrossFadeState.showFirst
-                  : CrossFadeState.showSecond,
-              firstChild: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
+        body: ReloadOverlay(
+          active: reloading,
+          child: Column(
+            children: [
+              // ✅ Header เดียวกับหน้าอื่น: Search ทางซ้าย + ปุ่ม Filters ทางขวา
+              HeaderRow(
+                left: _SearchField(
+                  controller: _q,
+                  onChanged: (_) => setState(() {}),
+                  onClear: () => setState(() {}),
                 ),
-                child: Card(
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: Colors.black.withValues(alpha: 0.06)),
+                right: _FilterButton(
+                  isOpen: _filtersOpen,
+                  activeCount: _activeFilterCount(),
+                  onTap: () => setState(() => _filtersOpen = !_filtersOpen),
+                ),
+              ),
+
+              // ✅ แผง Filters (กาง/หุบ) — เนื้อหาเหมือนเดิม
+              AnimatedCrossFade(
+                duration: const Duration(milliseconds: 160),
+                crossFadeState: _filtersOpen
+                    ? CrossFadeState.showFirst
+                    : CrossFadeState.showSecond,
+                firstChild: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _SectionLabel('Status'),
-                        const SizedBox(height: 6),
-                        Wrap(
-                          spacing: 6,
-                          children: [
-                            _statusChip('All', _StatusTab.all),
-                            _statusChip('Active', _StatusTab.active),
-                            _statusChip('Done', _StatusTab.done),
-                            _statusChip('Overdue', _StatusTab.overdue),
-                            _statusChip('Pinned', _StatusTab.pinned),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
+                  child: Card(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(
+                        color: Colors.black.withValues(alpha: 0.06),
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _SectionLabel(context.l10n.commonStatus),
+                          const SizedBox(height: 6),
+                          Wrap(
+                            spacing: 6,
+                            children: [
+                              _statusChip(
+                                context.l10n.commonAll,
+                                _StatusTab.all,
+                              ),
+                              _statusChip(
+                                context.l10n.notesStatusActive,
+                                _StatusTab.active,
+                              ),
+                              _statusChip(
+                                context.l10n.notesStatusDone,
+                                _StatusTab.done,
+                              ),
+                              _statusChip(
+                                context.l10n.notesStatusOverdue,
+                                _StatusTab.overdue,
+                              ),
+                              _statusChip(
+                                context.l10n.notesPinned,
+                                _StatusTab.pinned,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
 
-                        _SectionLabel('Category'),
-                        const SizedBox(height: 6),
-                        Wrap(
-                          spacing: 6,
-                          children: [
-                            _categoryChip('All', null),
-                            _categoryChip('Bills', 'bills'),
-                            _categoryChip('Chores', 'chores'),
-                            _categoryChip('Appointment', 'appointment'),
-                            _categoryChip('General', 'general'),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
+                          _SectionLabel(context.l10n.notesCategory),
+                          const SizedBox(height: 6),
+                          Wrap(
+                            spacing: 6,
+                            children: [
+                              _categoryChip(context.l10n.commonAll, null),
+                              _categoryChip(
+                                context.l10n.notesCatBills,
+                                'bills',
+                              ),
+                              _categoryChip(
+                                context.l10n.notesCatChores,
+                                'chores',
+                              ),
+                              _categoryChip(
+                                context.l10n.notesCatAppointment,
+                                'appointment',
+                              ),
+                              _categoryChip(
+                                context.l10n.notesCatGeneral,
+                                'general',
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
 
-                        _SectionLabel('Pinned'),
-                        const SizedBox(height: 6),
-                        Wrap(
-                          spacing: 6,
-                          children: [
-                            _pinnedChip('All', null),
-                            _pinnedChip('Pinned', true),
-                            _pinnedChip('Unpinned', false),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
+                          _SectionLabel(context.l10n.notesPinned),
+                          const SizedBox(height: 6),
+                          Wrap(
+                            spacing: 6,
+                            children: [
+                              _pinnedChip(context.l10n.commonAll, null),
+                              _pinnedChip(context.l10n.notesPinned, true),
+                              _pinnedChip(context.l10n.notesUnpinned, false),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
 
-                        _SectionLabel('Tag'),
-                        const SizedBox(height: 6),
-                        notes.maybeWhen(
-                          data: (items) {
-                            final set = <String>{};
-                            for (final n in items) {
-                              set.addAll(n.tags);
-                            }
-                            final list = set.toList()..sort();
-                            return SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: Row(
-                                children: [
-                                  _tagChip('All', 'all'),
-                                  const SizedBox(width: 6),
-                                  for (final t in list) ...[
-                                    _tagChip('#$t', t),
+                          _SectionLabel(context.l10n.notesTag),
+                          const SizedBox(height: 6),
+                          notes.maybeWhen(
+                            data: (items) {
+                              final set = <String>{};
+                              for (final n in items) {
+                                set.addAll(n.tags);
+                              }
+                              final list = set.toList()..sort();
+                              return SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Row(
+                                  children: [
+                                    _tagChip(context.l10n.commonAll, 'all'),
                                     const SizedBox(width: 6),
+                                    for (final t in list) ...[
+                                      _tagChip('#$t', t),
+                                      const SizedBox(width: 6),
+                                    ],
                                   ],
-                                ],
-                              ),
-                            );
-                          },
-                          orElse: () => const SizedBox.shrink(),
-                        ),
+                                ),
+                              );
+                            },
+                            orElse: () => const SizedBox.shrink(),
+                          ),
 
-                        const SizedBox(height: 12),
-                        Row(
-                          children: {
-                            TextButton.icon(
-                              onPressed: _clearAll,
-                              icon: const Icon(Icons.clear_all, size: 18),
-                              label: const Text('Clear'),
-                            ),
-                            const Spacer(),
-                            FilledButton.icon(
-                              style: FilledButton.styleFrom(
-                                backgroundColor: accent,
+                          const SizedBox(height: 12),
+                          Row(
+                            children: {
+                              TextButton.icon(
+                                onPressed: _clearAll,
+                                icon: const Icon(Icons.clear_all, size: 18),
+                                label: Text(context.l10n.commonClear),
                               ),
-                              onPressed: () {
-                                setState(() => _filtersOpen = false);
-                                _scroll.animateTo(
-                                  0,
-                                  duration: const Duration(milliseconds: 160),
-                                  curve: Curves.easeOut,
-                                );
-                              },
-                              icon: const Icon(Icons.check),
-                              label: const Text('Apply'),
-                            ),
-                          }.toList(),
-                        ),
-                      ],
+                              const Spacer(),
+                              FilledButton.icon(
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: accent,
+                                ),
+                                onPressed: () {
+                                  setState(() => _filtersOpen = false);
+                                  _scroll.animateTo(
+                                    0,
+                                    duration: const Duration(milliseconds: 160),
+                                    curve: Curves.easeOut,
+                                  );
+                                },
+                                icon: const Icon(Icons.check),
+                                label: Text(context.l10n.commonApply),
+                              ),
+                            }.toList(),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
+                secondChild: const SizedBox.shrink(),
               ),
-              secondChild: const SizedBox.shrink(),
-            ),
 
-            // ✅ เนื้อหาหลัก (List/Refresh) — เหมือนเดิม
-            Expanded(child: _buildBody(notes, accent)),
-          ],
+              // ✅ เนื้อหาหลัก (List/Refresh) — เหมือนเดิม
+              Expanded(child: _buildBody(notes, accent)),
+            ],
+          ),
         ),
       ),
     );
@@ -262,13 +304,15 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
       ),
       child: notes.when(
-        loading: () =>
-            const PageLoading(),
-        error: (e, _) => ErrorState(
-          title: '$e',
-          icon: Icons.error_outline,
-          retryLabel: 'Retry',
-          onRetry: () => ref.refresh(notesProvider(_query)),
+        loading: () => const PageLoading(),
+        error: (e, _) => RefreshableFill(
+          onRefresh: _pull,
+          child: ErrorState(
+            title: '$e',
+            icon: Icons.error_outline,
+            retryLabel: context.l10n.commonTryAgain,
+            onRetry: () => ref.refresh(notesProvider(_query)),
+          ),
         ),
         data: (items) {
           final filtered = _applyFilters(
@@ -294,20 +338,22 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
           }).toList();
 
           if (byStatus.isEmpty) {
-            return const Center(
+            return RefreshableFill(
+              onRefresh: _pull,
               child: Text(
-                'ไม่พบโน้ตที่ตรงกับเงื่อนไข',
+                context.l10n.notesNoMatch,
                 style: TextStyle(color: Color(0xFF6B7280)),
               ),
             );
           }
 
           return RefreshIndicator(
-            onRefresh: () async {
-              final _ = await ref.refresh(notesProvider(_query).future);
-            },
+            onRefresh: _pull,
             child: ListView.separated(
               controller: _scroll,
+              // A controller makes the list non-primary, so without this a
+              // short list can't be pulled down to refresh.
+              physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 96),
               itemCount: byStatus.length,
               separatorBuilder: (_, __) => const SizedBox(height: 8),
@@ -382,18 +428,14 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
           ? await repo.unsetDone(note.id)
           : await repo.setDone(note.id);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            updated.doneAt != null ? 'ทำเสร็จแล้ว' : 'ยกเลิกเสร็จสิ้นแล้ว',
-          ),
-        ),
+      AppToast.success(
+        updated.doneAt != null
+            ? context.l10n.notesMarkedDone
+            : context.l10n.notesMarkedUndone,
       );
     } on DioException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_shortError(e, fallback: 'Done error'))),
-      );
+      AppToast.error(_shortError(e, fallback: context.l10n.notesErrDone));
     } finally {
       ref.invalidate(notesProvider(_query));
     }
@@ -404,17 +446,15 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
     try {
       final toggled = await repo.setPinned(note.id, !(note.pinned ?? false));
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(toggled.pinned == true ? 'Pinned' : 'Unpinned'),
-          ),
+        AppToast.success(
+          toggled.pinned == true
+              ? context.l10n.notesPinned
+              : context.l10n.notesUnpinned,
         );
       }
     } on DioException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_shortError(e, fallback: 'Pin error'))),
-      );
+      AppToast.error(_shortError(e, fallback: context.l10n.notesErrPin));
     } finally {
       ref.invalidate(notesProvider(_query));
     }
@@ -428,17 +468,17 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete note'),
-        content: Text('ลบ "${note.title}" ?'),
+        title: Text(context.l10n.notesDeleteTitle),
+        content: Text(context.l10n.notesDeleteBody(note.title)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.commonCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Delete'),
+            child: Text(context.l10n.commonDelete),
           ),
         ],
       ),
@@ -448,15 +488,11 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
     try {
       await ref.read(notesRepositoryProvider).delete(note.id);
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('ลบแล้ว')));
+        AppToast.success(context.l10n.notesDeleted);
       }
     } on DioException catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_shortError(e, fallback: 'Delete error'))),
-      );
+      AppToast.error(_shortError(e, fallback: context.l10n.notesErrDelete));
     } finally {
       ref.invalidate(notesProvider(_query));
     }
@@ -489,9 +525,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
           cancelToken: cancel,
         );
         if (context.mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('เพิ่มโน้ตแล้ว')));
+          AppToast.success(context.l10n.notesAdded);
         }
       } else {
         await repo.update(
@@ -503,26 +537,23 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
           cancelToken: cancel,
         );
         if (context.mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('แก้ไขโน้ตแล้ว')));
+          AppToast.success(context.l10n.notesEdited);
         }
       }
     } on DioException catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_shortError(e, fallback: 'Save error'))),
-      );
+      AppToast.error(_shortError(e, fallback: context.l10n.notesErrSave));
     } finally {
       ref.invalidate(notesProvider(_query));
     }
   }
 
-  String _shortError(DioException e, {String fallback = 'Error'}) {
+  String _shortError(DioException e, {String? fallback}) {
+    final what = fallback ?? context.l10n.commonError;
     final sc = e.response?.statusCode;
-    if (sc == 401) return '$fallback: 401 (โปรดเข้าสู่ระบบใหม่)';
-    if (sc == 404) return '$fallback: 404 (ไม่พบข้อมูล/endpoint)';
-    return '$fallback${sc != null ? ' ($sc)' : ''}: ${e.message}';
+    if (sc == 401) return context.l10n.notesErr401(what);
+    if (sc == 404) return context.l10n.notesErr404(what);
+    return '$what${sc != null ? ' ($sc)' : ''}: ${e.message}';
   }
 }
 
@@ -588,12 +619,12 @@ class _SearchFieldState extends State<_SearchField> {
       controller: widget.controller,
       onChanged: widget.onChanged,
       decoration: InputDecoration(
-        hintText: 'ค้นหาโน้ต (หัวข้อ/เนื้อหา/แท็ก)',
+        hintText: context.l10n.notesSearchHint,
         prefixIcon: const Icon(Icons.search),
         suffixIcon: widget.controller.text.isEmpty
             ? null
             : IconButton(
-                tooltip: 'Clear',
+                tooltip: context.l10n.commonClear,
                 icon: const Icon(Icons.close),
                 onPressed: () {
                   widget.controller.clear();
@@ -636,7 +667,7 @@ class _FilterButton extends StatelessWidget {
       label: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('Filters'),
+          Text(context.l10n.commonFilters),
           if (hasActive) ...[
             const SizedBox(width: 6),
             Container(
@@ -700,19 +731,19 @@ class _NoteCardState extends State<_NoteCard> with TickerProviderStateMixin {
     final editedSuffix = n.isEdited ? ' (edited)' : '';
 
     final statusPill = n.isDone
-        ? const _Pill(
-            text: 'DONE',
+        ? _Pill(
+            text: context.l10n.notesStatusDone,
             color: Color(0xFFE8FFF1),
             textColor: Color(0xFF16A34A),
           )
         : (n.isOverdue
-              ? const _Pill(
-                  text: 'OVERDUE',
+              ? _Pill(
+                  text: context.l10n.notesStatusOverdue,
                   color: Color(0xFFFFEEF0),
                   textColor: Color(0xFFDC2626),
                 )
-              : const _Pill(
-                  text: 'ACTIVE',
+              : _Pill(
+                  text: context.l10n.notesStatusActive,
                   color: Color(0xFFEFF6FF),
                   textColor: Color(0xFF2563EB),
                 ));
@@ -777,8 +808,8 @@ class _NoteCardState extends State<_NoteCard> with TickerProviderStateMixin {
                       textColor: const Color(0xFF2563EB),
                     ),
                   if (n.pinned == true)
-                    const _Pill(
-                      text: 'Pinned',
+                    _Pill(
+                      text: context.l10n.notesPinned,
                       color: Color(0xFFEFF4FF),
                       textColor: Color(0xFF2563EB),
                     ),
@@ -806,21 +837,21 @@ class _NoteCardState extends State<_NoteCard> with TickerProviderStateMixin {
               Row(
                 children: [
                   IconButton(
-                    tooltip: 'คัดลอก',
+                    tooltip: context.l10n.notesCopy,
                     onPressed: () async {
                       await Clipboard.setData(
                         ClipboardData(text: '${n.title}\n\n${n.body}'.trim()),
                       );
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('คัดลอกแล้ว')),
-                        );
+                        AppToast.success(context.l10n.notesCopied);
                       }
                     },
                     icon: const Icon(Icons.copy_outlined),
                   ),
                   IconButton(
-                    tooltip: n.isDone ? 'ยกเลิกเสร็จสิ้น' : 'เสร็จสิ้น',
+                    tooltip: n.isDone
+                        ? context.l10n.notesMarkUndone
+                        : context.l10n.notesMarkDone,
                     onPressed: widget.onToggleDone,
                     icon: Icon(
                       n.isDone ? Icons.undo : Icons.check_circle_outline,
@@ -836,13 +867,20 @@ class _NoteCardState extends State<_NoteCard> with TickerProviderStateMixin {
                     itemBuilder: (_) => [
                       PopupMenuItem(
                         value: 'pin',
-                        child: Text((n.pinned == true) ? 'Unpin' : 'Pin'),
+                        child: Text(
+                          (n.pinned == true)
+                              ? context.l10n.notesUnpin
+                              : context.l10n.notesPin,
+                        ),
                       ),
-                      const PopupMenuItem(value: 'edit', child: Text('Edit')),
-                      const PopupMenuItem(
+                      PopupMenuItem(
+                        value: 'edit',
+                        child: Text(context.l10n.commonEdit),
+                      ),
+                      PopupMenuItem(
                         value: 'delete',
                         child: Text(
-                          'Delete',
+                          context.l10n.commonDelete,
                           style: TextStyle(color: Colors.red),
                         ),
                       ),
@@ -950,7 +988,7 @@ class _EditorSheetState extends State<_EditorSheet> {
           shrinkWrap: true,
           children: [
             Text(
-              isEdit ? 'Edit note' : 'New note',
+              isEdit ? context.l10n.notesEditTitle : context.l10n.notesNew,
               style: Theme.of(
                 context,
               ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -958,8 +996,8 @@ class _EditorSheetState extends State<_EditorSheet> {
             const SizedBox(height: 10),
             TextField(
               controller: _title,
-              decoration: const InputDecoration(
-                labelText: 'Title',
+              decoration: InputDecoration(
+                labelText: context.l10n.notesFieldTitle,
                 border: OutlineInputBorder(),
                 isDense: true,
               ),
@@ -967,18 +1005,27 @@ class _EditorSheetState extends State<_EditorSheet> {
             const SizedBox(height: 10),
             DropdownButtonFormField<String>(
               initialValue: _category,
-              items: const [
-                DropdownMenuItem(value: 'general', child: Text('General')),
-                DropdownMenuItem(value: 'bills', child: Text('Bills')),
-                DropdownMenuItem(value: 'chores', child: Text('Chores')),
+              items: [
+                DropdownMenuItem(
+                  value: 'general',
+                  child: Text(context.l10n.notesCatGeneral),
+                ),
+                DropdownMenuItem(
+                  value: 'bills',
+                  child: Text(context.l10n.notesCatBills),
+                ),
+                DropdownMenuItem(
+                  value: 'chores',
+                  child: Text(context.l10n.notesCatChores),
+                ),
                 DropdownMenuItem(
                   value: 'appointment',
-                  child: Text('Appointment'),
+                  child: Text(context.l10n.notesCatAppointment),
                 ),
               ],
               onChanged: (v) => setState(() => _category = v ?? 'general'),
-              decoration: const InputDecoration(
-                labelText: 'Category',
+              decoration: InputDecoration(
+                labelText: context.l10n.notesCategory,
                 border: OutlineInputBorder(),
                 isDense: true,
               ),
@@ -987,7 +1034,7 @@ class _EditorSheetState extends State<_EditorSheet> {
             SwitchListTile(
               value: _pinned,
               onChanged: (v) => setState(() => _pinned = v),
-              title: const Text('Pinned'),
+              title: Text(context.l10n.notesPinned),
               dense: true,
               contentPadding: EdgeInsets.zero,
               activeThumbColor: widget.accent,
@@ -996,8 +1043,8 @@ class _EditorSheetState extends State<_EditorSheet> {
             TextField(
               controller: _body,
               maxLines: 12,
-              decoration: const InputDecoration(
-                labelText: 'Content (รองรับวางลิงก์รูปจาก Uploads)',
+              decoration: InputDecoration(
+                labelText: context.l10n.notesFieldContent,
                 alignLabelWithHint: true,
                 border: OutlineInputBorder(),
               ),
@@ -1008,7 +1055,7 @@ class _EditorSheetState extends State<_EditorSheet> {
                 OutlinedButton.icon(
                   onPressed: () => Navigator.pop(context),
                   icon: const Icon(Icons.close),
-                  label: const Text('Cancel'),
+                  label: Text(context.l10n.commonCancel),
                 ),
                 const Spacer(),
                 FilledButton.icon(
@@ -1016,9 +1063,7 @@ class _EditorSheetState extends State<_EditorSheet> {
                   onPressed: () {
                     final title = _title.text.trim();
                     if (title.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('กรุณากรอก Title')),
-                      );
+                      AppToast.error(context.l10n.notesTitleRequired);
                       return;
                     }
                     Navigator.pop(
@@ -1032,7 +1077,9 @@ class _EditorSheetState extends State<_EditorSheet> {
                     );
                   },
                   icon: const Icon(Icons.check),
-                  label: Text(isEdit ? 'Save' : 'Create'),
+                  label: Text(
+                    isEdit ? context.l10n.commonSave : context.l10n.notesCreate,
+                  ),
                 ),
               ],
             ),

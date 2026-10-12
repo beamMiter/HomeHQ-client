@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../models/medicine_batch.dart';
 import 'qty_badge.dart' as q; // 👈 ใส่ prefix
+import '../l10n/l10n.dart';
 
 class BatchTile extends StatelessWidget {
   final MedicineBatch b;
@@ -11,6 +12,7 @@ class BatchTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final dateFmt = DateFormat('d MMM yyyy');
     final exp = b.expiryDate != null ? dateFmt.format(b.expiryDate!) : '-';
     return Container(
@@ -30,8 +32,8 @@ class BatchTile extends StatelessWidget {
               children: [
                 Text(
                   b.lotNo?.isNotEmpty == true
-                      ? 'Lot ${b.lotNo}'
-                      : 'ไม่มีเลขล็อต',
+                      ? l10n.medBatchLot(b.lotNo!)
+                      : l10n.medBatchNoLot,
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
                 const SizedBox(height: 2),
@@ -39,13 +41,13 @@ class BatchTile extends StatelessWidget {
                   children: [
                     const Icon(Icons.event, size: 16),
                     const SizedBox(width: 4),
-                    Text('หมดอายุ: $exp'),
+                    Text(l10n.medBatchExpires(exp)),
                   ],
                 ),
               ],
             ),
           ),
-          q.qtyBadge(b.qty),
+          q.qtyBadge(context, b.qty),
         ],
       ),
     );

@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/medicine_alert.dart'; // 👈 ใช้ model ที่ถูกต้อง
 import '../state/medicine_actions.dart';
+import 'toast.dart';
+import '../l10n/l10n.dart';
 
 class AlertSheet extends ConsumerStatefulWidget {
   final String id;
@@ -40,14 +42,13 @@ class _AlertSheetState extends ConsumerState<AlertSheet> {
     await ref.read(alertUpdateProvider((widget.id, a)).future);
     if (mounted) {
       Navigator.pop(context);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('อัปเดตการเตือนแล้ว')));
+      AppToast.success(context.l10n.medAlertUpdated);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final bottom = MediaQuery.of(context).viewInsets.bottom;
     return Padding(
       padding: EdgeInsets.only(bottom: bottom),
@@ -70,40 +71,36 @@ class _AlertSheetState extends ConsumerState<AlertSheet> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'ตั้งเตือน',
+                  l10n.medAlertTitle,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 12),
                 SwitchListTile(
                   value: _enabled,
                   onChanged: (v) => setState(() => _enabled = v),
-                  title: const Text('เปิดการเตือน'),
+                  title: Text(l10n.medAlertEnable),
                 ),
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _minQty,
-                  decoration: const InputDecoration(
-                    labelText: 'แจ้งเตือนเมื่อคงเหลือ ≤ (ชิ้น)',
-                  ),
+                  decoration: InputDecoration(labelText: l10n.medAlertMinQty),
                   keyboardType: TextInputType.number,
                   validator: (v) {
                     if ((v ?? '').isEmpty) return null;
                     final t = int.tryParse(v!);
-                    if (t == null || t < 0) return 'ตัวเลขไม่ถูกต้อง';
+                    if (t == null || t < 0) return l10n.commonInvalidNumber;
                     return null;
                   },
                 ),
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _expWin,
-                  decoration: const InputDecoration(
-                    labelText: 'แจ้งเตือนเมื่อเหลือวันหมดอายุ ≤ (วัน)',
-                  ),
+                  decoration: InputDecoration(labelText: l10n.medAlertExpiryDays),
                   keyboardType: TextInputType.number,
                   validator: (v) {
                     if ((v ?? '').isEmpty) return null;
                     final t = int.tryParse(v!);
-                    if (t == null || t < 0) return 'ตัวเลขไม่ถูกต้อง';
+                    if (t == null || t < 0) return l10n.commonInvalidNumber;
                     return null;
                   },
                 ),
@@ -113,7 +110,7 @@ class _AlertSheetState extends ConsumerState<AlertSheet> {
                   child: FilledButton.icon(
                     onPressed: _submit,
                     icon: const Icon(Icons.check),
-                    label: const Text('บันทึก'),
+                    label: Text(l10n.commonSave),
                   ),
                 ),
               ],

@@ -9,6 +9,9 @@ import '../state/purchase_actions.dart';
 import '../models/purchase_model.dart';
 import '../widgets/error_state.dart';
 import '../widgets/page_loading.dart';
+import '../widgets/toast.dart';
+import '../widgets/refresh.dart';
+import '../l10n/l10n.dart';
 
 class PurchaseDetailScreen extends ConsumerWidget {
   final String id;
@@ -18,19 +21,37 @@ class PurchaseDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final asyncDetail = ref.watch(purchaseDetailProvider(id));
 
+    final reloading = watchReloading(ref, 'purchase:$id');
     return Scaffold(
-      appBar: AppBar(title: const Text('Purchase Detail')),
-      body: asyncDetail.when(
-        loading: () => const PageLoading(),
-        error: (e, _) => ErrorState(
-          title: 'โหลดไม่สำเร็จ: $e',
-          icon: Icons.error_outline,
-          retryLabel: 'ลองอีกครั้ง',
-          onRetry: () => ref.invalidate(purchaseDetailProvider(id)),
-        ),
-        data: (p) => RefreshIndicator(
-          onRefresh: () async => ref.refresh(purchaseDetailProvider(id).future),
-          child: _DetailView(p: p),
+      appBar: AppBar(
+        title: Text(context.l10n.purchDetailTitle),
+        actions: [
+          RefreshButton(
+            busy: reloading || asyncDetail.isReloadingData,
+            onPressed: () => runReload(
+              ref,
+              'purchase:$id',
+              () => ref.refresh(purchaseDetailProvider(id).future),
+            ),
+          ),
+        ],
+      ),
+      body: ReloadOverlay(
+        active: reloading,
+        child: asyncDetail.when(
+          loading: () => const PageLoading(),
+          error: (e, _) => ErrorState(
+            title: context.l10n.purchDetailLoadFailed('$e'),
+            icon: Icons.error_outline,
+            retryLabel: context.l10n.commonTryAgain,
+            onRetry: () => ref.invalidate(purchaseDetailProvider(id)),
+          ),
+          data: (p) => RefreshIndicator(
+            onRefresh: () => pullRefresh(
+              () => ref.refresh(purchaseDetailProvider(id).future),
+            ),
+            child: _DetailView(p: p),
+          ),
         ),
       ),
       bottomNavigationBar: asyncDetail.maybeWhen(
@@ -39,9 +60,7 @@ class PurchaseDetailScreen extends ConsumerWidget {
           p: p,
           onAdvance: () {
             // TODO: ต่อ action “Next status” ของคุณ
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('ยังไม่ได้ต่อ API: advance status')),
-            );
+            AppToast.info(context.l10n.purchAdvanceSoon);
           },
           onEdit: () {
             // TODO: ไปหน้าแก้ไข
@@ -54,26 +73,26 @@ class PurchaseDetailScreen extends ConsumerWidget {
               if (result != null && result.files.single.path != null) {
                 final file = File(result.files.single.path!);
                 final filename = result.files.single.name;
-                
+
                 if (!context.mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('กำลังอัปโหลดไฟล์...')),
+                AppToast.info(context.l10n.purchUploading);
+
+                await ref.read(
+                  uploadAttachmentProvider(
+                    UploadAttachmentPayload(
+                      id: id,
+                      file: file,
+                      filename: filename,
+                    ),
+                  ).future,
                 );
-                
-                await ref.read(uploadAttachmentProvider(
-                  UploadAttachmentPayload(id: id, file: file, filename: filename),
-                ).future);
-                
+
                 if (!context.mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('อัปโหลดไฟล์สำเร็จ')),
-                );
+                AppToast.success(context.l10n.purchUploadDone);
               }
             } catch (e) {
               if (!context.mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('อัปโหลดไฟล์ล้มเหลว: $e')),
-              );
+              AppToast.error(context.l10n.purchUploadFailed('$e'));
             }
           },
         ),
@@ -107,24 +126,24 @@ class _DetailView extends StatelessWidget {
         const SizedBox(height: 12),
         if (p.note?.isNotEmpty == true) ...[
           _SectionCard(
-            title: 'บันทึก',
+            title: context.l10n.commonSave,
             child: Text(p.note!, style: Theme.of(context).textTheme.bodyMedium),
           ),
           const SizedBox(height: 12),
         ],
         _SectionCard(
-          title: 'รายการสินค้า',
+          title: context.l10n.purchItemsTitle,
           trailing: Text(
-            '${items.length} รายการ',
+            context.l10n.purchItemsCount(items.length),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
           child: items.isEmpty
-              ? const Padding(
+              ? Padding(
                   padding: EdgeInsets.symmetric(vertical: 8),
                   child: Text(
-                    '— ไม่มีรายการ —',
+                    context.l10n.purchNoItems,
                     style: TextStyle(color: Colors.grey),
                   ),
                 )
@@ -136,27 +155,30 @@ class _DetailView extends StatelessWidget {
                         unit: it.unit,
                         qty: it.qty,
                         price: it.price,
-                        currencySymbol: (p.currency == null || p.currency!.isEmpty) ? '฿' : p.currency!,
+                        currencySymbol:
+                            (p.currency == null || p.currency!.isEmpty)
+                            ? '฿'
+                            : p.currency!,
                         nf: nf,
                       ),
                     ),
                     const Divider(height: 24),
                     _KeyValueRow(
-                      label: 'รวมตามรายการ',
+                      label: context.l10n.purchTotalByItems,
                       value: nf.format(lineTotal),
                       isEmphasis: true,
                     ),
                     if (p.amountEstimated != null) ...[
                       const SizedBox(height: 6),
                       _KeyValueRow(
-                        label: 'ประมาณการ',
+                        label: context.l10n.purchEstimated,
                         value: nf.format(p.amountEstimated),
                       ),
                     ],
                     if (p.amountPaid != null) ...[
                       const SizedBox(height: 6),
                       _KeyValueRow(
-                        label: 'จ่ายจริง',
+                        label: context.l10n.purchPaid,
                         value: nf.format(p.amountPaid),
                       ),
                     ],
@@ -164,7 +186,7 @@ class _DetailView extends StatelessWidget {
                 ),
         ),
         _SectionCard(
-          title: 'ไฟล์แนบ',
+          title: context.l10n.purchAttachments,
           child: _AttachmentsGrid(
             purchaseId: p.id,
             attachments: p.attachments ?? [],
@@ -213,20 +235,19 @@ class _SummaryCard extends StatelessWidget {
     }
   }
 
-  String _statusLabel() {
-    // ปรับไทย/อังกฤษตามต้องการ
+  String _statusLabel(BuildContext context) {
     switch (p.status) {
       case PurchaseStatus.planned:
-        return 'วางแผน';
+        return context.l10n.purchStatusPlanned;
       case PurchaseStatus.ordered:
-        return 'สั่งซื้อแล้ว';
+        return context.l10n.purchStatusOrdered;
       case PurchaseStatus.bought:
-        return 'ซื้อแล้ว';
+        return context.l10n.purchStatusBought;
       case PurchaseStatus.delivered:
-        return 'ส่งมอบแล้ว';
+        return context.l10n.purchStatusDelivered;
       case PurchaseStatus.canceled:
       case PurchaseStatus.cancelled:
-        return 'ยกเลิก';
+        return context.l10n.purchStatusCanceled;
     }
   }
 
@@ -266,7 +287,7 @@ class _SummaryCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
-                    _statusLabel(),
+                    _statusLabel(context),
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                       color: _statusFg(context),
@@ -288,12 +309,16 @@ class _SummaryCard extends StatelessWidget {
                 if (p.amountEstimated != null)
                   _InfoChip(
                     icon: Icons.calculate_outlined,
-                    label: 'ประมาณ ${nf.format(p.amountEstimated)}',
+                    label: context.l10n.purchEstimatedAmount(
+                      nf.format(p.amountEstimated),
+                    ),
                   ),
                 if (p.amountPaid != null)
                   _InfoChip(
                     icon: Icons.payments_outlined,
-                    label: 'จ่ายจริง ${nf.format(p.amountPaid)}',
+                    label: context.l10n.purchPaidAmount(
+                      nf.format(p.amountPaid),
+                    ),
                   ),
               ],
             ),
@@ -364,9 +389,9 @@ class _LineItemTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final q = (qty ?? 0);
     final subtitle = [
-      'จำนวน: ${qty == null ? "-" : q.toString()}',
+      context.l10n.purchItemQty(qty == null ? "-" : q.toString()),
       if ((unit ?? '').isNotEmpty) unit!,
-      if (price != null) '• ${nf.format(price)} / หน่วย',
+      if (price != null) context.l10n.purchItemPrice(nf.format(price)),
     ].join(' ');
 
     final lineSum = price == null ? null : (price! * q.toDouble());
@@ -467,20 +492,20 @@ class _BottomActions extends StatelessWidget {
               child: FilledButton.icon(
                 onPressed: onAdvance,
                 icon: const Icon(Icons.fast_forward),
-                label: const Text('Next status'),
+                label: Text(context.l10n.purchNextStatus),
               ),
             ),
             const SizedBox(width: 8),
             IconButton.filledTonal(
               onPressed: onAttach,
-              tooltip: 'แนบไฟล์/รูป',
+              tooltip: context.l10n.purchAttach,
               icon: const Icon(Icons.attachment),
             ),
             const SizedBox(width: 8),
             OutlinedButton.icon(
               onPressed: onEdit,
               icon: const Icon(Icons.edit_outlined),
-              label: const Text('แก้ไข'),
+              label: Text(context.l10n.commonEdit),
             ),
           ],
         ),
@@ -492,18 +517,15 @@ class _BottomActions extends StatelessWidget {
 class _AttachmentsGrid extends ConsumerWidget {
   final String purchaseId;
   final List<FileAttachment> attachments;
-  const _AttachmentsGrid({
-    required this.purchaseId,
-    required this.attachments,
-  });
+  const _AttachmentsGrid({required this.purchaseId, required this.attachments});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (attachments.isEmpty) {
-      return const Padding(
+      return Padding(
         padding: EdgeInsets.symmetric(vertical: 8),
         child: Text(
-          '— ไม่มีไฟล์แนบ —',
+          context.l10n.purchNoAttachments,
           style: TextStyle(color: Colors.grey),
         ),
       );
@@ -514,7 +536,9 @@ class _AttachmentsGrid extends ConsumerWidget {
         return Card(
           margin: const EdgeInsets.only(bottom: 8),
           elevation: 0,
-          color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+          color: Theme.of(
+            context,
+          ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
             side: BorderSide(
@@ -535,36 +559,42 @@ class _AttachmentsGrid extends ConsumerWidget {
               children: [
                 IconButton(
                   icon: const Icon(Icons.open_in_new),
-                  tooltip: 'เปิดดู',
+                  tooltip: context.l10n.purchOpen,
                   onPressed: () async {
                     final uri = Uri.parse(att.url);
                     if (await canLaunchUrl(uri)) {
-                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      await launchUrl(
+                        uri,
+                        mode: LaunchMode.externalApplication,
+                      );
                     } else {
                       if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('ไม่สามารถเปิดลิงก์ได้')),
-                      );
+                      AppToast.error(context.l10n.purchCantOpenLink);
                     }
                   },
                 ),
                 IconButton(
                   icon: const Icon(Icons.delete_outline, color: Colors.red),
-                  tooltip: 'ลบไฟล์แนบ',
+                  tooltip: context.l10n.purchDeleteAttachment,
                   onPressed: () async {
                     final confirm = await showDialog<bool>(
                       context: context,
                       builder: (ctx) => AlertDialog(
-                        title: const Text('ลบไฟล์แนบ?'),
-                        content: Text('ต้องการลบไฟล์ "${att.fileName}" ใช่หรือไม่?'),
+                        title: Text(context.l10n.purchDeleteAttachmentAsk),
+                        content: Text(
+                          context.l10n.purchDeleteAttachmentBody(att.fileName),
+                        ),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(ctx, false),
-                            child: const Text('ยกเลิก'),
+                            child: Text(context.l10n.commonCancel),
                           ),
                           TextButton(
                             onPressed: () => Navigator.pop(ctx, true),
-                            child: const Text('ลบ', style: TextStyle(color: Colors.red)),
+                            child: Text(
+                              context.l10n.commonDelete,
+                              style: TextStyle(color: Colors.red),
+                            ),
                           ),
                         ],
                       ),
@@ -572,21 +602,20 @@ class _AttachmentsGrid extends ConsumerWidget {
                     if (confirm == true) {
                       try {
                         if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('กำลังลบไฟล์แนบ...')),
+                        AppToast.info(context.l10n.purchDeleting);
+                        await ref.read(
+                          deleteAttachmentProvider(
+                            DeleteAttachmentPayload(
+                              id: purchaseId,
+                              fileId: att.id,
+                            ),
+                          ).future,
                         );
-                        await ref.read(deleteAttachmentProvider(
-                          DeleteAttachmentPayload(id: purchaseId, fileId: att.id),
-                        ).future);
                         if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('ลบไฟล์แนบสำเร็จ')),
-                        );
+                        AppToast.success(context.l10n.purchDeleted);
                       } catch (e) {
                         if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('ลบไฟล์แนบล้มเหลว: $e')),
-                        );
+                        AppToast.error(context.l10n.purchDeleteFailed('$e'));
                       }
                     }
                   },

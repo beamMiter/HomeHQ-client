@@ -4,6 +4,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/note.dart';
 import '../repositories/notes_repository.dart';
+import '../l10n/l10n.dart';
+import 'locale_provider.dart';
 
 /// พารามิเตอร์ query สำหรับ list (immutable)
 class NotesQuery {
@@ -57,15 +59,10 @@ final notesProvider = FutureProvider.autoDispose.family<List<Note>, NotesQuery>(
     } on DioException catch (e) {
       // แปลงเป็นข้อความสั้น ๆ อ่านง่าย (หลีกเลี่ยง error block ยาว)
       final sc = e.response?.statusCode;
-      if (sc == 401) {
-        throw Exception('ไม่ได้รับอนุญาต (401) — กรุณาเข้าสู่ระบบอีกครั้ง');
-      }
-      if (sc == 404) {
-        throw Exception(
-          'ไม่พบข้อมูลโน้ต (404) — อาจยังไม่มีโน้ตหรือ endpoint ผิด',
-        );
-      }
-      throw Exception('โหลดโน้ตล้มเหลว: ${sc ?? ''} ${e.message}');
+      final l10n = l10nFor(ref.read(localeProvider));
+      if (sc == 401) throw Exception(l10n.notesErrUnauthorized);
+      if (sc == 404) throw Exception(l10n.notesErrNotFound);
+      throw Exception(l10n.notesErrLoad('${sc ?? ''} ${e.message}'));
     }
   },
 );

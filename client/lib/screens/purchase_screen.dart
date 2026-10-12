@@ -14,6 +14,8 @@ import '../widgets/search_bar_field.dart';
 import '../widgets/header_row.dart';
 import '../widgets/list_empty_state.dart';
 import '../widgets/page_loading.dart';
+import '../widgets/refresh.dart';
+import '../l10n/l10n.dart';
 
 enum _StatusFilter { all, planned, ordered, bought, delivered, canceled }
 
@@ -51,11 +53,15 @@ class _PurchaseScreenState extends ConsumerState<PurchaseScreen> {
     });
   }
 
+  Future<void> _pull() =>
+      pullRefresh(() => ref.refresh(purchasesListProvider.future));
+
   @override
   Widget build(BuildContext context) {
     final listAsync = ref.watch(purchasesListProvider);
     const accent = Color(0xFF1F4E9E); // same tone as Notes
 
+    final reloading = watchReloading(ref, 'purchases');
     return Theme(
       data: Theme.of(context).copyWith(
         colorScheme: Theme.of(context).colorScheme.copyWith(primary: accent),
@@ -66,8 +72,16 @@ class _PurchaseScreenState extends ConsumerState<PurchaseScreen> {
         appBar: TopNavBar(
           title: 'Purchases',
           actions: [
+            RefreshButton(
+              busy: reloading || listAsync.isReloadingData,
+              onPressed: () => runReload(
+                ref,
+                'purchases',
+                () => ref.refresh(purchasesListProvider.future),
+              ),
+            ),
             IconButton(
-              tooltip: 'Clear filters',
+              tooltip: context.l10n.commonClearFilters,
               onPressed: _clearAll,
               icon: const Icon(Icons.filter_alt_off),
             ),
@@ -78,120 +92,128 @@ class _PurchaseScreenState extends ConsumerState<PurchaseScreen> {
           foregroundColor: Colors.white,
           onPressed: () => context.push('/purchases/new'),
           icon: const Icon(Icons.add),
-          label: const Text('New Purchase'),
+          label: Text(context.l10n.purchNew),
         ),
-        body: listAsync.when(
-          loading: () =>
-              const PageLoading(),
-          error: (e, _) => _ErrorOrAuth(e: e),
-          data: (items) => Column(
-            children: [
-              HeaderRow(
-                left: SearchBarField(
-                  controller: _search,
-                  onChanged: (_) => setState(() {}),
-                  onClear: () => setState(_search.clear),
-                  hintText:
-                      'Search (title/store/category/note/status) • ค้นหา…',
+        body: ReloadOverlay(
+          active: reloading,
+          child: listAsync.when(
+            loading: () => const PageLoading(),
+            error: (e, _) => RefreshableFill(
+              onRefresh: _pull,
+              child: _ErrorOrAuth(e: e, onRetry: _pull),
+            ),
+            data: (items) => Column(
+              children: [
+                HeaderRow(
+                  left: SearchBarField(
+                    controller: _search,
+                    onChanged: (_) => setState(() {}),
+                    onClear: () => setState(_search.clear),
+                    hintText: context.l10n.purchSearchHint,
+                  ),
+                  right: _FilterButton(
+                    isOpen: _filtersOpen,
+                    activeCount: _activeFilterCount(),
+                    onTap: () => setState(() => _filtersOpen = !_filtersOpen),
+                  ),
                 ),
-                right: _FilterButton(
-                  isOpen: _filtersOpen,
-                  activeCount: _activeFilterCount(),
-                  onTap: () => setState(() => _filtersOpen = !_filtersOpen),
-                ),
-              ),
 
-              AnimatedCrossFade(
-                duration: const Duration(milliseconds: 160),
-                crossFadeState: _filtersOpen
-                    ? CrossFadeState.showFirst
-                    : CrossFadeState.showSecond,
-                firstChild: Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 6, 12, 4),
-                  child: Card(
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(color: Colors.black.withValues(alpha: .06)),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(10),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _SectionLabel('Status • สถานะ'),
-                          const SizedBox(height: 6),
-                          Wrap(
-                            spacing: 6,
-                            children: [
-                              _statusChip('All • ทั้งหมด', _StatusFilter.all),
-                              _statusChip(
-                                'Planned • วางแผน',
-                                _StatusFilter.planned,
-                              ),
-                              _statusChip(
-                                'Ordered • สั่งแล้ว',
-                                _StatusFilter.ordered,
-                              ),
-                              _statusChip(
-                                'Bought • ซื้อแล้ว',
-                                _StatusFilter.bought,
-                              ),
-                              _statusChip(
-                                'Delivered • ส่งมอบ',
-                                _StatusFilter.delivered,
-                              ),
-                              _statusChip(
-                                'Canceled • ยกเลิก',
-                                _StatusFilter.canceled,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              TextButton.icon(
-                                onPressed: _clearAll,
-                                icon: const Icon(Icons.clear_all, size: 18),
-                                label: const Text('Clear • ล้างทั้งหมด'),
-                              ),
-                              const Spacer(),
-                              FilledButton.icon(
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: accent,
+                AnimatedCrossFade(
+                  duration: const Duration(milliseconds: 160),
+                  crossFadeState: _filtersOpen
+                      ? CrossFadeState.showFirst
+                      : CrossFadeState.showSecond,
+                  firstChild: Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 6, 12, 4),
+                    child: Card(
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(
+                          color: Colors.black.withValues(alpha: .06),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _SectionLabel(context.l10n.commonStatus),
+                            const SizedBox(height: 6),
+                            Wrap(
+                              spacing: 6,
+                              children: [
+                                _statusChip(
+                                  context.l10n.commonAll,
+                                  _StatusFilter.all,
                                 ),
-                                onPressed: () =>
-                                    setState(() => _filtersOpen = false),
-                                icon: const Icon(Icons.check),
-                                label: const Text('Apply • ใช้งาน'),
-                              ),
-                            ],
-                          ),
-                        ],
+                                _statusChip(
+                                  context.l10n.purchStatusPlanned,
+                                  _StatusFilter.planned,
+                                ),
+                                _statusChip(
+                                  context.l10n.purchStatusOrdered,
+                                  _StatusFilter.ordered,
+                                ),
+                                _statusChip(
+                                  context.l10n.purchStatusBought,
+                                  _StatusFilter.bought,
+                                ),
+                                _statusChip(
+                                  context.l10n.purchStatusDelivered,
+                                  _StatusFilter.delivered,
+                                ),
+                                _statusChip(
+                                  context.l10n.purchStatusCanceled,
+                                  _StatusFilter.canceled,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                TextButton.icon(
+                                  onPressed: _clearAll,
+                                  icon: const Icon(Icons.clear_all, size: 18),
+                                  label: Text(context.l10n.commonClearAll),
+                                ),
+                                const Spacer(),
+                                FilledButton.icon(
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: accent,
+                                  ),
+                                  onPressed: () =>
+                                      setState(() => _filtersOpen = false),
+                                  icon: const Icon(Icons.check),
+                                  label: Text(context.l10n.commonApply),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
+                  secondChild: const SizedBox.shrink(),
                 ),
-                secondChild: const SizedBox.shrink(),
-              ),
 
-              Expanded(
-                child: RefreshIndicator(
-                  onRefresh: () async =>
-                      ref.refresh(purchasesListProvider.future),
-                  child: ListView(
-                    children: [
-                      _ListBody(
-                        items: items,
-                        q: _search.text,
-                        status: _status,
-                        onClearFilters: _clearAll,
-                      ),
-                    ],
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: _pull,
+                    child: ListView(
+                      children: [
+                        _ListBody(
+                          items: items,
+                          q: _search.text,
+                          status: _status,
+                          onClearFilters: _clearAll,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -226,7 +248,7 @@ class _FilterButton extends StatelessWidget {
       label: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('Filters • ตัวกรอง'),
+          Text(context.l10n.commonFilters),
           if (hasActive) ...[
             const SizedBox(width: 6),
             Container(
@@ -309,8 +331,8 @@ class _ListBody extends StatelessWidget {
         centered: true,
         icon: Icons.shopping_bag_outlined,
         title: hasQueryOrFilter
-            ? 'No results • ไม่พบรายการตามเงื่อนไข'
-            : 'No purchases yet • ยังไม่มีรายการสั่งซื้อ',
+            ? context.l10n.purchNoResults
+            : context.l10n.purchEmpty,
         action: Wrap(
           spacing: 8,
           children: [
@@ -318,12 +340,12 @@ class _ListBody extends StatelessWidget {
               OutlinedButton.icon(
                 onPressed: onClearFilters,
                 icon: const Icon(Icons.refresh),
-                label: const Text('Clear filters • ล้างตัวกรอง'),
+                label: Text(context.l10n.commonClearFilters),
               ),
             FilledButton.icon(
               onPressed: () => context.push('/purchases/new'),
               icon: const Icon(Icons.add),
-              label: const Text('New • เพิ่มรายการ'),
+              label: Text(context.l10n.purchAddItem),
             ),
           ],
         ),
@@ -378,19 +400,19 @@ class _PurchaseCard extends StatelessWidget {
     }
   }
 
-  String _statusLabel() {
+  String _statusLabel(BuildContext context) {
     switch (p.status) {
       case PurchaseStatus.planned:
-        return 'Planned • วางแผน';
+        return context.l10n.purchStatusPlanned;
       case PurchaseStatus.ordered:
-        return 'Ordered • สั่งแล้ว';
+        return context.l10n.purchStatusOrdered;
       case PurchaseStatus.bought:
-        return 'Bought • ซื้อแล้ว';
+        return context.l10n.purchStatusBought;
       case PurchaseStatus.delivered:
-        return 'Delivered • ส่งมอบแล้ว';
+        return context.l10n.purchStatusDelivered;
       case PurchaseStatus.canceled:
       case PurchaseStatus.cancelled:
-        return 'Canceled • ยกเลิก';
+        return context.l10n.purchStatusCanceled;
     }
   }
 
@@ -466,7 +488,7 @@ class _PurchaseCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: Text(
-                      _statusLabel(),
+                      _statusLabel(context),
                       style: TextStyle(
                         color: _statusFg(context),
                         fontWeight: FontWeight.w600,
@@ -534,7 +556,8 @@ class _TinyChip extends StatelessWidget {
 
 class _ErrorOrAuth extends StatelessWidget {
   final Object e;
-  const _ErrorOrAuth({required this.e});
+  final VoidCallback onRetry;
+  const _ErrorOrAuth({required this.e, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
@@ -545,14 +568,14 @@ class _ErrorOrAuth extends StatelessWidget {
           children: [
             const Icon(Icons.lock_outline, size: 48, color: Colors.grey),
             const SizedBox(height: 12),
-            const Text(
-              'Please sign in • กรุณาเข้าสู่ระบบก่อนใช้งาน',
+            Text(
+              context.l10n.purchSignInPrompt,
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
             FilledButton.icon(
               icon: const Icon(Icons.login),
-              label: const Text('Sign in • เข้าสู่ระบบ'),
+              label: Text(context.l10n.authSignIn),
               onPressed: () => context.push('/login'),
             ),
           ],
@@ -565,12 +588,18 @@ class _ErrorOrAuth extends StatelessWidget {
         children: [
           const Icon(Icons.error_outline, color: Colors.redAccent, size: 48),
           const SizedBox(height: 8),
-          const Text('Failed to load • ไม่สามารถโหลดข้อมูลได้'),
+          Text(context.l10n.purchLoadFailed),
           const SizedBox(height: 4),
           Text(
             e.toString(),
             style: const TextStyle(color: Colors.grey, fontSize: 12),
             textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 12),
+          FilledButton.icon(
+            onPressed: onRetry,
+            icon: const Icon(Icons.refresh),
+            label: Text(context.l10n.commonTryAgain),
           ),
         ],
       ),
