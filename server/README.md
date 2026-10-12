@@ -150,6 +150,11 @@ make run              # Run API server
 | `GOOGLE_PLACES_RATE_PER_MIN` | Google-backed requests per user per minute | `20` |
 | `GOOGLE_PLACES_MAX_RADIUS_M` | Largest search radius accepted (Google's own cap is 50000) | `20000` |
 | `GOOGLE_PLACES_ALLOW_ALL_TRADES` | Allow a search with no trade and no text (fans out to 4 calls) | `false` |
+| `IMOU_APP_ID` / `IMOU_APP_SECRET` | Imou Open Platform credentials (open.imoulife.com). Both set = cameras on | _(empty = off)_ |
+| `IMOU_REGION` | `sg` picks the Singapore host; for other regions set `IMOU_BASE_URL` | _(global host)_ |
+| `IMOU_BASE_URL` | Override the Imou API host (e.g. `https://openapi-xx.easy4ip.com/openapi`) | region default |
+| `CAMERAS_DRIVER` | `imou`, `fake` (demo cameras, no account needed) or empty (auto) | _(auto)_ |
+| `CAMERAS_FAKE_STREAM_URL` | HLS address the fake driver hands out | Apple's test stream |
 
 ---
 
@@ -271,6 +276,44 @@ content; the list call requests cheap fields and phone/rating/website is a
 separate call because those fields bill at a higher rate; Google's terms don't
 allow these results on a non-Google map, so the app lists them without pinning
 them on OpenStreetMap.
+
+### Cameras (Imou, optional)
+Off unless `IMOU_APP_ID` + `IMOU_APP_SECRET` are set (or `CAMERAS_DRIVER=fake`);
+then it answers `503 cameras_disabled`. Auth required. The video and its
+recordings stay with Imou: the server only asks Imou's cloud for a live (HLS)
+address and a still picture and hands those to the app, so it never relays
+video.
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/cameras/status` | `{enabled, driver}`. Always answers, costs no Imou call |
+| GET | `/api/v1/cameras` | `{items:[{id,name,model,online,human_detect,ptz,zoom,switches}]}`. `?refresh=1` skips the 60 s cache. `ptz`/`zoom`/`switches` come from the camera's own abilities, so the app shows only controls that work |
+| GET | `/api/v1/cameras/:id/live?quality=hd\|sd` | `{url, protocol:"hls", quality}`. Never cached |
+| GET | `/api/v1/cameras/:id/snapshot` | A still picture (image bytes), private-cached for 10 s |
+| POST | `/api/v1/cameras/:id/ptz` | Body `{"action":"left","duration_ms":600}`. Actions: `up down left right up_left up_right down_left down_right zoom_in zoom_out stop`. Duration is clamped to 0.1–3 s (default 0.5 s), so a lost "stop" can't leave the camera swinging |
+| GET | `/api/v1/cameras/:id/switches` | `{"privacy":false,"motion":true,"human":true}` for the settings this camera has |
+| PUT | `/api/v1/cameras/:id/switches/:key` | Body `{"on":true}`. Keys: `privacy` (view off), `motion`, `human`, `light` (the camera's own light, Imou `whiteLight`), `light_auto` (light on motion, `linkageWhiteLight`) |
+
+Errors: `429 provider_limit` (Imou itself refused: its own call allowance is
+used up), `409 camera_offline`,
+`404 camera_not_found`, `422 not_supported` (the camera lacks that
+capability), `503 cameras_misconfigured` (credentials rejected),
+`502 cameras_unavailable`.
+
+There is no rate limit, call budget or audit log on our side: this is one
+household. Imou has its own allowance per app (reported as ~30,000 requests a
+month); the server only keeps calls down by caching lists, snapshots and live
+addresses for 60 / 20 / 30 s, and by not calling for a camera already known to
+be offline.
+
+The Imou client follows the protocol of the open-source `imouapi` library
+(signed `POST {base}/{method}`; `accessToken`, `deviceBaseList`,
+`deviceBaseDetailList`, `deviceOnline`, `getLiveStreamInfo`, `bindDeviceLive`,
+`setDeviceSnapEnhanced`, `controlMovePTZ`, `getDeviceCameraStatus`,
+`setDeviceCameraStatus`). Abilities are read from the device's `ability`
+string (`PTZ`/`PT`, `ZoomFocus`, `CloseCamera`, `MotionDetect`,
+`HeaderDetect`/`AiHuman`, `WhiteLight`, `Linkagewhitelight`). That is not Imou's own documentation: confirm
+against open.imoulife.com when the account is set up.
 
 ### Files
 | Method | Endpoint | Description |

@@ -27,6 +27,16 @@ type Config struct {
 	GooglePlacesMaxRadiusM     int  // largest accepted search radius
 	GooglePlacesAllowAllTrades bool // permit a search with no trade and no text
 
+	// Cameras (optional). CamerasDriver is "imou", "fake" or empty: empty picks
+	// "imou" when both Imou credentials are set, otherwise the feature is off.
+	CamerasDriver        string
+	CamerasFakeStreamURL string // HLS address the fake driver hands out
+
+	ImouAppID     string
+	ImouAppSecret string
+	ImouBaseURL   string // empty = region default, else Imou's global host
+	ImouRegion    string // "sg"; other regions: set ImouBaseURL
+
 	// Cloudflare R2
 	R2AccountID string
 	R2AccessKey string
@@ -86,6 +96,14 @@ func Load() Config {
 		GooglePlacesRatePerMin:     Getint("GOOGLE_PLACES_RATE_PER_MIN", 0),
 		GooglePlacesMaxRadiusM:     Getint("GOOGLE_PLACES_MAX_RADIUS_M", 0),
 		GooglePlacesAllowAllTrades: Getbool("GOOGLE_PLACES_ALLOW_ALL_TRADES", false),
+
+		CamerasDriver:        Getenv("CAMERAS_DRIVER", ""),
+		CamerasFakeStreamURL: Getenv("CAMERAS_FAKE_STREAM_URL", ""),
+
+		ImouAppID:     Getenv("IMOU_APP_ID", ""),
+		ImouAppSecret: Getenv("IMOU_APP_SECRET", ""),
+		ImouBaseURL:   Getenv("IMOU_BASE_URL", ""),
+		ImouRegion:    Getenv("IMOU_REGION", ""),
 
 		R2AccountID: Getenv("R2_ACCOUNT_ID", ""),
 		R2AccessKey: Getenv("R2_ACCESS_KEY_ID", ""),
