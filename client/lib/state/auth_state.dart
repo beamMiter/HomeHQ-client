@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user.dart';
 import '../repositories/auth_repository.dart';
 import '../services/api_client.dart' show tokenStorageProvider;
+import '../l10n/l10n.dart';
+import 'locale_provider.dart';
 
 class AuthState {
   final User? user;
@@ -39,6 +41,9 @@ class AuthNotifier extends Notifier<AuthState> {
   late final AuthRepository _repo;
   bool _booting = false;
 
+  /// Messages in the language the user is using now.
+  AppLocalizations get _l10n => l10nFor(ref.read(localeProvider));
+
   @override
   AuthState build() {
     final storage = ref.read(tokenStorageProvider);
@@ -65,7 +70,7 @@ class AuthNotifier extends Notifier<AuthState> {
       state = state.copyWith(loading: false, error: _extractError(e));
       return false;
     } catch (_) {
-      state = state.copyWith(loading: false, error: 'Unexpected error');
+      state = state.copyWith(loading: false, error: _l10n.authUnexpected);
       return false;
     }
   }
@@ -85,7 +90,7 @@ class AuthNotifier extends Notifier<AuthState> {
       state = state.copyWith(loading: false, error: _extractError(e));
       return false;
     } catch (_) {
-      state = state.copyWith(loading: false, error: 'Unexpected error');
+      state = state.copyWith(loading: false, error: _l10n.authUnexpected);
       return false;
     }
   }
@@ -148,10 +153,10 @@ class AuthNotifier extends Notifier<AuthState> {
   String _extractError(DioException e) {
     final data = e.response?.data;
     if (data is Map) {
-      return (data['error'] ?? data['message'] ?? 'Unknown error').toString();
+      return (data['error'] ?? data['message'] ?? _l10n.authUnknownError).toString();
     }
     if (data is String && data.isNotEmpty) return data;
-    return 'Network error (${e.response?.statusCode ?? '-'})';
+    return _l10n.authNetworkError('${e.response?.statusCode ?? '-'}');
   }
 }
 
