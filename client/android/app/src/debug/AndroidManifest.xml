@@ -4,4 +4,8 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- Debug only: the local API is plain http (http://10.0.2.2:8080 from the
+         emulator), which Android 9+ blocks by default. Release stays https-only. -->
+    <application android:usesCleartextTraffic="true"/>
 </manifest>

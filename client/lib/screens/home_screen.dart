@@ -3,34 +3,23 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 
+import '../l10n/l10n.dart';
 import '../state/auth_state.dart';
+import '../state/location_controller.dart';
 import '../state/weather_provider.dart';
 import '../models/weather.dart';
 import '../widgets/error_state.dart';
+import '../widgets/language_sheet.dart';
 import '../shared/app_colors.dart';
 import '../widgets/page_loading.dart';
-
-class _DotBadge extends StatelessWidget {
-  const _DotBadge();
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 10,
-      height: 10,
-      decoration: BoxDecoration(
-        color: const Color(0xFFFF3B30),
-        shape: BoxShape.circle,
-        border: Border.all(color: Colors.white, width: 1.5),
-      ),
-    );
-  }
-}
+import '../widgets/toast.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
 
@@ -55,28 +44,18 @@ class HomeScreen extends ConsumerWidget {
           ),
         ),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 4),
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                IconButton(
-                  tooltip: 'Notifications',
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Coming soon: Notifications'),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.notifications_none_rounded, size: 22),
-                ),
-                const Positioned(right: 6, top: 6, child: _DotBadge()),
-              ],
-            ),
+          IconButton(
+            tooltip: l10n.homeNotifications,
+            onPressed: () => AppToast.info(l10n.homeNotificationsSoon),
+            icon: const Icon(Icons.notifications_none_rounded, size: 22),
           ),
           IconButton(
-            tooltip: 'Logout',
+            tooltip: l10n.languageTitle,
+            onPressed: () => showLanguageSheet(context),
+            icon: const Icon(Icons.translate_rounded, size: 22),
+          ),
+          IconButton(
+            tooltip: l10n.homeLogout,
             onPressed: () async {
               await ref.read(authProvider.notifier).logout();
               if (!context.mounted) return;
@@ -90,24 +69,24 @@ class HomeScreen extends ConsumerWidget {
       // ===== Body: คอนเทนต์เดิมกลับมา =====
       body: RefreshIndicator(
         onRefresh: () async {
-          ref.invalidate(locationProvider);
+          // Re-check GPS first; weather rebuilds itself when the fix changes.
+          await ref.read(locationControllerProvider.notifier).refresh();
           ref.invalidate(currentWeatherProvider);
           await ref.read(currentWeatherProvider.future);
         },
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
           children: [
-            const _SectionCard(
-              title: 'Current Weather',
-              subtitle: 'Local conditions',
-              trailing: _AutoSyncChip(),
-              child: _WeatherBodyProxy(),
+            _SectionCard(
+              title: l10n.homeWeatherTitle,
+              subtitle: l10n.homeWeatherSubtitle,
+              child: const _WeatherBodyProxy(),
             ),
             const SizedBox(height: 16),
-            const _SectionCard(
-              title: 'Tools',
-              subtitle: 'Manage your home quickly',
-              child: _QuickToolsSection(),
+            _SectionCard(
+              title: l10n.homeToolsTitle,
+              subtitle: l10n.homeToolsSubtitle,
+              child: const _QuickToolsSection(),
             ),
             const SizedBox(height: 16),
           ],
@@ -117,19 +96,12 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
-
 class _SectionCard extends StatelessWidget {
-  const _SectionCard({
-    required this.title,
-    required this.child,
-    this.subtitle,
-    this.trailing,
-  });
+  const _SectionCard({required this.title, required this.child, this.subtitle});
 
   final String title;
   final String? subtitle;
   final Widget child;
-  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -145,14 +117,7 @@ class _SectionCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: _SectionHeader(title: title, subtitle: subtitle),
-                ),
-                if (trailing != null) trailing!,
-              ],
-            ),
+            _SectionHeader(title: title, subtitle: subtitle),
             const SizedBox(height: 8),
             const Divider(height: 24, color: AppColors.cardBorder),
             child,
@@ -194,57 +159,6 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-class _AutoSyncChip extends ConsumerWidget {
-  const _AutoSyncChip();
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return const _PillChip(
-      icon: Icons.sync,
-      label: 'Auto-sync',
-      color: AppColors.softBlue,
-    );
-  }
-}
-
-class _PillChip extends StatelessWidget {
-  const _PillChip({
-    required this.icon,
-    required this.label,
-    required this.color,
-  });
-  final IconData icon;
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    // Status badge, not a button — no border/outline so it doesn't
-    // read as tappable like a Material chip.
-    return Container(
-      height: 30,
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: color),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: color,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 // proxy เพื่อดึง AsyncValue<WeatherNow> จาก provider
 class _WeatherBodyProxy extends ConsumerWidget {
   const _WeatherBodyProxy();
@@ -254,7 +168,9 @@ class _WeatherBodyProxy extends ConsumerWidget {
     final weather = ref.watch(currentWeatherProvider);
     return _WeatherBody(
       weather: weather,
-      onRetry: () => ref.invalidate(currentWeatherProvider),
+      // The weather error is usually a location problem, so retry the GPS
+      // check (weather rebuilds when the controller reports a fix).
+      onRetry: () => ref.read(locationControllerProvider.notifier).refresh(),
     );
   }
 }
@@ -266,6 +182,7 @@ class _WeatherBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return weather.when(
       loading: () => const Padding(
         padding: EdgeInsets.symmetric(vertical: 20),
@@ -273,9 +190,9 @@ class _WeatherBody extends StatelessWidget {
       ),
       error: (e, _) => ErrorState(
         icon: Icons.cloud_off,
-        title: 'Failed to load weather',
+        title: l10n.homeWeatherFailed,
         error: e,
-        retryLabel: 'Retry',
+        retryLabel: l10n.commonTryAgain,
         onRetry: onRetry,
       ),
       data: (w) {
@@ -289,7 +206,7 @@ class _WeatherBody extends StatelessWidget {
                   Expanded(
                     child: _MetricTile(
                       icon: Icons.thermostat_outlined,
-                      title: 'Temperature',
+                      title: l10n.homeTemperature,
                       value: '${w.temperature.toStringAsFixed(1)} °C',
                     ),
                   ),
@@ -297,8 +214,19 @@ class _WeatherBody extends StatelessWidget {
                   Expanded(
                     child: _MetricTile(
                       icon: Icons.wb_sunny_outlined,
-                      title: 'Condition',
-                      value: w.conditionLabel,
+                      title: l10n.homeCondition,
+                      value: switch (w.condition) {
+                        WeatherCondition.clear => l10n.weatherClear,
+                        WeatherCondition.partlyCloudy =>
+                          l10n.weatherPartlyCloudy,
+                        WeatherCondition.fog => l10n.weatherFog,
+                        WeatherCondition.drizzle => l10n.weatherDrizzle,
+                        WeatherCondition.rain => l10n.weatherRain,
+                        WeatherCondition.snow => l10n.weatherSnow,
+                        WeatherCondition.thunderstorm =>
+                          l10n.weatherThunderstorm,
+                        WeatherCondition.unknown => l10n.weatherUnknown,
+                      },
                     ),
                   ),
                 ],
@@ -310,14 +238,14 @@ class _WeatherBody extends StatelessWidget {
                 Expanded(
                   child: _InfoRow(
                     icon: Icons.air,
-                    label: 'Wind',
+                    label: l10n.homeWind,
                     value: '${w.windSpeed.toStringAsFixed(1)} m/s',
                   ),
                 ),
                 Expanded(
                   child: _InfoRow(
                     icon: Icons.schedule_outlined,
-                    label: 'Updated',
+                    label: l10n.homeUpdated,
                     value: DateFormat('HH:mm').format(w.time),
                   ),
                 ),
@@ -417,49 +345,40 @@ class _QuickToolsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    // The feature names stay in English in every language; only the
+    // captions are translated.
     final items = <_ToolItem>[
-      const _ToolItem(
+      _ToolItem(
         Icons.handyman,
         'Contractors',
         '/contractors',
-        'รายชื่อช่างตามตำแหน่ง',
+        l10n.toolContractorsCaption,
       ),
-      const _ToolItem(
+      _ToolItem(
         Icons.event_note,
         'Important Notes',
         '/notes',
-        'บันทึกสำคัญกันลืม',
+        l10n.toolNotesCaption,
       ),
-      const _ToolItem(
+      _ToolItem(
         Icons.videocam_outlined,
         'Home Cameras',
         '/cameras',
-        'ดูกล้องวงจรปิดที่บ้าน',
+        l10n.toolCamerasCaption,
       ),
-      const _ToolItem(
+      _ToolItem(
         Icons.shopping_cart_checkout,
         'Purchases',
         '/purchases',
-        'ติดตามของที่ซื้อเข้าบ้าน',
+        l10n.toolPurchasesCaption,
       ),
-      const _ToolItem(
-        Icons.receipt_long,
-        'Bills',
-        '/bills',
-        'บิลค่าใช้จ่ายประจำ',
-      ),
-      const _ToolItem(Icons.calculate, 'Calculator', '/calc', 'เครื่องคิดเลข'),
-      const _ToolItem(
+      _ToolItem(Icons.receipt_long, 'Bills', '/bills', l10n.toolBillsCaption),
+      _ToolItem(
         Icons.medical_services_outlined,
         'Medicine Stock',
         '/medicine',
-        'เช็คสต็อกยาประจำบ้าน',
-      ),
-      const _ToolItem(
-        Icons.trending_up,
-        'Household Stocks',
-        '/stocks',
-        'หุ้นน่าซื้อประจำบ้าน',
+        l10n.toolMedicineCaption,
       ),
     ];
 
@@ -467,7 +386,7 @@ class _QuickToolsSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _LauncherSearch(
-          hintText: 'Search contractors (electrician, plumber, AC...)',
+          hintText: l10n.homeSearchHint,
           onSubmit: (q) => _goTo(context, '/contractors', query: q),
         ),
         const SizedBox(height: 12),
@@ -488,10 +407,7 @@ class _QuickToolsSection extends StatelessWidget {
 }
 
 class _LauncherSearch extends StatefulWidget {
-  const _LauncherSearch({
-    required this.hintText,
-    required this.onSubmit,
-  });
+  const _LauncherSearch({required this.hintText, required this.onSubmit});
   final String hintText;
   final void Function(String query) onSubmit;
 
@@ -538,7 +454,10 @@ class _ToolGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final iconSize = large ? 36.0 : 30.0;
-    final aspect = large ? 1.1 : 1.25;
+    // A fixed height rather than an aspect ratio: the title and caption can
+    // each wrap to two lines (English runs longer than Thai, and text scale
+    // goes up to 1.2), and a ratio-sized card would overflow.
+    final extent = large ? 184.0 : 150.0;
 
     return GridView.builder(
       shrinkWrap: true,
@@ -548,7 +467,7 @@ class _ToolGrid extends StatelessWidget {
         crossAxisCount: 2,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
-        childAspectRatio: aspect,
+        mainAxisExtent: extent,
       ),
       itemBuilder: (_, i) =>
           _ToolCard(item: items[i], iconSize: iconSize, large: large),
