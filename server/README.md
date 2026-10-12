@@ -85,9 +85,12 @@ go run ./cmd/migrate -cmd=up
 go run ./cmd/seed
 ```
 
-Default admin credentials:
-- **Email:** `admin@home.local`
-- **Password:** `password`
+Dev accounts (local only — never seed a production database):
+
+| Role | Email | Password |
+|---|---|---|
+| admin | `admin@example.com` | `admin2026` |
+| member | `user@example.com` | `user2026` |
 
 ### 5. Start Server
 

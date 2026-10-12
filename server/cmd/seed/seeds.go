@@ -9,21 +9,42 @@ import (
 
 var adminID string
 
-// Seeded admin login: admin@home.local / DevPass123!
-// (bcrypt hash below was generated for that exact password — see internal/auth.HashPassword)
-const adminSeedPasswordHash = "$2a$10$9ATgBfFG/zfsBX6F4pcZH.h.gTPHtNAncrBZjiO8VNboYlNUTNs6G"
+// Dev-only accounts. NEVER run this seed against a production database: the
+// passwords below are public and are reset on every run.
+//
+//	admin@example.com / admin2026  (role: admin)
+//	user@example.com  / user2026   (role: member)
+//
+// The bcrypt hashes were generated with internal/auth.HashPassword.
+const (
+	adminSeedPasswordHash  = "$2a$10$MBI7b.EBgddh9Cy.TbbZ5.vzH/r2upikoz.biGTRsSj9wK0W3s7Xu"
+	memberSeedPasswordHash = "$2a$10$pXSZFF3Vg4lqL.fhoxenx.ay11NGjg/pC9l7PEsQ9HesB.JZcGIg2"
+)
 
 func seedUsers(ctx context.Context, db *pgxpool.Pool) {
-	err := db.QueryRow(ctx, `
-		INSERT INTO users (name, email, password_hash, role)
-		VALUES ('Admin', 'admin@home.local', $1, 'admin')
-		ON CONFLICT (email) DO UPDATE SET role = 'admin', password_hash = $1
-		RETURNING id
-	`, adminSeedPasswordHash).Scan(&adminID)
-	if err != nil {
-		log.Fatalf("seedUsers: %v", err)
+	accounts := []struct {
+		name, email, hash, role string
+	}{
+		{"Admin", "admin@example.com", adminSeedPasswordHash, "admin"},
+		{"User", "user@example.com", memberSeedPasswordHash, "member"},
 	}
-	log.Printf("✅ users seeded (admin id: %s, login: admin@home.local / DevPass123!)", adminID)
+
+	for _, a := range accounts {
+		var id string
+		err := db.QueryRow(ctx, `
+			INSERT INTO users (name, email, password_hash, role)
+			VALUES ($1, $2, $3, $4)
+			ON CONFLICT (email) DO UPDATE SET name = $1, role = $4, password_hash = $3
+			RETURNING id
+		`, a.name, a.email, a.hash, a.role).Scan(&id)
+		if err != nil {
+			log.Fatalf("seedUsers %s: %v", a.email, err)
+		}
+		if a.role == "admin" {
+			adminID = id // owner of the rest of the seed data
+		}
+		log.Printf("✅ user seeded: %s (%s)", a.email, a.role)
+	}
 }
 
 func seedNotes(ctx context.Context, db *pgxpool.Pool) {
@@ -124,15 +145,40 @@ func seedMedicine(ctx context.Context, db *pgxpool.Pool) {
 	log.Println("✅ medicine seeded")
 }
 
+// seedContractors inserts sample contractors around central Bangkok, one or
+// more per trade the app filters on.
+// Coordinates matter: the radius search filters on lat/lng IS NOT NULL, so rows
+// without them can never be found. Safe to re-run — existing rows are kept and
+// only get their coordinates backfilled if they were seeded without any.
 func seedContractors(ctx context.Context, db *pgxpool.Pool) {
-	_, err := db.Exec(ctx, `
-		INSERT INTO contractors (name, types, phone, note, is_favorite, created_by)
-		VALUES 
-		('ช่างอ้น', '{"electrician"}', '0812345678', 'ช่างไฟแนะนำ', true, $1),
-		('ช่างประปาแถวบ้าน', '{"plumber"}', '0898765432', '', false, $1)
-	`, adminID)
-	if err != nil {
-		log.Printf("seedContractors: %v", err)
+	rows := []struct {
+		name, typ, phone, note, address string
+		fav                             bool
+		lat, lng                        float64
+	}{
+		{"ช่างอ้น", "electrician", "0812345678", "ช่างไฟแนะนำ", "ถนนพญาไท, ราชเทวี, กรุงเทพฯ", true, 13.7512, 100.5410},
+		{"ช่างประปาแถวบ้าน", "plumber", "0898765432", "", "อนุสาวรีย์ชัยสมรภูมิ, ราชเทวี, กรุงเทพฯ", false, 13.7649, 100.5383},
+		{"ช่างสมชาย แอร์เซอร์วิส", "hvac", "0861234567", "ล้าง/ซ่อมแอร์", "ถนนพระราม 4, ปทุมวัน, กรุงเทพฯ", false, 13.7380, 100.5290},
+		{"ช่างไม้ลุงแดง", "carpenter", "0829876543", "งานไม้/เฟอร์นิเจอร์", "ถนนเพชรบุรี, ราชเทวี, กรุงเทพฯ", false, 13.7570, 100.5255},
+	}
+
+	for _, c := range rows {
+		_, err := db.Exec(ctx, `
+			INSERT INTO contractors (name, types, phone, note, address, lat, lng, is_favorite, created_by)
+			SELECT $1::text, ARRAY[$2::text], $3::text, $4::text, $5::text,
+			       $6::float8, $7::float8, $8::boolean, $9::uuid
+			WHERE NOT EXISTS (SELECT 1 FROM contractors WHERE name = $1::text)
+		`, c.name, c.typ, c.phone, c.note, c.address, c.lat, c.lng, c.fav, adminID)
+		if err != nil {
+			log.Printf("seedContractors insert %q: %v", c.name, err)
+			continue
+		}
+		if _, err := db.Exec(ctx, `
+			UPDATE contractors SET lat = $2::float8, lng = $3::float8, address = COALESCE(address, $4::text)
+			WHERE name = $1::text AND lat IS NULL AND lng IS NULL
+		`, c.name, c.lat, c.lng, c.address); err != nil {
+			log.Printf("seedContractors backfill %q: %v", c.name, err)
+		}
 	}
 	log.Println("✅ contractors seeded")
 }
