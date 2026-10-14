@@ -72,7 +72,7 @@ class HomeHqApp extends ConsumerWidget {
 
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      title: 'Home Service',
+      title: 'HomeHQ',
       // null = follow the device; see resolveAppLocale for the fallback.
       locale: ref.watch(localeProvider),
       supportedLocales: AppLocalizations.supportedLocales,

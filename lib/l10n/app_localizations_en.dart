@@ -1078,7 +1078,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authRegisterSubtitle =>
-      'Join Home Service 6/188 to manage tasks and services.';
+      'Join HomeHQ to run your household in one place.';
 
   @override
   String get authFullName => 'Full name';

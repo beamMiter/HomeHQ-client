@@ -150,7 +150,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
                           ),
                           const SizedBox(height: 14),
                           Text(
-                            'Home Service 6/188',
+                            'HomeHQ',
                             style: GoogleFonts.inter(
                               fontSize: 24,
                               fontWeight: FontWeight.w800,

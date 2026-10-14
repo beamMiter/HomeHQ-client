@@ -1048,7 +1048,7 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get authRegisterSubtitle =>
-      'เข้าร่วม Home Service 6/188 เพื่อจัดการงานและบริการของบ้าน';
+      'เข้าร่วม HomeHQ เพื่อจัดการเรื่องในบ้านไว้ในที่เดียว';
 
   @override
   String get authFullName => 'ชื่อ-นามสกุล';

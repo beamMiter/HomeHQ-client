@@ -2027,7 +2027,7 @@ abstract class AppLocalizations {
   /// No description provided for @authRegisterSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Join Home Service 6/188 to manage tasks and services.'**
+  /// **'Join HomeHQ to run your household in one place.'**
   String get authRegisterSubtitle;
 
   /// No description provided for @authFullName.
