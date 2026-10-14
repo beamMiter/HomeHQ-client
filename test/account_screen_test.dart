@@ -4,14 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:homeservice/l10n/l10n.dart';
-import 'package:homeservice/models/user.dart';
-import 'package:homeservice/screens/account_screen.dart';
-import 'package:homeservice/services/auth_interceptor.dart';
-import 'package:homeservice/services/token_storage.dart';
-import 'package:homeservice/state/auth_state.dart';
-import 'package:homeservice/widgets/toast.dart';
-import 'package:homeservice/widgets/user_avatar.dart';
+import 'package:homehq/l10n/l10n.dart';
+import 'package:homehq/models/user.dart';
+import 'package:homehq/screens/account_screen.dart';
+import 'package:homehq/services/auth_interceptor.dart';
+import 'package:homehq/services/token_storage.dart';
+import 'package:homehq/state/auth_state.dart';
+import 'package:homehq/widgets/toast.dart';
+import 'package:homehq/widgets/user_avatar.dart';
 
 /// Auth that records what the page asked for and answers as told.
 class _Auth extends AuthNotifier {

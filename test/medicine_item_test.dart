@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:homeservice/models/medicine_item.dart';
+import 'package:homehq/models/medicine_item.dart';
 
 // The list rows as the server sends them: the item nested, the totals beside it.
 void main() {

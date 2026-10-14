@@ -8,9 +8,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
-import 'package:homeservice/main.dart' as app;
-import 'package:homeservice/state/location_controller.dart';
-import 'package:homeservice/state/weather_provider.dart';
+import 'package:homehq/main.dart' as app;
+import 'package:homehq/state/location_controller.dart';
+import 'package:homehq/state/weather_provider.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();

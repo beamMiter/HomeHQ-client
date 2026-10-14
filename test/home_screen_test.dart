@@ -8,17 +8,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:homeservice/l10n/l10n.dart';
-import 'package:homeservice/models/home_camera.dart';
-import 'package:homeservice/models/user.dart';
-import 'package:homeservice/models/weather.dart';
-import 'package:homeservice/repositories/cameras_repository.dart';
-import 'package:homeservice/screens/home_screen.dart';
-import 'package:homeservice/state/auth_state.dart';
-import 'package:homeservice/state/cameras_provider.dart';
-import 'package:homeservice/state/locale_provider.dart';
-import 'package:homeservice/state/weather_provider.dart';
-import 'package:homeservice/widgets/toast.dart';
+import 'package:homehq/l10n/l10n.dart';
+import 'package:homehq/models/home_camera.dart';
+import 'package:homehq/models/user.dart';
+import 'package:homehq/models/weather.dart';
+import 'package:homehq/repositories/cameras_repository.dart';
+import 'package:homehq/screens/home_screen.dart';
+import 'package:homehq/state/auth_state.dart';
+import 'package:homehq/state/cameras_provider.dart';
+import 'package:homehq/state/locale_provider.dart';
+import 'package:homehq/state/weather_provider.dart';
+import 'package:homehq/widgets/toast.dart';
 
 /// Cameras as the server would list them; pictures never arrive.
 class _Cameras extends CamerasRepository {

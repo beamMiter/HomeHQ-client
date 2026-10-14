@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:homeservice/models/purchase_model.dart';
+import 'package:homehq/models/purchase_model.dart';
 
 // The shape the server really sends for a purchase with no items or optional
 // fields (what the seed script makes): the keys are simply absent. Parsing it

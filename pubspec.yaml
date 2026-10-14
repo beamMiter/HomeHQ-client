@@ -1,5 +1,6 @@
-name: homeservice
-description: "A new Flutter project."
+name: homehq
+description: "HomeHQ: one place to run a household. Bills, purchases, notes, medicine, contractors and home cameras."
+repository: https://github.com/beamMiter/HomeHQ-client
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev

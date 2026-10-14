@@ -5,11 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
 
-import 'package:homeservice/models/contractor.dart';
-import 'package:homeservice/repositories/contractors_repository.dart';
-import 'package:homeservice/repositories/places_repository.dart';
-import 'package:homeservice/state/contractors_provider.dart';
-import 'package:homeservice/state/location_controller.dart';
+import 'package:homehq/models/contractor.dart';
+import 'package:homehq/repositories/contractors_repository.dart';
+import 'package:homehq/repositories/places_repository.dart';
+import 'package:homehq/state/contractors_provider.dart';
+import 'package:homehq/state/location_controller.dart';
 
 class _Loc extends LocationController {
   _Loc(this._at);

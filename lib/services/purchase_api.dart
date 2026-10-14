@@ -1,7 +1,7 @@
 // lib/services/purchase_api.dart
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:homeservice/models/purchase_model.dart';
+import 'package:homehq/models/purchase_model.dart';
 
 /// ---------- Exceptions (ให้ UI/Providers จับง่าย) ----------
 class AuthRequired implements Exception {

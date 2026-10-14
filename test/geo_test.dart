@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
 
-import 'package:homeservice/models/contractor.dart';
-import 'package:homeservice/utils/geo.dart';
+import 'package:homehq/models/contractor.dart';
+import 'package:homehq/utils/geo.dart';
 
 void main() {
   // Siam Square → Victory Monument, central Bangkok. ~2.4 km as the crow flies.

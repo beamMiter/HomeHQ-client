@@ -4,22 +4,22 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:homeservice/l10n/l10n.dart';
-import 'package:homeservice/models/medicine_detail.dart';
-import 'package:homeservice/models/medicine_item.dart';
-import 'package:homeservice/models/purchase_model.dart';
-import 'package:homeservice/models/user.dart';
-import 'package:homeservice/repositories/purchase_repository.dart';
-import 'package:homeservice/screens/medicine_detail_screen.dart';
-import 'package:homeservice/screens/purchase_detail_screen.dart';
-import 'package:homeservice/services/purchase_api.dart';
-import 'package:homeservice/state/auth_state.dart';
-import 'package:homeservice/state/medicine_provider.dart';
-import 'package:homeservice/state/purchase_providers.dart';
-import 'package:homeservice/widgets/detail_bottom_bar.dart';
-import 'package:homeservice/widgets/item_card.dart';
-import 'package:homeservice/widgets/more_menu.dart';
-import 'package:homeservice/widgets/toast.dart';
+import 'package:homehq/l10n/l10n.dart';
+import 'package:homehq/models/medicine_detail.dart';
+import 'package:homehq/models/medicine_item.dart';
+import 'package:homehq/models/purchase_model.dart';
+import 'package:homehq/models/user.dart';
+import 'package:homehq/repositories/purchase_repository.dart';
+import 'package:homehq/screens/medicine_detail_screen.dart';
+import 'package:homehq/screens/purchase_detail_screen.dart';
+import 'package:homehq/services/purchase_api.dart';
+import 'package:homehq/state/auth_state.dart';
+import 'package:homehq/state/medicine_provider.dart';
+import 'package:homehq/state/purchase_providers.dart';
+import 'package:homehq/widgets/detail_bottom_bar.dart';
+import 'package:homehq/widgets/item_card.dart';
+import 'package:homehq/widgets/more_menu.dart';
+import 'package:homehq/widgets/toast.dart';
 
 import 'package:dio/dio.dart';
 

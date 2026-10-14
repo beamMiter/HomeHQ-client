@@ -8,13 +8,13 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:homeservice/main.dart';
-import 'package:homeservice/models/user.dart';
-import 'package:homeservice/models/weather.dart';
-import 'package:homeservice/screens/home_screen.dart';
-import 'package:homeservice/screens/login_screen.dart';
-import 'package:homeservice/state/auth_state.dart';
-import 'package:homeservice/state/weather_provider.dart';
+import 'package:homehq/main.dart';
+import 'package:homehq/models/user.dart';
+import 'package:homehq/models/weather.dart';
+import 'package:homehq/screens/home_screen.dart';
+import 'package:homehq/screens/login_screen.dart';
+import 'package:homehq/state/auth_state.dart';
+import 'package:homehq/state/weather_provider.dart';
 
 const _user = User(id: 'u1', name: 'A', email: 'a@x.io', role: 'member');
 
@@ -58,7 +58,7 @@ Future<void> _pump(WidgetTester t, {bool accept = true}) async {
           ),
         ),
       ],
-      child: const HomeServiceApp(),
+      child: const HomeHqApp(),
     ),
   );
   await t.pumpAndSettle();

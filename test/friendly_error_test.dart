@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:homeservice/l10n/friendly_error.dart';
-import 'package:homeservice/l10n/l10n.dart';
-import 'package:homeservice/services/purchase_api.dart' show AuthRequired;
+import 'package:homehq/l10n/friendly_error.dart';
+import 'package:homehq/l10n/l10n.dart';
+import 'package:homehq/services/purchase_api.dart' show AuthRequired;
 
 import 'support/list_fakes.dart';
 

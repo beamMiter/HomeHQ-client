@@ -3,12 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-// ต้องใช้ชื่อ package ตรงกับ pubspec.yaml: name: homeservice
-import 'package:homeservice/services/purchase_api.dart';
-import 'package:homeservice/repositories/purchase_repository.dart';
-import 'package:homeservice/models/purchase_model.dart';
+// ต้องใช้ชื่อ package ตรงกับ pubspec.yaml: name: homehq
+import 'package:homehq/services/purchase_api.dart';
+import 'package:homehq/repositories/purchase_repository.dart';
+import 'package:homehq/models/purchase_model.dart';
 
-import 'package:homeservice/services/token_storage.dart';
+import 'package:homehq/services/token_storage.dart';
 import 'auth_state.dart'
     show authProvider; // เราจะทำ adapter ดึง token ด้านล่าง
 

@@ -55,13 +55,13 @@ Future<void> main() async {
   runApp(
     ProviderScope(
       overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-      child: const HomeServiceApp(),
+      child: const HomeHqApp(),
     ),
   );
 }
 
-class HomeServiceApp extends ConsumerWidget {
-  const HomeServiceApp({super.key});
+class HomeHqApp extends ConsumerWidget {
+  const HomeHqApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

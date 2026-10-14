@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:homeservice/utils/numbers.dart';
+import 'package:homehq/utils/numbers.dart';
 
 void main() {
   test('a whole quantity has no ".0"', () {

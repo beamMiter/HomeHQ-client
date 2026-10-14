@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:homeservice/models/purchase_item.dart';
+import 'package:homehq/models/purchase_item.dart';
 
 part 'purchase_model.g.dart';
 

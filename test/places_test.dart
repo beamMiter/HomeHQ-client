@@ -4,9 +4,9 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:homeservice/models/contractor.dart';
-import 'package:homeservice/repositories/places_repository.dart';
-import 'package:homeservice/state/contractors_provider.dart';
+import 'package:homehq/models/contractor.dart';
+import 'package:homehq/repositories/places_repository.dart';
+import 'package:homehq/state/contractors_provider.dart';
 
 Contractor _saved(String name, double lat, double lng) => Contractor(
   id: 'saved-$name',

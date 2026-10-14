@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:homeservice/l10n/l10n.dart';
-import 'package:homeservice/widgets/add_fab.dart';
+import 'package:homehq/l10n/l10n.dart';
+import 'package:homehq/widgets/add_fab.dart';
 
 import 'support/list_fakes.dart';
 

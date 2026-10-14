@@ -9,16 +9,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart';
 
-import 'package:homeservice/l10n/l10n.dart';
-import 'package:homeservice/models/home_camera.dart';
-import 'package:homeservice/repositories/cameras_repository.dart';
-import 'package:homeservice/screens/camera_player_screen.dart';
-import 'package:homeservice/screens/cameras_screen.dart';
-import 'package:homeservice/state/cameras_provider.dart';
-import 'package:homeservice/state/screen_awake.dart';
-import 'package:homeservice/widgets/page_loading.dart';
-import 'package:homeservice/widgets/refresh.dart';
-import 'package:homeservice/widgets/toast.dart';
+import 'package:homehq/l10n/l10n.dart';
+import 'package:homehq/models/home_camera.dart';
+import 'package:homehq/repositories/cameras_repository.dart';
+import 'package:homehq/screens/camera_player_screen.dart';
+import 'package:homehq/screens/cameras_screen.dart';
+import 'package:homehq/state/cameras_provider.dart';
+import 'package:homehq/state/screen_awake.dart';
+import 'package:homehq/widgets/page_loading.dart';
+import 'package:homehq/widgets/refresh.dart';
+import 'package:homehq/widgets/toast.dart';
 
 // A 1x1 PNG, so Image.memory has something valid to decode.
 final _png = base64Decode(

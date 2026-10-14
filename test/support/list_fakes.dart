@@ -3,21 +3,21 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 
-import 'package:homeservice/models/bill.dart';
-import 'package:homeservice/models/medicine_item.dart';
-import 'package:homeservice/models/note.dart';
-import 'package:homeservice/models/purchase_model.dart';
-import 'package:homeservice/repositories/bill_repository.dart';
-import 'package:homeservice/repositories/medicine_repository.dart';
-import 'package:homeservice/repositories/notes_repository.dart';
-import 'package:homeservice/repositories/purchase_repository.dart';
-import 'package:homeservice/screens/bills_screen.dart';
-import 'package:homeservice/screens/medicine_screen.dart';
-import 'package:homeservice/screens/notes_screen.dart';
-import 'package:homeservice/screens/purchase_screen.dart';
-import 'package:homeservice/state/bills_provider.dart';
-import 'package:homeservice/state/medicine_provider.dart';
-import 'package:homeservice/state/purchase_providers.dart';
+import 'package:homehq/models/bill.dart';
+import 'package:homehq/models/medicine_item.dart';
+import 'package:homehq/models/note.dart';
+import 'package:homehq/models/purchase_model.dart';
+import 'package:homehq/repositories/bill_repository.dart';
+import 'package:homehq/repositories/medicine_repository.dart';
+import 'package:homehq/repositories/notes_repository.dart';
+import 'package:homehq/repositories/purchase_repository.dart';
+import 'package:homehq/screens/bills_screen.dart';
+import 'package:homehq/screens/medicine_screen.dart';
+import 'package:homehq/screens/notes_screen.dart';
+import 'package:homehq/screens/purchase_screen.dart';
+import 'package:homehq/state/bills_provider.dart';
+import 'package:homehq/state/medicine_provider.dart';
+import 'package:homehq/state/purchase_providers.dart';
 
 // Shared by the list-screen tests: the four list screens (Bills, Purchases,
 // Medicine, Notes) wired to repositories that count their fetches.

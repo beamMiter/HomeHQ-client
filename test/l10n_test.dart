@@ -6,10 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:homeservice/l10n/l10n.dart';
-import 'package:homeservice/state/locale_provider.dart';
-import 'package:homeservice/utils/geo.dart';
-import 'package:homeservice/widgets/language_sheet.dart';
+import 'package:homehq/l10n/l10n.dart';
+import 'package:homehq/state/locale_provider.dart';
+import 'package:homehq/utils/geo.dart';
+import 'package:homehq/widgets/language_sheet.dart';
 
 import 'support/list_fakes.dart';
 

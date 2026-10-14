@@ -5,11 +5,11 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:homeservice/models/user.dart';
-import 'package:homeservice/shared/app_colors.dart';
-import 'package:homeservice/state/auth_state.dart';
-import 'package:homeservice/state/toast_boundary.dart';
-import 'package:homeservice/widgets/toast.dart';
+import 'package:homehq/models/user.dart';
+import 'package:homehq/shared/app_colors.dart';
+import 'package:homehq/state/auth_state.dart';
+import 'package:homehq/state/toast_boundary.dart';
+import 'package:homehq/widgets/toast.dart';
 
 /// Auth notifier whose state the test drives directly.
 class _FakeAuth extends AuthNotifier {

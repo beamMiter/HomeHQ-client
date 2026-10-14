@@ -6,8 +6,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:homeservice/main.dart';
-import 'package:homeservice/screens/login_screen.dart';
+import 'package:homehq/main.dart';
+import 'package:homehq/screens/login_screen.dart';
 
 void main() {
   testWidgets('App boots and redirects to login when unauthenticated', (
@@ -19,7 +19,7 @@ void main() {
       envString: 'API_BASE_URL=http://127.0.0.1:8080/api/v1',
     );
 
-    await tester.pumpWidget(const ProviderScope(child: HomeServiceApp()));
+    await tester.pumpWidget(const ProviderScope(child: HomeHqApp()));
 
     // Let the splash screen resolve the (non-existent) session and redirect.
     await tester.pumpAndSettle();
