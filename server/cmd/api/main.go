@@ -92,7 +92,9 @@ func main() {
 	var camDriver cameras.Driver
 	switch kind := cfg.CamerasDriver; {
 	case kind == "fake":
-		camDriver = cameras.NewFake(cfg.CamerasFakeStreamURL)
+		fake := cameras.NewFake(cfg.CamerasFakeStreamURL)
+		fake.Pictures = cfg.CamerasFakePictures
+		camDriver = fake
 	case kind == "imou" || (kind == "" && cfg.ImouAppID != "" && cfg.ImouAppSecret != ""):
 		camDriver = cameras.NewImou(cameras.ImouConfig{
 			AppID:     cfg.ImouAppID,

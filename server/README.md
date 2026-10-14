@@ -155,6 +155,7 @@ make run              # Run API server
 | `IMOU_BASE_URL` | Override the Imou API host (e.g. `https://openapi-xx.easy4ip.com/openapi`) | region default |
 | `CAMERAS_DRIVER` | `imou`, `fake` (demo cameras, no account needed) or empty (auto) | _(auto)_ |
 | `CAMERAS_FAKE_STREAM_URL` | HLS address the fake driver hands out | Apple's test stream |
+| `CAMERAS_FAKE_PICTURES` | `true` = the fake cameras give a made-up still picture; otherwise none, so the app shows a camera icon on the cover | `false` |
 
 ---
 

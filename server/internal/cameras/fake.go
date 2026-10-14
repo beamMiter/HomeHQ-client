@@ -20,6 +20,11 @@ const DefaultFakeStreamURL = "https://devstreaming-cdn.apple.com/videos/streamin
 type Fake struct {
 	StreamURL string
 
+	// Pictures makes Snapshot draw a made-up frame. Off, the cameras have no
+	// still picture (ErrUnsupported), which is what the app shows with a camera
+	// icon on the cover, as it would for a camera that cannot take one.
+	Pictures bool
+
 	mu       sync.Mutex
 	moves    []string
 	switches map[string]bool
@@ -29,7 +34,7 @@ func NewFake(streamURL string) *Fake {
 	if streamURL == "" {
 		streamURL = DefaultFakeStreamURL
 	}
-	return &Fake{StreamURL: streamURL, switches: map[string]bool{}}
+	return &Fake{StreamURL: streamURL, Pictures: true, switches: map[string]bool{}}
 }
 
 func (f *Fake) Name() string { return "fake" }
@@ -131,6 +136,9 @@ func (f *Fake) Snapshot(_ context.Context, id string) (Image, error) {
 	}
 	if !c.Online {
 		return Image{}, ErrOffline
+	}
+	if !f.Pictures {
+		return Image{}, ErrUnsupported
 	}
 	h := fnv.New32a()
 	_, _ = h.Write([]byte(id))

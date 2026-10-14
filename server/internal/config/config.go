@@ -31,6 +31,7 @@ type Config struct {
 	// "imou" when both Imou credentials are set, otherwise the feature is off.
 	CamerasDriver        string
 	CamerasFakeStreamURL string // HLS address the fake driver hands out
+	CamerasFakePictures  bool   // fake cameras give a made-up still picture
 
 	ImouAppID     string
 	ImouAppSecret string
@@ -99,6 +100,7 @@ func Load() Config {
 
 		CamerasDriver:        Getenv("CAMERAS_DRIVER", ""),
 		CamerasFakeStreamURL: Getenv("CAMERAS_FAKE_STREAM_URL", ""),
+		CamerasFakePictures:  Getbool("CAMERAS_FAKE_PICTURES", false),
 
 		ImouAppID:     Getenv("IMOU_APP_ID", ""),
 		ImouAppSecret: Getenv("IMOU_APP_SECRET", ""),

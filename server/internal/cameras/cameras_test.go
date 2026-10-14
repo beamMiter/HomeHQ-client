@@ -434,6 +434,38 @@ func (d *countingDriver) Snapshot(ctx context.Context, id string) (Image, error)
 	return d.Fake.Snapshot(ctx, id)
 }
 
+func TestFakeWithoutPicturesHasNoStill(t *testing.T) {
+	f := NewFake("")
+	f.Pictures = false
+	ctx := context.Background()
+
+	if _, err := f.Snapshot(ctx, "FAKE-FRONT-DOOR"); !errors.Is(err, ErrUnsupported) {
+		t.Errorf("an online camera with no pictures: want ErrUnsupported, got %v", err)
+	}
+	// Offline still wins: the app words that case differently.
+	if _, err := f.Snapshot(ctx, "FAKE-BACK-YARD"); !errors.Is(err, ErrOffline) {
+		t.Errorf("an offline camera: want ErrOffline, got %v", err)
+	}
+	// Everything else about the camera is unchanged.
+	if _, err := f.Live(ctx, "FAKE-FRONT-DOOR", QualityHD); err != nil {
+		t.Errorf("live must still work: %v", err)
+	}
+}
+
+func TestHTTPSnapshotWithoutPicturesIsNotSupported(t *testing.T) {
+	f := NewFake("")
+	f.Pictures = false
+	_, r := newTestHandler(t, f)
+
+	rec := get(r, "/cameras/FAKE-FRONT-DOOR/snapshot")
+	if rec.Code != http.StatusUnprocessableEntity {
+		t.Fatalf("want 422, got %d %s", rec.Code, rec.Body.String())
+	}
+	if !strings.Contains(rec.Body.String(), "not_supported") {
+		t.Errorf("want error not_supported, got %s", rec.Body.String())
+	}
+}
+
 func TestServiceCachesListSnapshotAndLive(t *testing.T) {
 	d := &countingDriver{Fake: NewFake("")}
 	s := NewService(d)
