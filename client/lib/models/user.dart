@@ -21,4 +21,7 @@ class User {
   factory User.fromMap(Map<String, dynamic> j) => User.fromJson(j);
 
   bool get isAdmin => role == 'admin';
+
+  User copyWith({String? name}) =>
+      User(id: id, name: name ?? this.name, email: email, role: role);
 }

@@ -47,9 +47,14 @@ func jsonBytes(v any) []byte {
 	return b
 }
 
+// note, category, store and buyer_id are nullable columns that the model holds
+// as plain strings (empty = not set), so they are read through COALESCE. Without
+// it one row with a NULL (every row the seed script makes) failed the whole
+// list with "cannot scan NULL into *string".
 const selectCols = `
-  id, title, note, items, amount_estimated, amount_paid,
-  currency, category, store, status, requester_id, buyer_id,
+  id, title, COALESCE(note, '') AS note, items, amount_estimated, amount_paid,
+  currency, COALESCE(category, '') AS category, COALESCE(store, '') AS store,
+  status, requester_id, COALESCE(buyer_id::text, '') AS buyer_id,
   editable_until, created_at, updated_at,
   COALESCE((SELECT array_agg(file_id::text) FROM purchase_attachments WHERE purchase_id = purchases.id), '{}') as attachments
 `
@@ -67,6 +72,9 @@ func scanPurchase(row pgx.Row) (*Purchase, error) {
 			return nil, ErrNotFound
 		}
 		return nil, err
+	}
+	if p.Items == nil {
+		p.Items = Items{} // [] in JSON, never null or missing
 	}
 	return &p, nil
 }
@@ -120,7 +128,8 @@ func (r *repo) List(ctx context.Context, f ListFilter) ([]Purchase, error) {
 	}
 	defer rows.Close()
 
-	var out []Purchase
+	// Non-nil so an empty list is [] in JSON, not null.
+	out := []Purchase{}
 	for rows.Next() {
 		var p Purchase
 		if err := rows.Scan(
@@ -131,6 +140,9 @@ func (r *repo) List(ctx context.Context, f ListFilter) ([]Purchase, error) {
 			&p.EditableUntil, &p.CreatedAt, &p.UpdatedAt, &p.Attachments,
 		); err != nil {
 			return nil, err
+		}
+		if p.Items == nil {
+			p.Items = Items{}
 		}
 		out = append(out, p)
 	}
@@ -154,9 +166,10 @@ func (r *repo) Create(ctx context.Context, p *Purchase) error {
 		INSERT INTO purchases (
 		  title, note, items, amount_estimated, amount_paid, currency,
 		  category, store, status, requester_id, buyer_id
-		) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
-		RETURNING id, title, note, items, amount_estimated, amount_paid,
-		currency, category, store, status, requester_id, buyer_id,
+		) VALUES ($1,$2,$3,$4,$5,$6,NULLIF($7::text,''),NULLIF($8::text,''),$9,$10,NULLIF($11::text,'')::uuid)
+		RETURNING id, title, COALESCE(note, ''), items, amount_estimated, amount_paid,
+		currency, COALESCE(category, ''), COALESCE(store, ''), status, requester_id,
+		COALESCE(buyer_id::text, ''),
 		editable_until, created_at, updated_at, '{}'::text[] as attachments`,
 		p.Title, p.Note, jsonBytes(p.Items),
 		p.AmountEstimated, p.AmountPaid, p.Currency,
@@ -174,7 +187,8 @@ func (r *repo) Update(ctx context.Context, p *Purchase) error {
 	_, err := r.DB.Exec(ctx, `
 		UPDATE purchases
 		SET title=$2, note=$3, items=$4, amount_estimated=$5, amount_paid=$6,
-		    currency=$7, category=$8, store=$9, status=$10, requester_id=$11, buyer_id=$12,
+		    currency=$7, category=NULLIF($8::text,''), store=NULLIF($9::text,''),
+		    status=$10, requester_id=$11, buyer_id=NULLIF($12::text,'')::uuid,
 		    updated_at=now()
 		WHERE id=$1
 	`, p.ID, p.Title, p.Note, jsonBytes(p.Items),

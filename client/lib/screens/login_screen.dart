@@ -5,6 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../state/auth_state.dart';
 import '../shared/app_colors.dart';
+import '../l10n/l10n.dart';
+import '../widgets/toast.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -49,7 +51,13 @@ class _LoginState extends ConsumerState<LoginScreen> {
     final email = _email.text.trim();
     final password = _pw.text;
 
+    // Read before the await: the screen may be gone by the time it returns.
+    final l10n = context.l10n;
     final ok = await ref.read(authProvider.notifier).login(email, password);
+    // Raised after the sign-in itself: the toast boundary clears toasts when the
+    // signed-in state flips, and the router may replace this screen right away,
+    // so it must not depend on the screen still being mounted.
+    if (ok) AppToast.success(l10n.authSignedIn);
     if (!mounted) return;
 
     final s = ref.read(authProvider);
@@ -63,7 +71,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
       setState(() {
         _error = s.error?.isNotEmpty == true
             ? s.error
-            : 'Invalid email or password';
+            : context.l10n.authInvalidCredentials;
       });
     }
   }
@@ -152,7 +160,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            'Sign in to manage your home tasks and services.',
+                            context.l10n.authLoginSubtitle,
                             textAlign: TextAlign.center,
                             style: GoogleFonts.inter(
                               fontSize: 13.5,
@@ -212,7 +220,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
                             textInputAction: TextInputAction.next,
                             onFieldSubmitted: (_) => _pwNode.requestFocus(),
                             decoration: _input(
-                              'Email',
+                              context.l10n.authEmail,
                               prefix: const Icon(
                                 Icons.email_rounded,
                                 size: 20,
@@ -220,11 +228,11 @@ class _LoginState extends ConsumerState<LoginScreen> {
                             ),
                             validator: (v) {
                               final s = v?.trim() ?? '';
-                              if (s.isEmpty) return 'Please enter your email';
+                              if (s.isEmpty) return context.l10n.authEmailRequired;
                               final ok = RegExp(
                                 r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
                               ).hasMatch(s);
-                              if (!ok) return 'Invalid email format';
+                              if (!ok) return context.l10n.authEmailInvalid;
                               return null;
                             },
                             style: GoogleFonts.inter(
@@ -244,15 +252,15 @@ class _LoginState extends ConsumerState<LoginScreen> {
                             textInputAction: TextInputAction.done,
                             onFieldSubmitted: (_) => _submit(),
                             decoration: _input(
-                              'Password',
+                              context.l10n.authPassword,
                               prefix: const Icon(
                                 Icons.lock_rounded,
                                 size: 20,
                               ),
                               suffix: IconButton(
                                 tooltip: _obscure
-                                    ? 'Show password'
-                                    : 'Hide password',
+                                    ? context.l10n.authShowPassword
+                                    : context.l10n.authHidePassword,
                                 onPressed: _busy
                                     ? null
                                     : () =>
@@ -267,7 +275,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
                               ),
                             ),
                             validator: (v) => (v == null || v.isEmpty)
-                                ? 'Please enter your password'
+                                ? context.l10n.authPasswordRequired
                                 : null,
                             style: GoogleFonts.inter(
                               fontSize: 15,
@@ -290,7 +298,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                 ),
                               ),
                               child: Text(
-                                'Forgot password?',
+                                context.l10n.authForgot,
                                 style: GoogleFonts.inter(
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -327,7 +335,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                         ),
                                       ),
                                     )
-                                  : const Text('Sign in'),
+                                  : Text(context.l10n.authSignIn),
                             ),
                           ),
 
@@ -363,7 +371,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
                                 size: 18,
                               ),
                               label: Text(
-                                'Create an account',
+                                context.l10n.authCreateAccountLink,
                                 style: GoogleFonts.inter(
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -381,7 +389,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
                           const SizedBox(height: 6),
 
                           Text(
-                            'We keep your information secure and private.',
+                            context.l10n.authPrivacyNote,
                             textAlign: TextAlign.center,
                             style: GoogleFonts.inter(
                               fontSize: 12.5,

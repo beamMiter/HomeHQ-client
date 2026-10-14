@@ -6,6 +6,9 @@ import '../state/bills_provider.dart';
 import '../models/bill_summary.dart';
 import '../widgets/page_loading.dart';
 import '../widgets/error_state.dart';
+import '../widgets/refresh.dart';
+import '../l10n/l10n.dart';
+import '../l10n/labels.dart';
 
 class BillsSummaryScreen extends ConsumerWidget {
   const BillsSummaryScreen({super.key});
@@ -14,30 +17,61 @@ class BillsSummaryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final summary = ref.watch(billsSummaryProvider);
     final currency = NumberFormat.currency(locale: 'th_TH', symbol: '฿');
+    final l10n = context.l10n;
 
+    Future<void> pull() =>
+        pullRefresh(() => ref.refresh(billsSummaryProvider.future));
+
+    final reloading = watchReloading(ref, 'bills-summary');
     return Scaffold(
-      appBar: AppBar(title: const Text('Bills Summary'), elevation: 0),
-      body: summary.when(
-        loading: () => const PageLoading(),
-        error: (e, _) => ErrorState(
-          icon: Icons.error_outline,
-          title: 'โหลดสรุปไม่สำเร็จ',
-          error: e,
-          retryLabel: 'ลองอีกครั้ง',
-          onRetry: () => ref.invalidate(billsSummaryProvider),
+      appBar: AppBar(
+        title: Text(l10n.billsSummaryTitle),
+        elevation: 0,
+        actions: [
+          RefreshButton(
+            busy: reloading || summary.isReloadingData,
+            onPressed: () => runReload(
+              ref,
+              'bills-summary',
+              () => ref.refresh(billsSummaryProvider.future),
+            ),
+          ),
+        ],
+      ),
+      body: ReloadOverlay(
+        active: reloading,
+        child: summary.when(
+          loading: () => const PageLoading(),
+          error: (e, _) => RefreshableFill(
+            onRefresh: pull,
+            child: ErrorState(
+              icon: Icons.error_outline,
+              title: l10n.billsSummaryFailed,
+              error: e,
+              onRetry: () => ref.invalidate(billsSummaryProvider),
+            ),
+          ),
+          data: (items) {
+            if (items.isEmpty) {
+              return RefreshableFill(
+                onRefresh: pull,
+                child: Text(l10n.billsSummaryEmpty),
+              );
+            }
+            return RefreshIndicator(
+              onRefresh: pull,
+              child: ListView.separated(
+                // Short lists must still be pullable.
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(16),
+                itemCount: items.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                itemBuilder: (_, i) =>
+                    _SummaryCard(item: items[i], currency: currency),
+              ),
+            );
+          },
         ),
-        data: (items) {
-          if (items.isEmpty) {
-            return const Center(child: Text('ยังไม่มีข้อมูลสรุปบิล'));
-          }
-          return ListView.separated(
-            padding: const EdgeInsets.all(16),
-            itemCount: items.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
-            itemBuilder: (_, i) =>
-                _SummaryCard(item: items[i], currency: currency),
-          );
-        },
       ),
     );
   }
@@ -84,7 +118,7 @@ class _SummaryCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          item.type,
+                          billTypeLabel(context.l10n, item.type),
                           style: const TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 16,

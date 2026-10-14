@@ -11,8 +11,8 @@ class AuthRepository {
   final TokenStorage _storage;
 
   AuthRepository({required TokenStorage storage, required Ref ref})
-      : _storage = storage,
-        _api = ApiClient(tokenStorage: storage, ref: ref);
+    : _storage = storage,
+      _api = ApiClient(tokenStorage: storage, ref: ref);
 
   Future<String?> currentToken() => _storage.getAccessToken();
 
@@ -85,6 +85,26 @@ class AuthRepository {
     } finally {
       await _storage.clear();
     }
+  }
+
+  /// Renames the signed-in user. Returns the name the server stored.
+  Future<String> updateName(String name) async {
+    final res = await _api.patch('/me', data: {'name': name});
+    final data = res.data;
+    if (data is Map && data['name'] is String) return data['name'] as String;
+    return name;
+  }
+
+  /// Throws a [DioException]; a 401 whose error is "invalid old password"
+  /// means [current] was wrong.
+  Future<void> changePassword({
+    required String current,
+    required String next,
+  }) async {
+    await _api.post(
+      '/me/password',
+      data: {'old_password': current, 'new_password': next},
+    );
   }
 
   Future<void> requestPasswordReset(String email) async {

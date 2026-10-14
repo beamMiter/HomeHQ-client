@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../state/auth_state.dart';
 import '../shared/app_colors.dart';
+import '../l10n/l10n.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -65,7 +66,7 @@ class _RegisterState extends ConsumerState<RegisterScreen> {
       // สมัครเสร็จ: ไปหน้า home หรือจะแก้เป็น /login ก็ได้
       context.go('/home');
     } else {
-      setState(() => _error = 'Unable to create account. Please try again.');
+      setState(() => _error = context.l10n.authRegisterFailed);
     }
   }
 
@@ -144,7 +145,7 @@ class _RegisterState extends ConsumerState<RegisterScreen> {
                           ),
                           const SizedBox(height: 14),
                           Text(
-                            'Create your account',
+                            context.l10n.authRegisterTitle,
                             style: GoogleFonts.inter(
                               fontSize: 24,
                               fontWeight: FontWeight.w800,
@@ -154,7 +155,7 @@ class _RegisterState extends ConsumerState<RegisterScreen> {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            'Join Home Service 6/188 to manage tasks and services.',
+                            context.l10n.authRegisterSubtitle,
                             textAlign: TextAlign.center,
                             style: GoogleFonts.inter(
                               fontSize: 13.5,
@@ -210,7 +211,7 @@ class _RegisterState extends ConsumerState<RegisterScreen> {
                             autofillHints: const [AutofillHints.name],
                             onFieldSubmitted: (_) => _emailNode.requestFocus(),
                             decoration: _input(
-                              'Full name',
+                              context.l10n.authFullName,
                               prefix: const Icon(
                                 Icons.account_circle_rounded,
                                 size: 20,
@@ -218,9 +219,9 @@ class _RegisterState extends ConsumerState<RegisterScreen> {
                             ),
                             validator: (v) {
                               final s = v?.trim() ?? '';
-                              if (s.isEmpty) return 'Please enter your name';
+                              if (s.isEmpty) return context.l10n.authNameRequired;
                               if (s.length < 2) {
-                                return 'Name is too short';
+                                return context.l10n.authNameShort;
                               }
                               return null;
                             },
@@ -244,7 +245,7 @@ class _RegisterState extends ConsumerState<RegisterScreen> {
                             ],
                             onFieldSubmitted: (_) => _pwNode.requestFocus(),
                             decoration: _input(
-                              'Email',
+                              context.l10n.authEmail,
                               prefix: const Icon(
                                 Icons.email_rounded,
                                 size: 20,
@@ -252,11 +253,11 @@ class _RegisterState extends ConsumerState<RegisterScreen> {
                             ),
                             validator: (v) {
                               final s = v?.trim() ?? '';
-                              if (s.isEmpty) return 'Please enter your email';
+                              if (s.isEmpty) return context.l10n.authEmailRequired;
                               final ok = RegExp(
                                 r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
                               ).hasMatch(s);
-                              if (!ok) return 'Invalid email format';
+                              if (!ok) return context.l10n.authEmailInvalid;
                               return null;
                             },
                             style: GoogleFonts.inter(
@@ -276,15 +277,15 @@ class _RegisterState extends ConsumerState<RegisterScreen> {
                             autofillHints: const [AutofillHints.newPassword],
                             onFieldSubmitted: (_) => _pw2Node.requestFocus(),
                             decoration: _input(
-                              'Password',
+                              context.l10n.authPassword,
                               prefix: const Icon(
                                 Icons.lock_rounded,
                                 size: 20,
                               ),
                               suffix: IconButton(
                                 tooltip: _obscurePw
-                                    ? 'Show password'
-                                    : 'Hide password',
+                                    ? context.l10n.authShowPassword
+                                    : context.l10n.authHidePassword,
                                 onPressed: () =>
                                     setState(() => _obscurePw = !_obscurePw),
                                 icon: Icon(
@@ -298,9 +299,9 @@ class _RegisterState extends ConsumerState<RegisterScreen> {
                             ),
                             validator: (v) {
                               final s = v ?? '';
-                              if (s.isEmpty) return 'Please enter a password';
+                              if (s.isEmpty) return context.l10n.authPasswordNew;
                               if (s.length < 6) {
-                                return 'Password must be at least 6 characters';
+                                return context.l10n.authPasswordMin;
                               }
                               return null;
                             },
@@ -320,15 +321,15 @@ class _RegisterState extends ConsumerState<RegisterScreen> {
                             textInputAction: TextInputAction.done,
                             onFieldSubmitted: (_) => _submit(),
                             decoration: _input(
-                              'Confirm password',
+                              context.l10n.authConfirmPassword,
                               prefix: const Icon(
                                 Icons.lock_open_rounded,
                                 size: 20,
                               ),
                               suffix: IconButton(
                                 tooltip: _obscurePw2
-                                    ? 'Show password'
-                                    : 'Hide password',
+                                    ? context.l10n.authShowPassword
+                                    : context.l10n.authHidePassword,
                                 onPressed: () =>
                                     setState(() => _obscurePw2 = !_obscurePw2),
                                 icon: Icon(
@@ -342,10 +343,10 @@ class _RegisterState extends ConsumerState<RegisterScreen> {
                             ),
                             validator: (v) {
                               if ((v ?? '').isEmpty) {
-                                return 'Please confirm your password';
+                                return context.l10n.authConfirmRequired;
                               }
                               if (v != _pw.text) {
-                                return 'Passwords do not match';
+                                return context.l10n.authPasswordMismatch;
                               }
                               return null;
                             },
@@ -359,7 +360,7 @@ class _RegisterState extends ConsumerState<RegisterScreen> {
 
                           // Terms
                           Text(
-                            'By creating an account, you agree to our Terms and Privacy Policy.',
+                            context.l10n.authTerms,
                             textAlign: TextAlign.center,
                             style: GoogleFonts.inter(
                               fontSize: 12.5,
@@ -390,7 +391,7 @@ class _RegisterState extends ConsumerState<RegisterScreen> {
                                       size: 18,
                                     ),
                               label: Text(
-                                _busy ? 'Creating...' : 'Create account',
+                                _busy ? context.l10n.authCreating : context.l10n.authCreateAccount,
                                 style: GoogleFonts.inter(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
@@ -440,7 +441,7 @@ class _RegisterState extends ConsumerState<RegisterScreen> {
                                 size: 18,
                               ),
                               label: Text(
-                                'Sign in instead',
+                                context.l10n.authSignInInstead,
                                 style: GoogleFonts.inter(
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -458,7 +459,7 @@ class _RegisterState extends ConsumerState<RegisterScreen> {
                           const SizedBox(height: 6),
 
                           Text(
-                            'We keep your information secure and private.',
+                            context.l10n.authPrivacyNote,
                             textAlign: TextAlign.center,
                             style: GoogleFonts.inter(
                               fontSize: 12.5,

@@ -15,11 +15,11 @@ void main() {
   ) async {
     // main() normally loads .env.development; do the same here so
     // ApiClient/Env reads don't hit dotenv's NotInitializedError.
-    dotenv.loadFromString(envString: 'API_BASE_URL=http://127.0.0.1:8080/api/v1');
-
-    await tester.pumpWidget(
-      const ProviderScope(child: HomeServiceApp()),
+    dotenv.loadFromString(
+      envString: 'API_BASE_URL=http://127.0.0.1:8080/api/v1',
     );
+
+    await tester.pumpWidget(const ProviderScope(child: HomeServiceApp()));
 
     // Let the splash screen resolve the (non-existent) session and redirect.
     await tester.pumpAndSettle();

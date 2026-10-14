@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user.dart';
 import '../repositories/auth_repository.dart';
 import '../services/api_client.dart' show tokenStorageProvider;
+import '../l10n/l10n.dart';
+import 'locale_provider.dart';
 
 class AuthState {
   final User? user;
@@ -35,9 +37,15 @@ class AuthState {
   }
 }
 
+/// How a password change ended.
+enum PasswordChange { done, wrongCurrent, failed }
+
 class AuthNotifier extends Notifier<AuthState> {
   late final AuthRepository _repo;
   bool _booting = false;
+
+  /// Messages in the language the user is using now.
+  AppLocalizations get _l10n => l10nFor(ref.read(localeProvider));
 
   @override
   AuthState build() {
@@ -65,7 +73,7 @@ class AuthNotifier extends Notifier<AuthState> {
       state = state.copyWith(loading: false, error: _extractError(e));
       return false;
     } catch (_) {
-      state = state.copyWith(loading: false, error: 'Unexpected error');
+      state = state.copyWith(loading: false, error: _l10n.authUnexpected);
       return false;
     }
   }
@@ -85,7 +93,7 @@ class AuthNotifier extends Notifier<AuthState> {
       state = state.copyWith(loading: false, error: _extractError(e));
       return false;
     } catch (_) {
-      state = state.copyWith(loading: false, error: 'Unexpected error');
+      state = state.copyWith(loading: false, error: _l10n.authUnexpected);
       return false;
     }
   }
@@ -135,6 +143,36 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
+  /// Renames the signed-in user. False when the server refused or was
+  /// unreachable; the name shown stays as it was.
+  Future<bool> updateName(String name) async {
+    final user = state.user;
+    if (user == null) return false;
+    try {
+      final saved = await _repo.updateName(name);
+      state = state.copyWith(user: user.copyWith(name: saved));
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<PasswordChange> changePassword(String current, String next) async {
+    try {
+      await _repo.changePassword(current: current, next: next);
+      return PasswordChange.done;
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      final wrong =
+          e.response?.statusCode == 401 &&
+          data is Map &&
+          data['error'] == 'invalid old password';
+      return wrong ? PasswordChange.wrongCurrent : PasswordChange.failed;
+    } catch (_) {
+      return PasswordChange.failed;
+    }
+  }
+
   Future<bool> requestPasswordReset(String email) async {
     try {
       await _repo.requestPasswordReset(email);
@@ -148,10 +186,11 @@ class AuthNotifier extends Notifier<AuthState> {
   String _extractError(DioException e) {
     final data = e.response?.data;
     if (data is Map) {
-      return (data['error'] ?? data['message'] ?? 'Unknown error').toString();
+      return (data['error'] ?? data['message'] ?? _l10n.authUnknownError)
+          .toString();
     }
     if (data is String && data.isNotEmpty) return data;
-    return 'Network error (${e.response?.statusCode ?? '-'})';
+    return _l10n.authNetworkError('${e.response?.statusCode ?? '-'}');
   }
 }
 

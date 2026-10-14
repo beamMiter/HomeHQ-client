@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/friendly_error.dart';
+import '../l10n/l10n.dart';
+
 class ErrorState extends StatelessWidget {
   final String title;
   final Object? error;
   final VoidCallback? onRetry;
   final IconData? icon;
-  final String retryLabel;
+
+  /// Defaults to the translated "Try again".
+  final String? retryLabel;
 
   const ErrorState({
     super.key,
@@ -13,7 +18,7 @@ class ErrorState extends StatelessWidget {
     this.error,
     this.onRetry,
     this.icon,
-    this.retryLabel = 'ลองใหม่',
+    this.retryLabel,
   });
 
   @override
@@ -34,7 +39,7 @@ class ErrorState extends StatelessWidget {
           const SizedBox(height: 8),
           if (error != null)
             Text(
-              '$error',
+              friendlyError(context.l10n, error),
               textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.red),
             ),
@@ -43,7 +48,7 @@ class ErrorState extends StatelessWidget {
             FilledButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: Text(retryLabel),
+              label: Text(retryLabel ?? context.l10n.commonTryAgain),
             ),
         ],
       ),

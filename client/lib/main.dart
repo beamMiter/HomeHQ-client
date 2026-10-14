@@ -6,12 +6,21 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import 'l10n/l10n.dart';
 import 'router.dart';
 import 'state/auth_state.dart';
+import 'state/locale_provider.dart';
+import 'utils/app_orientation.dart';
+import 'state/toast_boundary.dart';
+import 'widgets/toast.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Every screen is laid out for portrait; only camera full screen turns.
+  AppOrientation.lockPortrait();
 
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.dumpErrorToConsole(details);
@@ -30,6 +39,12 @@ Future<void> main() async {
     if (kDebugMode) debugPrint('⚠️ dotenv load failed: $e');
   }
 
+  // Saved language choice, and the date symbols for the languages we ship.
+  final prefs = await SharedPreferences.getInstance();
+  for (final l in kAppLocales) {
+    await initializeDateFormatting(l.languageCode);
+  }
+
   Isolate.current.addErrorListener(
     RawReceivePort((dynamic pair) {
       final List<dynamic> errorAndStack = pair as List<dynamic>;
@@ -38,7 +53,10 @@ Future<void> main() async {
   );
 
   runApp(
-    const ProviderScope(child: HomeServiceApp()),
+    ProviderScope(
+      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      child: const HomeServiceApp(),
+    ),
   );
 }
 
@@ -48,11 +66,19 @@ class HomeServiceApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(authProvider);
+    ref.watch(toastAuthBoundaryProvider); // clears toasts on login/logout
+    ref.watch(intlDefaultLocaleProvider); // date formats follow the language
     final router = ref.watch(routerProvider);
 
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'Home Service',
+      // null = follow the device; see resolveAppLocale for the fallback.
+      locale: ref.watch(localeProvider),
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localeListResolutionCallback: (locales, _) => resolveAppLocale(locales),
+      scaffoldMessengerKey: AppToast.messengerKey,
       routerConfig: router,
       theme: ThemeData(
         useMaterial3: true,
@@ -76,10 +102,9 @@ class HomeServiceApp extends ConsumerWidget {
           data: media.copyWith(textScaler: TextScaler.linear(clampedScale)),
           child: Directionality(
             textDirection: TextDirection.ltr,
-            child: child ??
-                const Scaffold(
-                  body: Center(child: Text('❌ Page not found')),
-                ),
+            child:
+                child ??
+                const Scaffold(body: Center(child: Text('❌ Page not found'))),
           ),
         );
       },

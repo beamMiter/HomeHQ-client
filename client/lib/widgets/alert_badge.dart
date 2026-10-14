@@ -1,5 +1,6 @@
 // lib/widgets/alert_badge.dart
 import 'package:flutter/material.dart';
+import '../l10n/l10n.dart';
 import '../models/medicine_alert.dart';
 
 class AlertBadge extends StatelessWidget {
@@ -12,7 +13,7 @@ class AlertBadge extends StatelessWidget {
     if (alert == null) {
       return _chip(
         context,
-        label: 'ไม่ตั้งเตือน',
+        label: context.l10n.medAlertNone,
         color: Colors.grey.shade200,
         fg: Colors.grey.shade700,
         dense: dense,
@@ -20,9 +21,10 @@ class AlertBadge extends StatelessWidget {
     }
     final a = alert!;
     final on = a.enabled;
+    final l10n = context.l10n;
     final label = on
-        ? 'ON · min=${a.minQty ?? '-'} · exp=${a.expiryWindowDays ?? '-'}d'
-        : 'OFF';
+        ? l10n.medAlertOn('${a.minQty ?? '-'}', '${a.expiryWindowDays ?? '-'}')
+        : l10n.medAlertOff;
     return _chip(
       context,
       label: label,

@@ -5,12 +5,17 @@ import 'package:go_router/go_router.dart';
 import '../models/medicine_item.dart';
 import '../state/medicine_provider.dart';
 
+import '../widgets/item_card.dart';
+import '../widgets/add_fab.dart';
 import '../widgets/top_nav_bar.dart';
 import '../widgets/search_bar_field.dart';
-import '../widgets/last_updated_badge.dart';
 import '../widgets/error_state.dart';
 import '../widgets/list_empty_state.dart';
 import '../widgets/page_loading.dart';
+import '../widgets/refresh.dart';
+import '../l10n/l10n.dart';
+import '../utils/numbers.dart';
+import 'package:intl/intl.dart';
 
 class MedicineScreen extends ConsumerStatefulWidget {
   const MedicineScreen({super.key});
@@ -33,6 +38,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
     final asyncItems = ref.watch(medicineListProvider(query));
     const accent = Color(0xFF1F4E9E);
 
+    final reloading = watchReloading(ref, 'medicine');
     return Theme(
       data: Theme.of(context).copyWith(
         colorScheme: Theme.of(context).colorScheme.copyWith(primary: accent),
@@ -43,82 +49,94 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
 
         appBar: TopNavBar(
           title: 'Medicine Stock',
-          actions: const [
+          actions: [
+            RefreshButton(
+              busy: reloading || asyncItems.isReloadingData,
+              onPressed: () => runReload(
+                ref,
+                'medicine',
+                () => ref.refresh(medicineListProvider(query).future),
+              ),
+            ),
           ],
         ),
 
-        floatingActionButton: FloatingActionButton.extended(
-          backgroundColor: accent,
-          foregroundColor: Colors.white,
+        floatingActionButton: AddFab(
+          color: accent,
+          tooltip: context.l10n.medNew,
           onPressed: () => context.push('/medicine/new'),
-          icon: const Icon(Icons.add),
-          label: const Text('เพิ่มยาใหม่'),
         ),
 
-        body: SafeArea(
-          child: RefreshIndicator(
-            color: accent,
-            onRefresh: () async {
-              ref.invalidate(medicineListProvider(query));
-              await Future.delayed(const Duration(milliseconds: 200));
-            },
-            child: CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: SearchBarField(
-                            controller: _search,
-                            hintText: 'ค้นหาชื่อยา...',
-                            onChanged: (_) => setState(() {}),
+        body: ReloadOverlay(
+          active: reloading,
+          child: SafeArea(
+            child: RefreshIndicator(
+              color: accent,
+              onRefresh: () => pullRefresh(
+                () => ref.refresh(medicineListProvider(query).future),
+              ),
+              child: CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: SearchBarField(
+                              controller: _search,
+                              hintText: context.l10n.medSearchHint,
+                              onChanged: (_) => setState(() {}),
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        const LastUpdatedBadge(),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
 
-                asyncItems.when(
-                  data: (items) {
-                    if (items.isEmpty) {
-                      return const SliverFillRemaining(
-                        hasScrollBody: false,
-                        child: ListEmptyState(
-                          title: 'ยังไม่มียาในระบบ',
-                          subtitle: 'กดปุ่ม “เพิ่มยาใหม่” เพื่อสร้างรายการแรก',
-                        ),
-                      );
-                    }
-
-                    return SliverList(
-                      delegate: SliverChildBuilderDelegate((context, index) {
-                        final m = items[index];
-                        return _MedicineCard(
-                          item: m,
-                          onTap: () => context.push('/medicine/${m.id}'),
+                  asyncItems.when(
+                    data: (items) {
+                      if (items.isEmpty) {
+                        return SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: ListEmptyState(
+                            icon: query.isNotEmpty
+                                ? Icons.search_off_rounded
+                                : Icons.medical_services_outlined,
+                            title: query.isNotEmpty
+                                ? context.l10n.medNoMatchTitle
+                                : context.l10n.medEmptyTitle,
+                            subtitle: query.isNotEmpty
+                                ? context.l10n.medNoMatchHint
+                                : context.l10n.medEmptyHint,
+                          ),
                         );
-                      }, childCount: items.length),
-                    );
-                  },
-                  loading: () => const SliverFillRemaining(
-                    child: PageLoading(),
-                  ),
-                  error: (e, st) => SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: ErrorState(
-                      title: 'โหลดรายการยาไม่สำเร็จ',
-                      error: e,
-                      onRetry: () =>
-                          ref.invalidate(medicineListProvider(query)),
+                      }
+
+                      return SliverList(
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          final m = items[index];
+                          return _MedicineCard(
+                            item: m,
+                            onTap: () => context.push('/medicine/${m.id}'),
+                          );
+                        }, childCount: items.length),
+                      );
+                    },
+                    loading: () =>
+                        const SliverFillRemaining(child: PageLoading()),
+                    error: (e, st) => SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: ErrorState(
+                        title: context.l10n.medLoadFailed,
+                        error: e,
+                        onRetry: () =>
+                            ref.invalidate(medicineListProvider(query)),
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -140,68 +158,67 @@ class _MedicineCard extends StatelessWidget {
     final expirySoon = st?.expirySoon ?? false;
     final low = st?.low ?? false;
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Icon(Icons.medication_outlined, size: 28),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+    return ItemCard(
+      margin: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+      onTap: onTap,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.medication_outlined, size: 28),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            item.name,
-                            style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(fontWeight: FontWeight.w600),
-                          ),
-                        ),
-                        if (expired)
-                          const _StatusChip(
-                            label: 'หมดอายุ',
-                            icon: Icons.error_outline,
-                          ),
-                        if (!expired && expirySoon)
-                          const _StatusChip(
-                            label: 'ใกล้หมดอายุ',
-                            icon: Icons.schedule,
-                          ),
-                        if (low && !expired)
-                          const _StatusChip(
-                            label: 'ใกล้หมด',
-                            icon: Icons.inventory_2_outlined,
-                          ),
-                      ],
+                    Expanded(
+                      child: Text(
+                        item.name,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
+                      ),
                     ),
-                    const SizedBox(height: 6),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 4,
-                      children: [
-                        if (item.form != null) _InfoPill('${item.form}'),
-                        if (item.unit != null) _InfoPill('หน่วย: ${item.unit}'),
-                        _InfoPill('คงเหลือ ${item.stockQty}'),
-                        if (item.nextExpiryDate != null)
-                          _InfoPill('หมดอายุถัดไป ${item.nextExpiryDate}'),
-                        if (item.locationName != null)
-                          _InfoPill(item.locationName!),
-                      ],
-                    ),
+                    if (expired)
+                      _StatusChip(
+                        label: context.l10n.medStatusExpired,
+                        icon: Icons.error_outline,
+                      ),
+                    if (!expired && expirySoon)
+                      _StatusChip(
+                        label: context.l10n.medStatusExpiringSoon,
+                        icon: Icons.schedule,
+                      ),
+                    if (low && !expired)
+                      _StatusChip(
+                        label: context.l10n.medStatusLow,
+                        icon: Icons.inventory_2_outlined,
+                      ),
                   ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: [
+                    if (item.form != null) _InfoPill('${item.form}'),
+                    if (item.unit != null)
+                      _InfoPill(context.l10n.medUnit('${item.unit}')),
+                    _InfoPill(context.l10n.medInStock(qtyText(item.stockQty))),
+                    if (item.nextExpiryDate != null)
+                      _InfoPill(
+                        context.l10n.medNextExpiry(
+                          DateFormat('d MMM yyyy').format(item.nextExpiryDate!),
+                        ),
+                      ),
+                    if (item.locationName != null)
+                      _InfoPill(item.locationName!),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

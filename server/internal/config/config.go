@@ -16,6 +16,28 @@ type Config struct {
 	LocalDir       string
 	PublicBaseURL  string
 
+	// Google Places (optional). Empty key = feature off; the API then answers
+	// 503 google_places_disabled and the app falls back to saved contractors.
+	GooglePlacesAPIKey  string
+	GooglePlacesBaseURL string // empty = Google's production endpoint
+
+	// Bounds on Google traffic. Zero means "use the built-in default".
+	GooglePlacesDailyLimit     int  // outbound calls per day, all users
+	GooglePlacesRatePerMin     int  // requests per user per minute
+	GooglePlacesMaxRadiusM     int  // largest accepted search radius
+	GooglePlacesAllowAllTrades bool // permit a search with no trade and no text
+
+	// Cameras (optional). CamerasDriver is "imou", "fake" or empty: empty picks
+	// "imou" when both Imou credentials are set, otherwise the feature is off.
+	CamerasDriver        string
+	CamerasFakeStreamURL string // HLS address the fake driver hands out
+	CamerasFakePictures  bool   // fake cameras give a made-up still picture
+
+	ImouAppID     string
+	ImouAppSecret string
+	ImouBaseURL   string // empty = region default, else Imou's global host
+	ImouRegion    string // "sg"; other regions: set ImouBaseURL
+
 	// Cloudflare R2
 	R2AccountID string
 	R2AccessKey string
@@ -43,6 +65,20 @@ func Getbool(key string, def bool) bool {
 	return b
 }
 
+// Getint reads an integer environment variable, falling back to def when it is
+// unset or not a number.
+func Getint(key string, def int) int {
+	v := os.Getenv(key)
+	if v == "" {
+		return def
+	}
+	n, err := strconv.Atoi(v)
+	if err != nil {
+		return def
+	}
+	return n
+}
+
 func Load() Config {
 	c := Config{
 		AppPort:    Getenv("APP_PORT", "8080"),
@@ -53,6 +89,23 @@ func Load() Config {
 		StorageBackend: Getenv("STORAGE_BACKEND", "local"),
 		LocalDir:       Getenv("LOCAL_STORAGE_DIR", "./data/uploads"),
 		PublicBaseURL:  Getenv("PUBLIC_BASE_URL", "http://localhost:8080/static"),
+
+		GooglePlacesAPIKey:  Getenv("GOOGLE_PLACES_API_KEY", ""),
+		GooglePlacesBaseURL: Getenv("GOOGLE_PLACES_BASE_URL", ""),
+
+		GooglePlacesDailyLimit:     Getint("GOOGLE_PLACES_DAILY_LIMIT", 0),
+		GooglePlacesRatePerMin:     Getint("GOOGLE_PLACES_RATE_PER_MIN", 0),
+		GooglePlacesMaxRadiusM:     Getint("GOOGLE_PLACES_MAX_RADIUS_M", 0),
+		GooglePlacesAllowAllTrades: Getbool("GOOGLE_PLACES_ALLOW_ALL_TRADES", false),
+
+		CamerasDriver:        Getenv("CAMERAS_DRIVER", ""),
+		CamerasFakeStreamURL: Getenv("CAMERAS_FAKE_STREAM_URL", ""),
+		CamerasFakePictures:  Getbool("CAMERAS_FAKE_PICTURES", false),
+
+		ImouAppID:     Getenv("IMOU_APP_ID", ""),
+		ImouAppSecret: Getenv("IMOU_APP_SECRET", ""),
+		ImouBaseURL:   Getenv("IMOU_BASE_URL", ""),
+		ImouRegion:    Getenv("IMOU_REGION", ""),
 
 		R2AccountID: Getenv("R2_ACCOUNT_ID", ""),
 		R2AccessKey: Getenv("R2_ACCESS_KEY_ID", ""),

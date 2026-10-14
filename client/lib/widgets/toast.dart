@@ -1,236 +1,111 @@
 // lib/widgets/toast.dart
-import 'dart:collection';
 import 'package:flutter/material.dart';
+
+import '../shared/app_colors.dart';
 
 enum ToastType { success, error, info }
 
+/// The app's one way to show a short message.
+///
+/// Built on Flutter's [ScaffoldMessenger] (floating Material snack bars) rather
+/// than an overlay package: that is what Material specifies and what most
+/// Flutter apps use, and it already does the platform work. It sits above the
+/// FAB, bottom bars and keyboard, respects safe areas, can be swiped away and
+/// is announced to screen readers.
+///
+/// Following the Material snackbar guidance: an opaque dark container with
+/// light text (so it reads on any page without needing a shadow), one message
+/// at a time, at least 4 seconds on screen, at most two lines.
+///
+/// It needs no [BuildContext], so it can be called from providers, repositories
+/// and interceptors as well as widgets:
+///
+/// ```dart
+/// AppToast.success('บันทึกแล้ว');
+/// AppToast.error('เชื่อมต่อไม่ได้');
+/// ```
+///
+/// Requires `MaterialApp(scaffoldMessengerKey: AppToast.messengerKey)`.
 class AppToast {
   AppToast._();
 
-  static final _queue = Queue<_ToastRequest>();
-  static bool _isShowing = false;
+  /// Hand this to the root [MaterialApp].
+  static final messengerKey = GlobalKey<ScaffoldMessengerState>();
 
-  static void showSuccess(
-    BuildContext context,
-    String message, {
-    Duration duration = const Duration(milliseconds: 1600),
-  }) {
-    _enqueue(context, message, ToastType.success, duration);
+  static void success(String message, {Duration? duration}) =>
+      _show(message, ToastType.success, duration);
+
+  static void error(String message, {Duration? duration}) =>
+      _show(message, ToastType.error, duration);
+
+  static void info(String message, {Duration? duration}) =>
+      _show(message, ToastType.info, duration);
+
+  /// Dismiss the visible toast and drop anything queued behind it.
+  static void clear() => messengerKey.currentState?.clearSnackBars();
+
+  static void _show(String message, ToastType type, Duration? duration) {
+    final messenger = messengerKey.currentState;
+    if (messenger == null || message.trim().isEmpty) return;
+
+    // Latest wins. Stacking a queue of stale messages is worse than replacing
+    // one: by the time the 4th is shown the user has long moved on.
+    messenger
+      ..clearSnackBars()
+      ..showSnackBar(_build(message.trim(), type, duration));
   }
 
-  static void showError(
-    BuildContext context,
-    String message, {
-    Duration duration = const Duration(milliseconds: 2000),
-  }) {
-    _enqueue(context, message, ToastType.error, duration);
-  }
-
-  static void showInfo(
-    BuildContext context,
-    String message, {
-    Duration duration = const Duration(milliseconds: 1600),
-  }) {
-    _enqueue(context, message, ToastType.info, duration);
-  }
-
-  static void _enqueue(
-    BuildContext context,
-    String message,
-    ToastType type,
-    Duration duration,
-  ) {
-    _queue.add(_ToastRequest(context, message, type, duration));
-    if (!_isShowing) _tryShowNext();
-  }
-
-  static void _tryShowNext() async {
-    if (_queue.isEmpty) return;
-    _isShowing = true;
-
-    final req = _queue.removeFirst();
-    final overlay = Overlay.maybeOf(req.context, rootOverlay: true);
-    if (overlay == null) {
-      _isShowing = false;
-      _tryShowNext();
-      return;
-    }
-
-    late OverlayEntry entry;
-    entry = OverlayEntry(
-      opaque: false,
-      builder: (_) => _ToastEntry(
-        message: req.message,
-        type: req.type,
-        duration: req.duration,
-        onCompleted: () {
-          entry.remove();
-          _isShowing = false;
-          _tryShowNext();
-        },
-      ),
-    );
-
-    overlay.insert(entry);
-  }
-}
-
-class _ToastRequest {
-  final BuildContext context;
-  final String message;
-  final ToastType type;
-  final Duration duration;
-  _ToastRequest(this.context, this.message, this.type, this.duration);
-}
-
-class _ToastEntry extends StatefulWidget {
-  const _ToastEntry({
-    required this.message,
-    required this.type,
-    required this.duration,
-    required this.onCompleted,
-  });
-
-  final String message;
-  final ToastType type;
-  final Duration duration;
-  final VoidCallback onCompleted;
-
-  @override
-  State<_ToastEntry> createState() => _ToastEntryState();
-}
-
-class _ToastEntryState extends State<_ToastEntry>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _ac = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 160),
-    reverseDuration: const Duration(milliseconds: 180),
-  );
-  late final Animation<double> _scale = Tween(begin: 0.92, end: 1.0).animate(
-    CurvedAnimation(
-      parent: _ac,
-      curve: Curves.easeOutBack,
-      reverseCurve: Curves.easeIn,
-    ),
-  );
-  late final Animation<double> _fade = CurvedAnimation(
-    parent: _ac,
-    curve: Curves.easeOut,
-    reverseCurve: Curves.easeIn,
-  );
-
-  @override
-  void initState() {
-    super.initState();
-    _show();
-  }
-
-  Future<void> _show() async {
-    await _ac.forward();
-    await Future.delayed(widget.duration);
-    if (mounted) {
-      await _ac.reverse();
-      widget.onCompleted();
-    }
-  }
-
-  @override
-  void dispose() {
-    _ac.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final (icon, tint) = switch (widget.type) {
-      ToastType.success => (
-        Icons.check_circle_rounded,
-        const Color(0xFF16A34A),
-      ), // green-600
-      ToastType.error => (
-        Icons.error_rounded,
-        const Color(0xFFDC2626),
-      ), // red-600
-      ToastType.info => (
-        Icons.info_rounded,
-        const Color(0xFF2563EB),
-      ), // blue-600
+  static SnackBar _build(String message, ToastType type, Duration? duration) {
+    // The status shows in the icon only; the container stays one neutral tone.
+    final (icon, tint) = switch (type) {
+      ToastType.success => (Icons.check_circle_rounded, _green),
+      ToastType.error => (Icons.error_rounded, _red),
+      ToastType.info => (Icons.info_rounded, _blue),
     };
 
-    // Government-clean style: การ์ดขาว ขอบจาง เงานุ่ม
-    return IgnorePointer(
-      ignoring: true,
-      child: SafeArea(
-        child: Stack(
-          children: [
-            // ใส่เลเยอร์โปร่งแสงเบาๆ ให้โฟกัสที่ข้อความ
-            Positioned.fill(child: Container(color: Colors.transparent)),
-            Center(
-              child: FadeTransition(
-                opacity: _fade,
-                child: ScaleTransition(
-                  scale: _scale,
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 480),
-                    child: Material(
-                      elevation: 0,
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: const Color(0xFFE7ECF4),
-                          ), // cardBorder โทนสะอาด
-                          boxShadow: const [
-                            BoxShadow(
-                              blurRadius: 24,
-                              spreadRadius: 0,
-                              offset: Offset(0, 12),
-                              color: Color(0x1A000000),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                color: tint.withValues(alpha: 0.08),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(icon, size: 22, color: tint),
-                            ),
-                            const SizedBox(width: 12),
-                            Flexible(
-                              child: Text(
-                                widget.message,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  height: 1.25,
-                                  color: Color(0xFF0F172A), // slate-900
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+    return SnackBar(
+      behavior: SnackBarBehavior.floating,
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      // Flat, no drop shadow: a dark container needs none to stand apart.
+      elevation: 0,
+      backgroundColor: AppColors.deepNavy,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      duration:
+          duration ??
+          switch (type) {
+            // Material: at least 4 s. Errors get longer, they are read, not
+            // glanced at.
+            ToastType.error => const Duration(seconds: 6),
+            _ => const Duration(seconds: 4),
+          },
+      // A way out for errors, so a long message is never stuck on screen.
+      showCloseIcon: type == ToastType.error,
+      closeIconColor: Colors.white70,
+      content: Row(
+        children: [
+          Icon(icon, size: 20, color: tint),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              message,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 14,
+                height: 1.35,
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
+
+  // Lighter shades of the status colours, chosen to read on the dark container.
+  static const _green = Color(0xFF4ADE80);
+  static const _red = Color(0xFFF87171);
+  static const _blue = Color(0xFF93C5FD);
 }

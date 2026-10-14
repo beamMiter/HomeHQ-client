@@ -10,6 +10,7 @@ import (
 
 	"github.com/iMookatayou/homeservice-backend/internal/auth"
 	"github.com/iMookatayou/homeservice-backend/internal/bills"
+	"github.com/iMookatayou/homeservice-backend/internal/cameras"
 	"github.com/iMookatayou/homeservice-backend/internal/chores"
 	"github.com/iMookatayou/homeservice-backend/internal/config"
 	"github.com/iMookatayou/homeservice-backend/internal/contractors"
@@ -19,6 +20,7 @@ import (
 	"github.com/iMookatayou/homeservice-backend/internal/httpx"
 	"github.com/iMookatayou/homeservice-backend/internal/medicine"
 	"github.com/iMookatayou/homeservice-backend/internal/notes"
+	"github.com/iMookatayou/homeservice-backend/internal/places"
 	"github.com/iMookatayou/homeservice-backend/internal/purchases"
 	"github.com/iMookatayou/homeservice-backend/internal/storage"
 	"github.com/iMookatayou/homeservice-backend/internal/user"
@@ -63,6 +65,51 @@ func main() {
 	ctrRepo := contractors.NewRepo(pool)
 	ctrSvc := contractors.NewService(ctrRepo)
 	ctrH := contractors.NewHandler(ctrSvc)
+
+	// Google Places (off unless GOOGLE_PLACES_API_KEY is set)
+	placesLimits := places.DefaultLimits()
+	if cfg.GooglePlacesDailyLimit > 0 {
+		placesLimits.DailyCalls = cfg.GooglePlacesDailyLimit
+	}
+	if cfg.GooglePlacesRatePerMin > 0 {
+		placesLimits.RatePerMin = cfg.GooglePlacesRatePerMin
+	}
+	if cfg.GooglePlacesMaxRadiusM > 0 {
+		placesLimits.MaxRadiusM = float64(cfg.GooglePlacesMaxRadiusM)
+	}
+	placesLimits.AllowAllTrades = cfg.GooglePlacesAllowAllTrades
+	placesSvc := places.NewService(
+		places.NewClient(cfg.GooglePlacesAPIKey, cfg.GooglePlacesBaseURL),
+		places.NewPGStore(pool),
+		placesLimits,
+	)
+	placesH := places.NewHandler(placesSvc)
+	if !placesSvc.Enabled() {
+		logger.Info("google places disabled: GOOGLE_PLACES_API_KEY not set")
+	}
+
+	// Cameras (off unless an Imou account is configured, or CAMERAS_DRIVER=fake)
+	var camDriver cameras.Driver
+	switch kind := cfg.CamerasDriver; {
+	case kind == "fake":
+		fake := cameras.NewFake(cfg.CamerasFakeStreamURL)
+		fake.Pictures = cfg.CamerasFakePictures
+		camDriver = fake
+	case kind == "imou" || (kind == "" && cfg.ImouAppID != "" && cfg.ImouAppSecret != ""):
+		camDriver = cameras.NewImou(cameras.ImouConfig{
+			AppID:     cfg.ImouAppID,
+			AppSecret: cfg.ImouAppSecret,
+			BaseURL:   cfg.ImouBaseURL,
+			Region:    cfg.ImouRegion,
+		})
+	}
+	camSvc := cameras.NewService(camDriver)
+	camH := cameras.NewHandler(camSvc)
+	if camSvc.Enabled() {
+		logger.Info("cameras enabled", zap.String("driver", camDriver.Name()))
+	} else {
+		logger.Info("cameras disabled: set IMOU_APP_ID/IMOU_APP_SECRET (or CAMERAS_DRIVER=fake)")
+	}
 
 	// Medicine
 	mRepo := medicine.NewRepo(pool)
@@ -110,6 +157,14 @@ func main() {
 
 			pr.Route("/contractors", func(r chi.Router) {
 				ctrH.RegisterRoutes(r)
+			})
+
+			pr.Route("/places", func(r chi.Router) {
+				placesH.RegisterRoutes(r)
+			})
+
+			pr.Route("/cameras", func(r chi.Router) {
+				camH.RegisterRoutes(r)
 			})
 		})
 	})

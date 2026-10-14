@@ -47,7 +47,8 @@ class MedicineItem {
   /// ✅ แปลงจาก DTO แบบ ItemSummary ของ backend
   factory MedicineItem.fromItemSummaryJson(Map<String, dynamic> json) {
     final item = (json['item'] as Map).cast<String, dynamic>();
-    final next = json['next_expiry'] as String?;
+    // The server calls it next_expiry_date (older ones: next_expiry).
+    final next = (json['next_expiry_date'] ?? json['next_expiry']) as String?;
     final nextDt = next == null ? null : DateTime.parse(next);
 
     final lowStock = json['low_stock'] == true;

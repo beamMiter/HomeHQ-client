@@ -1,0 +1,7 @@
+# Strings live in lib/l10n/app_<locale>.arb; `flutter gen-l10n` (run by
+# `flutter pub get`/build) turns them into lib/l10n/app_localizations*.dart.
+arb-dir: lib/l10n
+template-arb-file: app_en.arb
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
+nullable-getter: true

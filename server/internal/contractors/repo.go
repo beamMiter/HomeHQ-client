@@ -51,6 +51,19 @@ func (r *Repo) List(ctx context.Context, onlyFavorites bool, limit, offset int) 
 	return out, rows.Err()
 }
 
+// distanceExpr returns a SQL expression for the great-circle distance in metres
+// between ($latParam, $lngParam) and the row's (lat, lng).
+//
+// The acos argument is clamped to [-1, 1]: for identical or near-identical
+// points floating-point error can push it just past 1, and Postgres then fails
+// the whole query with "input is out of range" instead of returning 0.
+func distanceExpr(latParam, lngParam int) string {
+	return fmt.Sprintf(
+		`( 6371000 * acos( LEAST(1.0, GREATEST(-1.0, cos( radians($%d) ) * cos( radians( lat ) ) * cos( radians( lng ) - radians($%d) ) + sin( radians($%d) ) * sin( radians( lat ) ) )) ) )`,
+		latParam, lngParam, latParam,
+	)
+}
+
 func (r *Repo) Search(ctx context.Context, f SearchFilter) ([]ContractorSearchResult, error) {
 	var sb strings.Builder
 	var args []any
@@ -59,8 +72,9 @@ func (r *Repo) Search(ctx context.Context, f SearchFilter) ([]ContractorSearchRe
 	selectClause := `SELECT id, name, types, phone, address, lat, lng, google_maps_url, note, is_favorite, created_by, created_at, updated_at`
 	distanceClause := `, CAST(NULL AS FLOAT) as distance_m`
 
+	// When a position is supplied it always occupies $1 (lat) and $2 (lng).
 	if f.Lat != nil && f.Lng != nil {
-		distanceClause = fmt.Sprintf(`, ( 6371000 * acos( cos( radians($%d) ) * cos( radians( lat ) ) * cos( radians( lng ) - radians($%d) ) + sin( radians($%d) ) * sin( radians( lat ) ) ) ) AS distance_m`, argIdx, argIdx+1, argIdx)
+		distanceClause = `, ` + distanceExpr(argIdx, argIdx+1) + ` AS distance_m`
 		args = append(args, *f.Lat, *f.Lng)
 		argIdx += 2
 	}
@@ -82,7 +96,7 @@ func (r *Repo) Search(ctx context.Context, f SearchFilter) ([]ContractorSearchRe
 	}
 
 	if f.Lat != nil && f.Lng != nil && f.Radius != nil && *f.Radius > 0 {
-		sb.WriteString(fmt.Sprintf(` AND lat IS NOT NULL AND lng IS NOT NULL AND ( 6371000 * acos( cos( radians($1) ) * cos( radians( lat ) ) * cos( radians( lng ) - radians($2) ) + sin( radians($1) ) * sin( radians( lat ) ) ) ) <= $%d`, argIdx))
+		sb.WriteString(fmt.Sprintf(` AND lat IS NOT NULL AND lng IS NOT NULL AND %s <= $%d`, distanceExpr(1, 2), argIdx))
 		args = append(args, *f.Radius)
 		argIdx++
 	}
@@ -109,7 +123,8 @@ func (r *Repo) Search(ctx context.Context, f SearchFilter) ([]ContractorSearchRe
 	}
 	defer rows.Close()
 
-	var out []ContractorSearchResult
+	// Non-nil so an empty result serialises as [] rather than null.
+	out := []ContractorSearchResult{}
 	for rows.Next() {
 		var c ContractorSearchResult
 		if err := rows.Scan(

@@ -4,6 +4,10 @@ import 'package:intl/intl.dart';
 
 import '../models/bill.dart';
 import '../state/bills_provider.dart';
+import '../widgets/detail_bottom_bar.dart';
+import '../widgets/toast.dart';
+import '../l10n/l10n.dart';
+import '../l10n/labels.dart';
 
 class BillDetailScreen extends ConsumerWidget {
   const BillDetailScreen({super.key, required this.bill});
@@ -50,6 +54,7 @@ class BillDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cs = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
     final money = NumberFormat.currency(locale: 'th_TH', symbol: '฿');
     final dtDate = DateFormat('d MMM yyyy HH:mm');
     final dtDay = DateFormat('d MMM yyyy');
@@ -62,9 +67,26 @@ class BillDetailScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bill Details'),
+        title: Text(l10n.billDetailTitle),
         scrolledUnderElevation: 0,
       ),
+      // The one thing to do with a bill that is not paid yet.
+      bottomNavigationBar: isPaid
+          ? null
+          : DetailBottomBar(
+              primary: DetailAction(
+                label: mark.isLoading ? l10n.billProcessing : l10n.billMarkPaid,
+                icon: Icons.check_circle_outline_rounded,
+                busy: mark.isLoading,
+                onPressed: () async {
+                  await ref.read(billMarkPaidProvider.notifier).run(bill.id);
+                  if (context.mounted) {
+                    AppToast.success(l10n.billMarkedPaid);
+                    Navigator.of(context).pop(); // back to the list
+                  }
+                },
+              ),
+            ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -109,12 +131,16 @@ class BillDetailScreen extends ConsumerWidget {
                           crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
                             _chip(
-                              label: isPaid ? 'Paid' : 'Unpaid',
+                              label: isPaid
+                                  ? l10n.billStatusPaid
+                                  : l10n.billStatusUnpaid,
                               fg: statusFg,
                               bg: statusBg,
                             ),
                             _chip(
-                              label: 'Due ${dtDay.format(bill.dueDate)}',
+                              label: l10n.billsDueOn(
+                                dtDay.format(bill.dueDate),
+                              ),
                               fg: _dueColor(context),
                               bg: _dueColor(context).withValues(alpha: 0.08),
                             ),
@@ -143,35 +169,35 @@ class BillDetailScreen extends ConsumerWidget {
                 children: [
                   _infoRow(
                     context,
-                    'Amount',
+                    l10n.billDetailAmount,
                     money.format(bill.amount),
                     bold: true,
                     size: 18,
                   ),
                   _infoRow(
                     context,
-                    'Status',
-                    bill.status.toUpperCase(),
+                    l10n.billDetailStatus,
+                    billStatusLabel(l10n, bill.status),
                     color: statusFg,
                     bold: true,
                   ),
                   _infoRow(
                     context,
-                    'Due Date',
+                    l10n.billDetailDueDate,
                     dtDate.format(bill.dueDate),
                     color: _dueColor(context),
                   ),
                   _infoRow(
                     context,
-                    'Created At',
+                    l10n.billDetailCreatedAt,
                     dtDate.format(bill.createdAt),
                   ),
                   _infoRow(
                     context,
-                    'Updated At',
+                    l10n.billDetailUpdatedAt,
                     dtDate.format(bill.updatedAt),
                   ),
-                  _infoRow(context, 'Created By', bill.createdBy),
+                  _infoRow(context, l10n.billDetailCreatedBy, bill.createdBy),
                 ],
               ),
             ),
@@ -191,7 +217,7 @@ class BillDetailScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Note',
+                      l10n.billDetailNote,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
@@ -206,29 +232,6 @@ class BillDetailScreen extends ConsumerWidget {
               ),
             ),
           ],
-
-          const SizedBox(height: 20),
-
-          if (!isPaid)
-            FilledButton.icon(
-              icon: const Icon(Icons.check_circle),
-              label: mark.isLoading
-                  ? const Text('Processing...')
-                  : const Text('Mark as Paid'),
-              onPressed: mark.isLoading
-                  ? null
-                  : () async {
-                      await ref
-                          .read(billMarkPaidProvider.notifier)
-                          .run(bill.id);
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Marked as paid')),
-                        );
-                        Navigator.of(context).pop(); // กลับไป list
-                      }
-                    },
-            ),
         ],
       ),
     );

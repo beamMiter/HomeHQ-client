@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../state/medicine_provider.dart';
 
 import '../services/medicine_api.dart'; // ใช้ CreateMedicinePayload จาก service
+import '../widgets/toast.dart';
+import '../l10n/l10n.dart';
 
 class MedicineFormScreen extends ConsumerStatefulWidget {
   const MedicineFormScreen({super.key});
@@ -45,9 +47,7 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
 
     await ref.read(createMedicineProvider(payload).future);
     if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('เพิ่มยาเรียบร้อย')));
+      AppToast.success(context.l10n.medFormAdded);
       context.pop();
     }
   }
@@ -57,7 +57,7 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
     final locationsAsync = ref.watch(medicineLocationsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('เพิ่มยาใหม่')),
+      appBar: AppBar(title: Text(context.l10n.medNew)),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -67,33 +67,33 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
               children: [
                 TextFormField(
                   controller: _name,
-                  decoration: const InputDecoration(
-                    labelText: 'ชื่อยา',
-                    hintText: 'เช่น Paracetamol 500mg',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.medFormName,
+                    hintText: context.l10n.medFormNameHint,
                   ),
                   validator: (v) => (v == null || v.trim().isEmpty)
-                      ? 'กรุณากรอกชื่อยา'
+                      ? context.l10n.medFormNameRequired
                       : null,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _form,
-                  decoration: const InputDecoration(
-                    labelText: 'รูปแบบยา (เช่น tablet, syrup)',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.medFormForm,
                   ),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _unit,
-                  decoration: const InputDecoration(
-                    labelText: 'หน่วย (เช่น tab, ml)',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.medFormUnit,
                   ),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _category,
-                  decoration: const InputDecoration(
-                    labelText: 'หมวดหมู่ (เช่น painkiller)',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.medFormCategory,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -106,7 +106,7 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
                       DropdownMenuItem<String?>(
                         value: null,
                         child: Text(
-                          '— ไม่ระบุที่เก็บ —',
+                          context.l10n.medFormNoLocation,
                           style: TextStyle(color: Theme.of(context).hintColor),
                         ),
                       ),
@@ -118,17 +118,19 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
                       ),
                     ],
                     onChanged: (v) => setState(() => _locationId = v),
-                    decoration: const InputDecoration(labelText: 'ที่เก็บยา'),
+                    decoration: InputDecoration(
+                      labelText: context.l10n.medFormLocation,
+                    ),
                   ),
                   loading: () => const LinearProgressIndicator(minHeight: 2),
                   error: (e, st) => Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('โหลดรายการที่เก็บยาไม่สำเร็จ'),
+                      Text(context.l10n.medFormLocationsFailed),
                       TextButton(
                         onPressed: () =>
                             ref.invalidate(medicineLocationsProvider),
-                        child: const Text('ลองใหม่'),
+                        child: Text(context.l10n.commonTryAgain),
                       ),
                     ],
                   ),
@@ -138,7 +140,7 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
                 FilledButton.icon(
                   onPressed: _submit,
                   icon: const Icon(Icons.save_outlined),
-                  label: const Text('บันทึก'),
+                  label: Text(context.l10n.commonSave),
                 ),
               ],
             ),

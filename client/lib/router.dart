@@ -8,6 +8,7 @@ import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/forgot_password_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/account_screen.dart';
 import 'screens/notes_screen.dart';
 import 'screens/contractors_screen.dart';
 import 'screens/purchase_screen.dart';
@@ -21,7 +22,11 @@ import 'models/bill.dart';
 import 'screens/medicine_screen.dart';
 import 'screens/medicine_form_screen.dart';
 import 'screens/medicine_detail_screen.dart';
-import 'screens/coming_soon_screen.dart';
+import 'screens/camera_player_screen.dart';
+import 'screens/cameras_screen.dart';
+import 'models/home_camera.dart';
+import 'l10n/l10n.dart';
+
 class GoRouterRefreshNotifier extends ChangeNotifier {
   GoRouterRefreshNotifier(this.ref) {
     _sub = ref.listen<AuthState>(authProvider, (_, __) => notifyListeners());
@@ -46,12 +51,35 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/splash', builder: (_, __) => const SplashScreen()),
       GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
       GoRoute(path: '/register', builder: (_, __) => const RegisterScreen()),
-      GoRoute(path: '/forgot', builder: (_, __) => const ForgotPasswordScreen()),
+      GoRoute(
+        path: '/forgot',
+        builder: (_, __) => const ForgotPasswordScreen(),
+      ),
 
       // Private
       GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
+      GoRoute(path: '/account', builder: (_, __) => const AccountScreen()),
       GoRoute(path: '/notes', builder: (_, __) => const NotesScreen()),
-      GoRoute(path: '/contractors', builder: (_, __) => const ContractorsScreen()),
+      GoRoute(
+        path: '/contractors',
+        builder: (_, st) => ContractorsScreen(
+          initialQuery: st.uri.queryParameters['q'],
+          focusId: st.uri.queryParameters['focus'],
+        ),
+        routes: [
+          // The map used to be its own page; it is now the main screen, so
+          // old links (and their ?focus=) land there.
+          GoRoute(
+            path: 'map',
+            redirect: (_, st) => Uri(
+              path: '/contractors',
+              queryParameters: st.uri.queryParameters.isEmpty
+                  ? null
+                  : st.uri.queryParameters,
+            ).toString(),
+          ),
+        ],
+      ),
 
       // Purchases
       GoRoute(
@@ -60,11 +88,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: 'new',
-            builder: (_, __) => const PurchaseFormScreen(mode: PurchaseFormMode.create),
+            builder: (_, __) =>
+                const PurchaseFormScreen(mode: PurchaseFormMode.create),
           ),
           GoRoute(
             path: ':id',
-            builder: (_, st) => PurchaseDetailScreen(id: st.pathParameters['id']!),
+            builder: (_, st) =>
+                PurchaseDetailScreen(id: st.pathParameters['id']!),
             routes: [
               GoRoute(
                 path: 'edit',
@@ -84,7 +114,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, __) => const BillsScreen(),
         routes: [
           GoRoute(path: 'new', builder: (_, __) => const BillFormScreen()),
-          GoRoute(path: 'summary', builder: (_, __) => const BillsSummaryScreen()),
+          GoRoute(
+            path: 'summary',
+            builder: (_, __) => const BillsSummaryScreen(),
+          ),
           GoRoute(
             path: ':id',
             builder: (_, st) => BillDetailScreen(bill: st.extra as Bill),
@@ -100,38 +133,30 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: 'new', builder: (_, __) => const MedicineFormScreen()),
           GoRoute(
             path: ':id',
-            builder: (_, st) => MedicineDetailScreen(id: st.pathParameters['id']!),
+            builder: (_, st) =>
+                MedicineDetailScreen(id: st.pathParameters['id']!),
           ),
         ],
       ),
 
-      // Not built yet — dashboard tiles link here so they don't hit a
-      // route-not-found error screen.
+      // Home cameras: a grid of live pictures, and a player per camera.
       GoRoute(
         path: '/cameras',
-        builder: (_, __) => const ComingSoonScreen(
-          title: 'Home Cameras',
-          icon: Icons.videocam_outlined,
-        ),
-      ),
-      GoRoute(
-        path: '/calc',
-        builder: (_, __) => const ComingSoonScreen(
-          title: 'Calculator',
-          icon: Icons.calculate,
-        ),
-      ),
-      GoRoute(
-        path: '/stocks',
-        builder: (_, __) => const ComingSoonScreen(
-          title: 'Household Stocks',
-          icon: Icons.trending_up,
-        ),
+        builder: (_, __) => const CamerasScreen(),
+        routes: [
+          GoRoute(
+            path: ':id',
+            builder: (_, st) => CameraPlayerScreen(
+              id: st.pathParameters['id']!,
+              camera: st.extra is HomeCamera ? st.extra as HomeCamera : null,
+            ),
+          ),
+        ],
       ),
     ],
 
     errorBuilder: (ctx, s) =>
-        Scaffold(body: Center(child: Text('Route error: ${s.error}'))),
+        Scaffold(body: Center(child: Text(ctx.l10n.routeError('${s.error}')))),
 
     redirect: (ctx, s) {
       final path = s.uri.path;

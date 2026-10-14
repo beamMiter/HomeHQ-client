@@ -22,3 +22,11 @@ fresh:
 
 run:
 	go run ./cmd/api
+
+# Everyday start: apply any new migrations (does nothing when there are none),
+# then run the API. Demo cameras unless told otherwise:
+#   make dev CAMERAS_DRIVER=      (empty = use the Imou account, if configured)
+CAMERAS_DRIVER ?= fake
+dev:
+	go run ./cmd/migrate -cmd=up
+	CAMERAS_DRIVER=$(CAMERAS_DRIVER) go run ./cmd/api
