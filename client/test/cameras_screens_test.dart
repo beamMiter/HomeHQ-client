@@ -143,9 +143,13 @@ class _FakeAwake implements ScreenAwake {
 /// A player that never touches the platform plugin.
 class _FakeController extends VideoPlayerController {
   // ignore: use_super_parameters
-  _FakeController(Uri uri, {this.failInit = false}) : super.networkUrl(uri);
+  _FakeController(Uri uri, {this.failInit = false, this.hold})
+    : super.networkUrl(uri);
 
   final bool failInit;
+
+  /// While set, opening the stream waits for it (a slow connection).
+  final Completer<void>? hold;
   bool played = false;
   bool pausedCalled = false;
   double volumeSet = 1;
@@ -153,6 +157,7 @@ class _FakeController extends VideoPlayerController {
 
   @override
   Future<void> initialize() async {
+    await hold?.future;
     if (failInit) throw Exception('cannot open stream');
     value = value.copyWith(
       isInitialized: true,
@@ -199,6 +204,7 @@ Future<void> _open(
   List<_FakeController>? controllers,
   _FakeAwake? awake,
   bool failPlayer = false,
+  Completer<void>? holdPlayer,
   String initial = '/cameras',
   Size size = const Size(800, 1600),
   double textScale = 1,
@@ -233,7 +239,11 @@ Future<void> _open(
         camerasRepoProvider.overrideWithValue(repo),
         screenAwakeProvider.overrideWithValue(awake ?? _FakeAwake()),
         videoControllerFactoryProvider.overrideWithValue((uri) {
-          final c = _FakeController(uri, failInit: failPlayer);
+          final c = _FakeController(
+            uri,
+            failInit: failPlayer,
+            hold: holdPlayer,
+          );
           controllers?.add(c);
           return c;
         }),
@@ -445,6 +455,57 @@ void main() {
       await t.pump();
       expect(controllers.single.volumeSet, 0);
       expect(find.byTooltip('Unmute'), findsOneWidget);
+    });
+
+    testWidgets('while connecting it is just the spinner and the words', (
+      t,
+    ) async {
+      final hold = Completer<void>();
+      await _open(t, _FakeCameras(), locale: 'en', holdPlayer: hold);
+      await t.tap(find.text('Front door'));
+      await t.pump();
+      await t.pump(const Duration(milliseconds: 100));
+
+      expect(find.text('Connecting…'), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsWidgets);
+      // No camera drawn in the block with the words.
+      expect(
+        find.descendant(
+          of: find
+              .ancestor(
+                of: find.text('Connecting…'),
+                matching: find.byType(Column),
+              )
+              .first,
+          matching: find.byType(Icon),
+        ),
+        findsNothing,
+      );
+
+      hold.complete();
+      await _frames(t);
+    });
+
+    testWidgets('a stream that will not open shows a crossed camera', (
+      t,
+    ) async {
+      await _open(t, _FakeCameras(), locale: 'en', failPlayer: true);
+      await t.tap(find.text('Front door'));
+      await _frames(t);
+
+      expect(find.text("Couldn't play the stream"), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find
+              .ancestor(
+                of: find.text("Couldn't play the stream"),
+                matching: find.byType(Column),
+              )
+              .first,
+          matching: find.byIcon(Icons.videocam_off_rounded),
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('a stream that will not open can be retried', (t) async {

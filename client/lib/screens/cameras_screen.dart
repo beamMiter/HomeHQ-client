@@ -339,7 +339,7 @@ class _Preview extends ConsumerWidget {
         errorBuilder: (_, __, ___) => const _PreviewPlaceholder(broken: true),
       );
     }
-    return _PreviewPlaceholder(broken: snap.hasError);
+    return _PreviewPlaceholder(broken: snap.pictureFailed);
   }
 }
 
@@ -353,7 +353,7 @@ class _PreviewPlaceholder extends StatelessWidget {
       color: AppColors.bgSoft,
       child: Center(
         child: Icon(
-          broken ? Icons.broken_image_outlined : Icons.videocam_outlined,
+          broken ? Icons.videocam_off_rounded : Icons.videocam_outlined,
           color: AppColors.textMuted,
         ),
       ),

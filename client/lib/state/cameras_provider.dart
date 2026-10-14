@@ -53,6 +53,17 @@ final cameraSnapshotProvider = FutureProvider.autoDispose
       return ref.watch(camerasRepoProvider).snapshot(id);
     });
 
+extension SnapshotFailure on AsyncValue<Uint8List> {
+  /// The picture could not be fetched. A camera that simply has no still
+  /// picture to give (the server says "not supported") is not a failure: it
+  /// keeps a plain camera on its cover.
+  bool get pictureFailed {
+    final e = error;
+    if (!hasError) return false;
+    return !(e is CameraException && e.failure == CameraFailure.unsupported);
+  }
+}
+
 /// The on/off settings of one camera (only the ones it supports).
 ///
 /// One notifier per camera, shared by everything that shows or flips a

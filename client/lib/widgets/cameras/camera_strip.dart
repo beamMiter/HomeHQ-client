@@ -91,12 +91,18 @@ class _Thumb extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final bytes = ref.watch(cameraSnapshotProvider(id)).value;
+    final snap = ref.watch(cameraSnapshotProvider(id));
+    final bytes = snap.value;
     if (bytes == null) {
-      return const ColoredBox(
+      return ColoredBox(
         color: AppColors.bgSoft,
         child: Center(
-          child: Icon(Icons.videocam_outlined, color: AppColors.textMuted),
+          child: Icon(
+            snap.pictureFailed
+                ? Icons.videocam_off_rounded
+                : Icons.videocam_outlined,
+            color: AppColors.textMuted,
+          ),
         ),
       );
     }

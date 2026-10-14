@@ -618,6 +618,7 @@ class _Stage extends ConsumerWidget {
               _Overlay(text: l10n.camConnecting, busy: true),
             if (active && error != null)
               _Overlay(
+                icon: Icons.videocam_off_rounded,
                 text:
                     error is Exception &&
                         cameraErrorText(l10n, error) != l10n.camErrUnavailable
@@ -628,6 +629,7 @@ class _Stage extends ConsumerWidget {
               ),
             if (active && pausedIdle)
               _Overlay(
+                icon: Icons.pause_circle_outline_rounded,
                 text: l10n.camPausedIdle,
                 actionLabel: l10n.camResume,
                 onAction: onResume,
@@ -896,12 +898,16 @@ class _Card extends StatelessWidget {
 class _Overlay extends StatelessWidget {
   const _Overlay({
     required this.text,
+    this.icon,
     this.busy = false,
     this.actionLabel,
     this.onAction,
   });
 
   final String text;
+
+  /// A camera (or a pause) above the words, so the state reads at a glance.
+  final IconData? icon;
   final bool busy;
   final String? actionLabel;
   final VoidCallback? onAction;
@@ -914,6 +920,10 @@ class _Overlay extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (icon != null) ...[
+              Icon(icon, size: 44, color: Colors.white70),
+              const SizedBox(height: 12),
+            ],
             if (busy)
               const SizedBox(
                 width: 28,
