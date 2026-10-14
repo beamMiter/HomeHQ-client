@@ -4,8 +4,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/note.dart';
 import '../repositories/notes_repository.dart';
-import '../l10n/l10n.dart';
-import 'locale_provider.dart';
 
 /// พารามิเตอร์ query สำหรับ list (immutable)
 class NotesQuery {
@@ -49,20 +47,13 @@ final notesProvider = FutureProvider.autoDispose.family<List<Note>, NotesQuery>(
       if (!cancel.isCancelled) cancel.cancel('notesProvider disposed');
     });
 
-    try {
-      final items = await repo.list(
-        limit: query.limit,
-        offset: query.offset,
-        cancelToken: cancel,
-      );
-      return items;
-    } on DioException catch (e) {
-      // แปลงเป็นข้อความสั้น ๆ อ่านง่าย (หลีกเลี่ยง error block ยาว)
-      final sc = e.response?.statusCode;
-      final l10n = l10nFor(ref.read(localeProvider));
-      if (sc == 401) throw Exception(l10n.notesErrUnauthorized);
-      if (sc == 404) throw Exception(l10n.notesErrNotFound);
-      throw Exception(l10n.notesErrLoad('${sc ?? ''} ${e.message}'));
-    }
+    // A failed request goes to the screen as it is; the screen words it
+    // (friendlyError), so a server problem reads as one rather than as a
+    // paragraph about requests.
+    return repo.list(
+      limit: query.limit,
+      offset: query.offset,
+      cancelToken: cancel,
+    );
   },
 );

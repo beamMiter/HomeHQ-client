@@ -42,6 +42,11 @@ class AuthInterceptor extends Interceptor {
       return handler.next(err);
     }
 
+    // "Change password" answers 401 when the current password is wrong. The
+    // session is fine: refreshing would not help, and the failed retry below
+    // would clear the tokens and sign the user out.
+    if (path.contains('/me/password')) return handler.next(err);
+
     // ถ้าเคย retry แล้วอย่าทำซ้ำ (กัน loop)
     final alreadyRetried = err.requestOptions.extra['__ret'] == true;
     if (alreadyRetried) return handler.next(err);

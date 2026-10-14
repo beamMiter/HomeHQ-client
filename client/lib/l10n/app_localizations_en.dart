@@ -78,15 +78,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeNotificationsSoon => 'Notifications are coming soon';
 
   @override
-  String get homeLogout => 'Log out';
-
-  @override
-  String get homeWeatherTitle => 'Current weather';
-
-  @override
-  String get homeWeatherSubtitle => 'Local conditions';
-
-  @override
   String get homeToolsTitle => 'Tools';
 
   @override
@@ -96,19 +87,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeWeatherFailed => 'Couldn\'t load the weather';
 
   @override
-  String get homeTemperature => 'Temperature';
-
-  @override
-  String get homeCondition => 'Condition';
-
-  @override
   String get homeWind => 'Wind';
 
   @override
   String get homeUpdated => 'Updated';
 
   @override
-  String get homeSearchHint => 'Search contractors (electrician, plumber, AC…)';
+  String get homeSearchHint => 'Search electrician, plumber…';
 
   @override
   String get weatherClear => 'Clear sky';
@@ -243,7 +228,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get billsEmptyTitle => 'No bills yet';
 
   @override
-  String get billsEmptyHint => 'Add a bill, or clear the filters and search.';
+  String get billsEmptyHint => 'Add your first bill to start tracking.';
 
   @override
   String get billsClearFilters => 'Clear filters';
@@ -1332,4 +1317,173 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get camSwitchLightAuto => 'Light on motion';
+
+  @override
+  String get authSignedIn => 'Signed in';
+
+  @override
+  String get authSignedOut => 'Signed out';
+
+  @override
+  String get homeGreetingMorning => 'Good morning';
+
+  @override
+  String get homeGreetingAfternoon => 'Good afternoon';
+
+  @override
+  String get homeGreetingEvening => 'Good evening';
+
+  @override
+  String get homeGreetingLate => 'Hello';
+
+  @override
+  String get homeLastUsed => 'Last used';
+
+  @override
+  String get accountTitle => 'Account';
+
+  @override
+  String get accountOpen => 'Open your account';
+
+  @override
+  String get accountProfileSection => 'Profile';
+
+  @override
+  String get accountName => 'Name';
+
+  @override
+  String get accountEmail => 'Email';
+
+  @override
+  String get roleAdmin => 'Admin';
+
+  @override
+  String get roleMember => 'Member';
+
+  @override
+  String get accountEditName => 'Edit name';
+
+  @override
+  String get accountNameRequired => 'Enter a name';
+
+  @override
+  String get accountNameSaved => 'Name updated';
+
+  @override
+  String get accountSaveFailed => 'Couldn\'t save. Try again.';
+
+  @override
+  String get accountSecuritySection => 'Security';
+
+  @override
+  String get accountChangePassword => 'Change password';
+
+  @override
+  String get accountCurrentPassword => 'Current password';
+
+  @override
+  String get accountNewPassword => 'New password';
+
+  @override
+  String get accountConfirmPassword => 'Confirm new password';
+
+  @override
+  String get accountPasswordTooShort => 'At least 6 characters';
+
+  @override
+  String get accountPasswordMismatch => 'Passwords don\'t match';
+
+  @override
+  String get accountPasswordWrong => 'Current password is incorrect';
+
+  @override
+  String get accountPasswordChanged => 'Password changed';
+
+  @override
+  String get accountPreferencesSection => 'Preferences';
+
+  @override
+  String get accountSignOut => 'Sign out';
+
+  @override
+  String get accountCurrentRequired => 'Enter your current password';
+
+  @override
+  String camOnlineCount(int online, int total) {
+    return '$online of $total online';
+  }
+
+  @override
+  String get errNetwork =>
+      'Can\'t reach the server. Check your connection and try again.';
+
+  @override
+  String get errSession => 'Your session has expired. Please sign in again.';
+
+  @override
+  String get errForbidden => 'You don\'t have permission to do this.';
+
+  @override
+  String get errNotFound => 'We couldn\'t find that.';
+
+  @override
+  String get errServer =>
+      'The server ran into a problem. Please try again in a moment.';
+
+  @override
+  String get billsNoMatchTitle => 'No bills match';
+
+  @override
+  String get billsNoMatchHint => 'Try another word, or clear the filters.';
+
+  @override
+  String get medNoMatchTitle => 'No medicine matches';
+
+  @override
+  String get medNoMatchHint => 'Try another name, or clear the search.';
+
+  @override
+  String get notesEmptyTitle => 'No notes yet';
+
+  @override
+  String get notesEmptyHint => 'Tap + to write the first one.';
+
+  @override
+  String get notesNoMatchHint => 'Try another word, or clear the filters.';
+
+  @override
+  String get commonMore => 'More';
+
+  @override
+  String get purchTake => 'I\'ll buy this';
+
+  @override
+  String get purchMarkBought => 'Mark as bought';
+
+  @override
+  String get purchMarkDelivered => 'Mark as delivered';
+
+  @override
+  String get purchPaidTitle => 'How much did you pay?';
+
+  @override
+  String get purchPaidLabel => 'Amount paid';
+
+  @override
+  String get purchPaidInvalid => 'Enter an amount';
+
+  @override
+  String get purchCancelPurchase => 'Cancel this purchase';
+
+  @override
+  String get purchCancelAsk => 'Cancel this purchase?';
+
+  @override
+  String get purchCancelKeep => 'Keep it';
+
+  @override
+  String get purchStatusUpdated => 'Status updated';
+
+  @override
+  String get purchCancelled => 'Purchase cancelled';
 }

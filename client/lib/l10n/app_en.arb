@@ -23,17 +23,12 @@
   "refreshFailed": "Couldn't refresh. Please try again.",
   "homeNotifications": "Notifications",
   "homeNotificationsSoon": "Notifications are coming soon",
-  "homeLogout": "Log out",
-  "homeWeatherTitle": "Current weather",
-  "homeWeatherSubtitle": "Local conditions",
   "homeToolsTitle": "Tools",
   "homeToolsSubtitle": "Manage your home quickly",
   "homeWeatherFailed": "Couldn't load the weather",
-  "homeTemperature": "Temperature",
-  "homeCondition": "Condition",
   "homeWind": "Wind",
   "homeUpdated": "Updated",
-  "homeSearchHint": "Search contractors (electrician, plumber, AC…)",
+  "homeSearchHint": "Search electrician, plumber…",
   "weatherClear": "Clear sky",
   "weatherPartlyCloudy": "Partly cloudy",
   "weatherFog": "Fog",
@@ -106,7 +101,7 @@
   "billsSummaryTooltip": "Summary",
   "billsSearchHint": "Search bills (title, note, type)…",
   "billsEmptyTitle": "No bills yet",
-  "billsEmptyHint": "Add a bill, or clear the filters and search.",
+  "billsEmptyHint": "Add your first bill to start tracking.",
   "billsClearFilters": "Clear filters",
   "billStatusPaid": "Paid",
   "billStatusUnpaid": "Unpaid",
@@ -651,5 +646,92 @@
   "camNotSupported": "This camera doesn't support that",
   "camSwitchLight": "Camera light",
   "camSwitchLightHint": "Turns the camera's built-in light on or off",
-  "camSwitchLightAuto": "Light on motion"
+  "camSwitchLightAuto": "Light on motion",
+  "authSignedIn": "Signed in",
+  "@authSignedIn": {
+    "description": "Toast shown right after a successful sign-in."
+  },
+  "authSignedOut": "Signed out",
+  "@authSignedOut": {
+    "description": "Toast shown right after the user signs out."
+  },
+  "homeGreetingMorning": "Good morning",
+  "@homeGreetingMorning": {
+    "description": "Home header greeting, 05:00-11:59."
+  },
+  "homeGreetingAfternoon": "Good afternoon",
+  "@homeGreetingAfternoon": {
+    "description": "Home header greeting, 12:00-16:59."
+  },
+  "homeGreetingEvening": "Good evening",
+  "@homeGreetingEvening": {
+    "description": "Home header greeting, 17:00-20:59."
+  },
+  "homeGreetingLate": "Hello",
+  "@homeGreetingLate": {
+    "description": "Home header greeting, 21:00-04:59."
+  },
+  "homeLastUsed": "Last used",
+  "@homeLastUsed": {
+    "description": "Small label on the Home tool the user opened last."
+  },
+  "accountTitle": "Account",
+  "accountOpen": "Open your account",
+  "accountProfileSection": "Profile",
+  "accountName": "Name",
+  "accountEmail": "Email",
+  "roleAdmin": "Admin",
+  "roleMember": "Member",
+  "accountEditName": "Edit name",
+  "accountNameRequired": "Enter a name",
+  "accountNameSaved": "Name updated",
+  "accountSaveFailed": "Couldn't save. Try again.",
+  "accountSecuritySection": "Security",
+  "accountChangePassword": "Change password",
+  "accountCurrentPassword": "Current password",
+  "accountNewPassword": "New password",
+  "accountConfirmPassword": "Confirm new password",
+  "accountPasswordTooShort": "At least 6 characters",
+  "accountPasswordMismatch": "Passwords don't match",
+  "accountPasswordWrong": "Current password is incorrect",
+  "accountPasswordChanged": "Password changed",
+  "accountPreferencesSection": "Preferences",
+  "accountSignOut": "Sign out",
+  "accountCurrentRequired": "Enter your current password",
+  "camOnlineCount": "{online} of {total} online",
+  "@camOnlineCount": {
+    "description": "Home Cameras card: how many cameras are online.",
+    "placeholders": {
+      "online": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "errNetwork": "Can't reach the server. Check your connection and try again.",
+  "errSession": "Your session has expired. Please sign in again.",
+  "errForbidden": "You don't have permission to do this.",
+  "errNotFound": "We couldn't find that.",
+  "errServer": "The server ran into a problem. Please try again in a moment.",
+  "billsNoMatchTitle": "No bills match",
+  "billsNoMatchHint": "Try another word, or clear the filters.",
+  "medNoMatchTitle": "No medicine matches",
+  "medNoMatchHint": "Try another name, or clear the search.",
+  "notesEmptyTitle": "No notes yet",
+  "notesEmptyHint": "Tap + to write the first one.",
+  "notesNoMatchHint": "Try another word, or clear the filters.",
+  "commonMore": "More",
+  "purchTake": "I'll buy this",
+  "purchMarkBought": "Mark as bought",
+  "purchMarkDelivered": "Mark as delivered",
+  "purchPaidTitle": "How much did you pay?",
+  "purchPaidLabel": "Amount paid",
+  "purchPaidInvalid": "Enter an amount",
+  "purchCancelPurchase": "Cancel this purchase",
+  "purchCancelAsk": "Cancel this purchase?",
+  "purchCancelKeep": "Keep it",
+  "purchStatusUpdated": "Status updated",
+  "purchCancelled": "Purchase cancelled"
 }

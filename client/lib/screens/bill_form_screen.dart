@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../state/bills_provider.dart';
 import '../widgets/toast.dart';
+import '../l10n/friendly_error.dart';
 import '../l10n/l10n.dart';
 import '../l10n/labels.dart';
 
@@ -189,7 +190,7 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
                           AppToast.success(l10n.billFormCreated);
                           Navigator.of(context).pop(true);
                         } else {
-                          AppToast.error('${s.error}');
+                          AppToast.error(friendlyError(l10n, s.error));
                         }
                       },
                 icon: createState.isLoading

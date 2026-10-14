@@ -236,24 +236,6 @@ abstract class AppLocalizations {
   /// **'Notifications are coming soon'**
   String get homeNotificationsSoon;
 
-  /// No description provided for @homeLogout.
-  ///
-  /// In en, this message translates to:
-  /// **'Log out'**
-  String get homeLogout;
-
-  /// No description provided for @homeWeatherTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Current weather'**
-  String get homeWeatherTitle;
-
-  /// No description provided for @homeWeatherSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Local conditions'**
-  String get homeWeatherSubtitle;
-
   /// No description provided for @homeToolsTitle.
   ///
   /// In en, this message translates to:
@@ -272,18 +254,6 @@ abstract class AppLocalizations {
   /// **'Couldn\'t load the weather'**
   String get homeWeatherFailed;
 
-  /// No description provided for @homeTemperature.
-  ///
-  /// In en, this message translates to:
-  /// **'Temperature'**
-  String get homeTemperature;
-
-  /// No description provided for @homeCondition.
-  ///
-  /// In en, this message translates to:
-  /// **'Condition'**
-  String get homeCondition;
-
   /// No description provided for @homeWind.
   ///
   /// In en, this message translates to:
@@ -299,7 +269,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeSearchHint.
   ///
   /// In en, this message translates to:
-  /// **'Search contractors (electrician, plumber, AC…)'**
+  /// **'Search electrician, plumber…'**
   String get homeSearchHint;
 
   /// No description provided for @weatherClear.
@@ -551,7 +521,7 @@ abstract class AppLocalizations {
   /// No description provided for @billsEmptyHint.
   ///
   /// In en, this message translates to:
-  /// **'Add a bill, or clear the filters and search.'**
+  /// **'Add your first bill to start tracking.'**
   String get billsEmptyHint;
 
   /// No description provided for @billsClearFilters.
@@ -2503,6 +2473,336 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Light on motion'**
   String get camSwitchLightAuto;
+
+  /// Toast shown right after a successful sign-in.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed in'**
+  String get authSignedIn;
+
+  /// Toast shown right after the user signs out.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed out'**
+  String get authSignedOut;
+
+  /// Home header greeting, 05:00-11:59.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning'**
+  String get homeGreetingMorning;
+
+  /// Home header greeting, 12:00-16:59.
+  ///
+  /// In en, this message translates to:
+  /// **'Good afternoon'**
+  String get homeGreetingAfternoon;
+
+  /// Home header greeting, 17:00-20:59.
+  ///
+  /// In en, this message translates to:
+  /// **'Good evening'**
+  String get homeGreetingEvening;
+
+  /// Home header greeting, 21:00-04:59.
+  ///
+  /// In en, this message translates to:
+  /// **'Hello'**
+  String get homeGreetingLate;
+
+  /// Small label on the Home tool the user opened last.
+  ///
+  /// In en, this message translates to:
+  /// **'Last used'**
+  String get homeLastUsed;
+
+  /// No description provided for @accountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get accountTitle;
+
+  /// No description provided for @accountOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open your account'**
+  String get accountOpen;
+
+  /// No description provided for @accountProfileSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get accountProfileSection;
+
+  /// No description provided for @accountName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get accountName;
+
+  /// No description provided for @accountEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get accountEmail;
+
+  /// No description provided for @roleAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin'**
+  String get roleAdmin;
+
+  /// No description provided for @roleMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Member'**
+  String get roleMember;
+
+  /// No description provided for @accountEditName.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit name'**
+  String get accountEditName;
+
+  /// No description provided for @accountNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a name'**
+  String get accountNameRequired;
+
+  /// No description provided for @accountNameSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Name updated'**
+  String get accountNameSaved;
+
+  /// No description provided for @accountSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save. Try again.'**
+  String get accountSaveFailed;
+
+  /// No description provided for @accountSecuritySection.
+  ///
+  /// In en, this message translates to:
+  /// **'Security'**
+  String get accountSecuritySection;
+
+  /// No description provided for @accountChangePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Change password'**
+  String get accountChangePassword;
+
+  /// No description provided for @accountCurrentPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Current password'**
+  String get accountCurrentPassword;
+
+  /// No description provided for @accountNewPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get accountNewPassword;
+
+  /// No description provided for @accountConfirmPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm new password'**
+  String get accountConfirmPassword;
+
+  /// No description provided for @accountPasswordTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'At least 6 characters'**
+  String get accountPasswordTooShort;
+
+  /// No description provided for @accountPasswordMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords don\'t match'**
+  String get accountPasswordMismatch;
+
+  /// No description provided for @accountPasswordWrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Current password is incorrect'**
+  String get accountPasswordWrong;
+
+  /// No description provided for @accountPasswordChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Password changed'**
+  String get accountPasswordChanged;
+
+  /// No description provided for @accountPreferencesSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences'**
+  String get accountPreferencesSection;
+
+  /// No description provided for @accountSignOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out'**
+  String get accountSignOut;
+
+  /// No description provided for @accountCurrentRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your current password'**
+  String get accountCurrentRequired;
+
+  /// Home Cameras card: how many cameras are online.
+  ///
+  /// In en, this message translates to:
+  /// **'{online} of {total} online'**
+  String camOnlineCount(int online, int total);
+
+  /// No description provided for @errNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t reach the server. Check your connection and try again.'**
+  String get errNetwork;
+
+  /// No description provided for @errSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Your session has expired. Please sign in again.'**
+  String get errSession;
+
+  /// No description provided for @errForbidden.
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t have permission to do this.'**
+  String get errForbidden;
+
+  /// No description provided for @errNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t find that.'**
+  String get errNotFound;
+
+  /// No description provided for @errServer.
+  ///
+  /// In en, this message translates to:
+  /// **'The server ran into a problem. Please try again in a moment.'**
+  String get errServer;
+
+  /// No description provided for @billsNoMatchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No bills match'**
+  String get billsNoMatchTitle;
+
+  /// No description provided for @billsNoMatchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Try another word, or clear the filters.'**
+  String get billsNoMatchHint;
+
+  /// No description provided for @medNoMatchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No medicine matches'**
+  String get medNoMatchTitle;
+
+  /// No description provided for @medNoMatchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Try another name, or clear the search.'**
+  String get medNoMatchHint;
+
+  /// No description provided for @notesEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No notes yet'**
+  String get notesEmptyTitle;
+
+  /// No description provided for @notesEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap + to write the first one.'**
+  String get notesEmptyHint;
+
+  /// No description provided for @notesNoMatchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Try another word, or clear the filters.'**
+  String get notesNoMatchHint;
+
+  /// No description provided for @commonMore.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get commonMore;
+
+  /// No description provided for @purchTake.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'ll buy this'**
+  String get purchTake;
+
+  /// No description provided for @purchMarkBought.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as bought'**
+  String get purchMarkBought;
+
+  /// No description provided for @purchMarkDelivered.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as delivered'**
+  String get purchMarkDelivered;
+
+  /// No description provided for @purchPaidTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How much did you pay?'**
+  String get purchPaidTitle;
+
+  /// No description provided for @purchPaidLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount paid'**
+  String get purchPaidLabel;
+
+  /// No description provided for @purchPaidInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an amount'**
+  String get purchPaidInvalid;
+
+  /// No description provided for @purchCancelPurchase.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel this purchase'**
+  String get purchCancelPurchase;
+
+  /// No description provided for @purchCancelAsk.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel this purchase?'**
+  String get purchCancelAsk;
+
+  /// No description provided for @purchCancelKeep.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep it'**
+  String get purchCancelKeep;
+
+  /// No description provided for @purchStatusUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Status updated'**
+  String get purchStatusUpdated;
+
+  /// No description provided for @purchCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchase cancelled'**
+  String get purchCancelled;
 }
 
 class _AppLocalizationsDelegate

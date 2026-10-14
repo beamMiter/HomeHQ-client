@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../models/bill.dart';
 import '../state/bills_provider.dart';
+import '../widgets/detail_bottom_bar.dart';
 import '../widgets/toast.dart';
 import '../l10n/l10n.dart';
 import '../l10n/labels.dart';
@@ -69,6 +70,23 @@ class BillDetailScreen extends ConsumerWidget {
         title: Text(l10n.billDetailTitle),
         scrolledUnderElevation: 0,
       ),
+      // The one thing to do with a bill that is not paid yet.
+      bottomNavigationBar: isPaid
+          ? null
+          : DetailBottomBar(
+              primary: DetailAction(
+                label: mark.isLoading ? l10n.billProcessing : l10n.billMarkPaid,
+                icon: Icons.check_circle_outline_rounded,
+                busy: mark.isLoading,
+                onPressed: () async {
+                  await ref.read(billMarkPaidProvider.notifier).run(bill.id);
+                  if (context.mounted) {
+                    AppToast.success(l10n.billMarkedPaid);
+                    Navigator.of(context).pop(); // back to the list
+                  }
+                },
+              ),
+            ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -214,27 +232,6 @@ class BillDetailScreen extends ConsumerWidget {
               ),
             ),
           ],
-
-          const SizedBox(height: 20),
-
-          if (!isPaid)
-            FilledButton.icon(
-              icon: const Icon(Icons.check_circle),
-              label: Text(
-                mark.isLoading ? l10n.billProcessing : l10n.billMarkPaid,
-              ),
-              onPressed: mark.isLoading
-                  ? null
-                  : () async {
-                      await ref
-                          .read(billMarkPaidProvider.notifier)
-                          .run(bill.id);
-                      if (context.mounted) {
-                        AppToast.success(l10n.billMarkedPaid);
-                        Navigator.of(context).pop(); // กลับไป list
-                      }
-                    },
-            ),
         ],
       ),
     );

@@ -8,6 +8,7 @@ import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/forgot_password_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/account_screen.dart';
 import 'screens/notes_screen.dart';
 import 'screens/contractors_screen.dart';
 import 'screens/purchase_screen.dart';
@@ -57,6 +58,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Private
       GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
+      GoRoute(path: '/account', builder: (_, __) => const AccountScreen()),
       GoRoute(path: '/notes', builder: (_, __) => const NotesScreen()),
       GoRoute(
         path: '/contractors',

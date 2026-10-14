@@ -78,15 +78,6 @@ class AppLocalizationsTh extends AppLocalizations {
   String get homeNotificationsSoon => 'การแจ้งเตือนกำลังจะมาเร็วๆ นี้';
 
   @override
-  String get homeLogout => 'ออกจากระบบ';
-
-  @override
-  String get homeWeatherTitle => 'อากาศตอนนี้';
-
-  @override
-  String get homeWeatherSubtitle => 'สภาพอากาศในพื้นที่ของคุณ';
-
-  @override
   String get homeToolsTitle => 'เครื่องมือ';
 
   @override
@@ -96,19 +87,13 @@ class AppLocalizationsTh extends AppLocalizations {
   String get homeWeatherFailed => 'โหลดสภาพอากาศไม่สำเร็จ';
 
   @override
-  String get homeTemperature => 'อุณหภูมิ';
-
-  @override
-  String get homeCondition => 'สภาพอากาศ';
-
-  @override
   String get homeWind => 'ลม';
 
   @override
   String get homeUpdated => 'อัปเดตเมื่อ';
 
   @override
-  String get homeSearchHint => 'ค้นหาช่าง (ช่างไฟ ช่างประปา แอร์…)';
+  String get homeSearchHint => 'ค้นหาช่างไฟ ช่างประปา…';
 
   @override
   String get weatherClear => 'ท้องฟ้าแจ่มใส';
@@ -242,7 +227,7 @@ class AppLocalizationsTh extends AppLocalizations {
   String get billsEmptyTitle => 'ยังไม่มีบิล';
 
   @override
-  String get billsEmptyHint => 'เพิ่มบิลใหม่ หรือเคลียร์ตัวกรอง/คำค้นหา';
+  String get billsEmptyHint => 'เพิ่มบิลแรกเพื่อเริ่มติดตามค่าใช้จ่าย';
 
   @override
   String get billsClearFilters => 'ล้างตัวกรอง';
@@ -1299,4 +1284,172 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get camSwitchLightAuto => 'เปิดไฟเมื่อมีความเคลื่อนไหว';
+
+  @override
+  String get authSignedIn => 'เข้าสู่ระบบสำเร็จ';
+
+  @override
+  String get authSignedOut => 'ออกจากระบบแล้ว';
+
+  @override
+  String get homeGreetingMorning => 'สวัสดีตอนเช้า';
+
+  @override
+  String get homeGreetingAfternoon => 'สวัสดีตอนบ่าย';
+
+  @override
+  String get homeGreetingEvening => 'สวัสดีตอนเย็น';
+
+  @override
+  String get homeGreetingLate => 'สวัสดี';
+
+  @override
+  String get homeLastUsed => 'ใช้ล่าสุด';
+
+  @override
+  String get accountTitle => 'บัญชีของฉัน';
+
+  @override
+  String get accountOpen => 'เปิดหน้าบัญชีของฉัน';
+
+  @override
+  String get accountProfileSection => 'ข้อมูลส่วนตัว';
+
+  @override
+  String get accountName => 'ชื่อ';
+
+  @override
+  String get accountEmail => 'อีเมล';
+
+  @override
+  String get roleAdmin => 'ผู้ดูแล';
+
+  @override
+  String get roleMember => 'สมาชิก';
+
+  @override
+  String get accountEditName => 'แก้ไขชื่อ';
+
+  @override
+  String get accountNameRequired => 'กรุณากรอกชื่อ';
+
+  @override
+  String get accountNameSaved => 'อัปเดตชื่อแล้ว';
+
+  @override
+  String get accountSaveFailed => 'บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง';
+
+  @override
+  String get accountSecuritySection => 'ความปลอดภัย';
+
+  @override
+  String get accountChangePassword => 'เปลี่ยนรหัสผ่าน';
+
+  @override
+  String get accountCurrentPassword => 'รหัสผ่านปัจจุบัน';
+
+  @override
+  String get accountNewPassword => 'รหัสผ่านใหม่';
+
+  @override
+  String get accountConfirmPassword => 'ยืนยันรหัสผ่านใหม่';
+
+  @override
+  String get accountPasswordTooShort => 'อย่างน้อย 6 ตัวอักษร';
+
+  @override
+  String get accountPasswordMismatch => 'รหัสผ่านไม่ตรงกัน';
+
+  @override
+  String get accountPasswordWrong => 'รหัสผ่านปัจจุบันไม่ถูกต้อง';
+
+  @override
+  String get accountPasswordChanged => 'เปลี่ยนรหัสผ่านแล้ว';
+
+  @override
+  String get accountPreferencesSection => 'การตั้งค่า';
+
+  @override
+  String get accountSignOut => 'ออกจากระบบ';
+
+  @override
+  String get accountCurrentRequired => 'กรุณากรอกรหัสผ่านปัจจุบัน';
+
+  @override
+  String camOnlineCount(int online, int total) {
+    return 'ออนไลน์ $online จาก $total ตัว';
+  }
+
+  @override
+  String get errNetwork =>
+      'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่อีกครั้ง';
+
+  @override
+  String get errSession => 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง';
+
+  @override
+  String get errForbidden => 'คุณไม่มีสิทธิ์ทำรายการนี้';
+
+  @override
+  String get errNotFound => 'ไม่พบข้อมูลที่ต้องการ';
+
+  @override
+  String get errServer => 'เซิร์ฟเวอร์มีปัญหา โปรดลองอีกครั้งในอีกสักครู่';
+
+  @override
+  String get billsNoMatchTitle => 'ไม่พบบิลที่ตรงกับที่ค้นหา';
+
+  @override
+  String get billsNoMatchHint => 'ลองคำอื่น หรือล้างตัวกรอง';
+
+  @override
+  String get medNoMatchTitle => 'ไม่พบยาที่ตรงกับที่ค้นหา';
+
+  @override
+  String get medNoMatchHint => 'ลองชื่ออื่น หรือล้างคำค้นหา';
+
+  @override
+  String get notesEmptyTitle => 'ยังไม่มีโน้ต';
+
+  @override
+  String get notesEmptyHint => 'กด + เพื่อเขียนโน้ตแรก';
+
+  @override
+  String get notesNoMatchHint => 'ลองคำอื่น หรือล้างตัวกรอง';
+
+  @override
+  String get commonMore => 'เพิ่มเติม';
+
+  @override
+  String get purchTake => 'รับไปซื้อ';
+
+  @override
+  String get purchMarkBought => 'ซื้อแล้ว';
+
+  @override
+  String get purchMarkDelivered => 'ได้รับของแล้ว';
+
+  @override
+  String get purchPaidTitle => 'จ่ายไปเท่าไร';
+
+  @override
+  String get purchPaidLabel => 'จำนวนเงินที่จ่าย';
+
+  @override
+  String get purchPaidInvalid => 'กรุณากรอกจำนวนเงิน';
+
+  @override
+  String get purchCancelPurchase => 'ยกเลิกรายการนี้';
+
+  @override
+  String get purchCancelAsk => 'ยกเลิกรายการนี้ใช่ไหม';
+
+  @override
+  String get purchCancelKeep => 'เก็บไว้';
+
+  @override
+  String get purchStatusUpdated => 'อัปเดตสถานะแล้ว';
+
+  @override
+  String get purchCancelled => 'ยกเลิกรายการแล้ว';
 }

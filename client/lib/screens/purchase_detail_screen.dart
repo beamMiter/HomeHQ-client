@@ -1,27 +1,234 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../repositories/purchase_repository.dart';
+import '../state/auth_state.dart';
 import '../state/purchase_providers.dart';
 import '../state/purchase_actions.dart';
 import '../models/purchase_model.dart';
+import '../widgets/detail_bottom_bar.dart';
 import '../widgets/error_state.dart';
+import '../widgets/more_menu.dart';
 import '../widgets/page_loading.dart';
 import '../widgets/toast.dart';
 import '../widgets/refresh.dart';
+import '../l10n/friendly_error.dart';
 import '../l10n/l10n.dart';
+import '../utils/numbers.dart';
 
-class PurchaseDetailScreen extends ConsumerWidget {
+class PurchaseDetailScreen extends ConsumerStatefulWidget {
   final String id;
   const PurchaseDetailScreen({super.key, required this.id});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PurchaseDetailScreen> createState() =>
+      _PurchaseDetailScreenState();
+}
+
+class _PurchaseDetailScreenState extends ConsumerState<PurchaseDetailScreen> {
+  bool _busy = false;
+
+  String get id => widget.id;
+
+  /// Runs one change to the purchase and says how it went.
+  Future<void> _change(
+    Future<Purchase> Function(PurchaseRepository repo) act, {
+    required String done,
+  }) async {
+    final l10n = context.l10n;
+    setState(() => _busy = true);
+    try {
+      await act(ref.read(purchaseRepoProvider));
+      ref.invalidate(purchaseDetailProvider(id));
+      ref.invalidate(purchasesListProvider);
+      AppToast.success(done);
+    } catch (e) {
+      AppToast.error(friendlyError(l10n, e));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _attach() async {
+    final l10n = context.l10n;
+    try {
+      final result = await FilePicker.platform.pickFiles(type: FileType.any);
+      if (result == null || result.files.single.path == null) return;
+      final file = File(result.files.single.path!);
+      final filename = result.files.single.name;
+
+      AppToast.info(l10n.purchUploading);
+      await ref.read(
+        uploadAttachmentProvider(
+          UploadAttachmentPayload(id: id, file: file, filename: filename),
+        ).future,
+      );
+      AppToast.success(l10n.purchUploadDone);
+    } catch (e) {
+      AppToast.error(l10n.purchUploadFailed(friendlyError(l10n, e)));
+    }
+  }
+
+  Future<double?> _askAmountPaid(Purchase p) {
+    final l10n = context.l10n;
+    final controller = TextEditingController(
+      text: p.amountEstimated == null
+          ? ''
+          : p.amountEstimated!.toStringAsFixed(
+              p.amountEstimated! % 1 == 0 ? 0 : 2,
+            ),
+    );
+    String? error;
+    return showDialog<double>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setLocal) => AlertDialog(
+          title: Text(l10n.purchPaidTitle),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: InputDecoration(
+              labelText: l10n.purchPaidLabel,
+              errorText: error,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.commonCancel),
+            ),
+            FilledButton(
+              onPressed: () {
+                final v = double.tryParse(controller.text.trim());
+                if (v == null || v < 0) {
+                  setLocal(() => error = l10n.purchPaidInvalid);
+                  return;
+                }
+                Navigator.pop(ctx, v);
+              },
+              child: Text(l10n.commonSave),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _cancelPurchase() async {
+    final l10n = context.l10n;
+    final yes = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.purchCancelAsk),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.purchCancelKeep),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.purchCancelPurchase),
+          ),
+        ],
+      ),
+    );
+    if (yes != true) return;
+    await _change((r) => r.cancel(id), done: l10n.purchCancelled);
+  }
+
+  /// The one thing to do next, if there is one for this person.
+  DetailAction? _primary(Purchase p, String? me) {
+    final l10n = context.l10n;
+    final mine = me != null && p.buyerId == me;
+    switch (p.status) {
+      case PurchaseStatus.planned:
+        if ((p.buyerId ?? '').isNotEmpty) return null;
+        return DetailAction(
+          label: l10n.purchTake,
+          icon: Icons.shopping_bag_outlined,
+          busy: _busy,
+          onPressed: () =>
+              _change((r) => r.claim(id), done: l10n.purchStatusUpdated),
+        );
+      case PurchaseStatus.ordered:
+        if (!mine) return null;
+        return DetailAction(
+          label: l10n.purchMarkBought,
+          icon: Icons.shopping_cart_checkout_rounded,
+          busy: _busy,
+          onPressed: () async {
+            final paid = await _askAmountPaid(p);
+            if (paid == null) return;
+            await _change(
+              (r) => r.markBought(id, amountPaid: paid),
+              done: l10n.purchStatusUpdated,
+            );
+          },
+        );
+      case PurchaseStatus.bought:
+        if (!mine) return null;
+        return DetailAction(
+          label: l10n.purchMarkDelivered,
+          icon: Icons.inventory_2_outlined,
+          busy: _busy,
+          onPressed: () => _change(
+            (r) => r.markDelivered(id),
+            done: l10n.purchStatusUpdated,
+          ),
+        );
+      case PurchaseStatus.delivered:
+      case PurchaseStatus.canceled:
+      case PurchaseStatus.cancelled:
+        return null;
+    }
+  }
+
+  /// "⋯": everything that is not the next step.
+  List<MoreMenuItem> _menu(Purchase p, String? me) {
+    final l10n = context.l10n;
+    final involved = me != null && (p.requesterId == me || p.buyerId == me);
+    final open =
+        p.status == PurchaseStatus.planned ||
+        p.status == PurchaseStatus.ordered;
+    return [
+      if (me != null && p.requesterId == me)
+        MoreMenuItem(
+          label: l10n.commonEdit,
+          icon: Icons.edit_outlined,
+          onSelected: () => context.push('/purchases/$id/edit'),
+        ),
+      if (involved)
+        MoreMenuItem(
+          label: l10n.purchAttach,
+          icon: Icons.attach_file_rounded,
+          onSelected: _attach,
+        ),
+      if (involved && open)
+        MoreMenuItem(
+          label: l10n.purchCancelPurchase,
+          icon: Icons.cancel_outlined,
+          destructive: true,
+          onSelected: _cancelPurchase,
+        ),
+    ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final asyncDetail = ref.watch(purchaseDetailProvider(id));
+    final me = ref.watch(authProvider.select((s) => s.user?.id));
+    final p = asyncDetail.value;
 
     final reloading = watchReloading(ref, 'purchase:$id');
+    final primary = p == null ? null : _primary(p, me);
+    final menu = p == null ? const <MoreMenuItem>[] : _menu(p, me);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(context.l10n.purchDetailTitle),
@@ -34,6 +241,7 @@ class PurchaseDetailScreen extends ConsumerWidget {
               () => ref.refresh(purchaseDetailProvider(id).future),
             ),
           ),
+          MoreMenuButton(items: menu),
         ],
       ),
       body: ReloadOverlay(
@@ -41,7 +249,9 @@ class PurchaseDetailScreen extends ConsumerWidget {
         child: asyncDetail.when(
           loading: () => const PageLoading(),
           error: (e, _) => ErrorState(
-            title: context.l10n.purchDetailLoadFailed('$e'),
+            title: context.l10n.purchDetailLoadFailed(
+              friendlyError(context.l10n, e),
+            ),
             icon: Icons.error_outline,
             retryLabel: context.l10n.commonTryAgain,
             onRetry: () => ref.invalidate(purchaseDetailProvider(id)),
@@ -54,49 +264,9 @@ class PurchaseDetailScreen extends ConsumerWidget {
           ),
         ),
       ),
-      bottomNavigationBar: asyncDetail.maybeWhen(
-        orElse: () => null,
-        data: (p) => _BottomActions(
-          p: p,
-          onAdvance: () {
-            // TODO: ต่อ action “Next status” ของคุณ
-            AppToast.info(context.l10n.purchAdvanceSoon);
-          },
-          onEdit: () {
-            // TODO: ไปหน้าแก้ไข
-          },
-          onAttach: () async {
-            try {
-              final result = await FilePicker.platform.pickFiles(
-                type: FileType.any,
-              );
-              if (result != null && result.files.single.path != null) {
-                final file = File(result.files.single.path!);
-                final filename = result.files.single.name;
-
-                if (!context.mounted) return;
-                AppToast.info(context.l10n.purchUploading);
-
-                await ref.read(
-                  uploadAttachmentProvider(
-                    UploadAttachmentPayload(
-                      id: id,
-                      file: file,
-                      filename: filename,
-                    ),
-                  ).future,
-                );
-
-                if (!context.mounted) return;
-                AppToast.success(context.l10n.purchUploadDone);
-              }
-            } catch (e) {
-              if (!context.mounted) return;
-              AppToast.error(context.l10n.purchUploadFailed('$e'));
-            }
-          },
-        ),
-      ),
+      bottomNavigationBar: primary == null
+          ? null
+          : DetailBottomBar(primary: primary),
     );
   }
 }
@@ -126,7 +296,7 @@ class _DetailView extends StatelessWidget {
         const SizedBox(height: 12),
         if (p.note?.isNotEmpty == true) ...[
           _SectionCard(
-            title: context.l10n.commonSave,
+            title: context.l10n.commonNote,
             child: Text(p.note!, style: Theme.of(context).textTheme.bodyMedium),
           ),
           const SizedBox(height: 12),
@@ -163,11 +333,14 @@ class _DetailView extends StatelessWidget {
                       ),
                     ),
                     const Divider(height: 24),
-                    _KeyValueRow(
-                      label: context.l10n.purchTotalByItems,
-                      value: nf.format(lineTotal),
-                      isEmphasis: true,
-                    ),
+                    // Only when the items carry prices: otherwise "0.00" reads
+                    // as if the items cost nothing.
+                    if (lineTotal > 0)
+                      _KeyValueRow(
+                        label: context.l10n.purchTotalByItems,
+                        value: nf.format(lineTotal),
+                        isEmphasis: true,
+                      ),
                     if (p.amountEstimated != null) ...[
                       const SizedBox(height: 6),
                       _KeyValueRow(
@@ -389,7 +562,7 @@ class _LineItemTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final q = (qty ?? 0);
     final subtitle = [
-      context.l10n.purchItemQty(qty == null ? "-" : q.toString()),
+      context.l10n.purchItemQty(qty == null ? "-" : qtyText(q)),
       if ((unit ?? '').isNotEmpty) unit!,
       if (price != null) context.l10n.purchItemPrice(nf.format(price)),
     ].join(' ');
@@ -459,56 +632,6 @@ class _InfoChip extends StatelessWidget {
           const SizedBox(width: 6),
           Text(label, style: TextStyle(color: cs.onSurfaceVariant)),
         ],
-      ),
-    );
-  }
-}
-
-class _BottomActions extends StatelessWidget {
-  final Purchase p;
-  final VoidCallback onAdvance;
-  final VoidCallback onEdit;
-  final VoidCallback onAttach;
-  const _BottomActions({
-    required this.p,
-    required this.onAdvance,
-    required this.onEdit,
-    required this.onAttach,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return SafeArea(
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          border: Border(top: BorderSide(color: cs.outlineVariant)),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: FilledButton.icon(
-                onPressed: onAdvance,
-                icon: const Icon(Icons.fast_forward),
-                label: Text(context.l10n.purchNextStatus),
-              ),
-            ),
-            const SizedBox(width: 8),
-            IconButton.filledTonal(
-              onPressed: onAttach,
-              tooltip: context.l10n.purchAttach,
-              icon: const Icon(Icons.attachment),
-            ),
-            const SizedBox(width: 8),
-            OutlinedButton.icon(
-              onPressed: onEdit,
-              icon: const Icon(Icons.edit_outlined),
-              label: Text(context.l10n.commonEdit),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -615,7 +738,11 @@ class _AttachmentsGrid extends ConsumerWidget {
                         AppToast.success(context.l10n.purchDeleted);
                       } catch (e) {
                         if (!context.mounted) return;
-                        AppToast.error(context.l10n.purchDeleteFailed('$e'));
+                        AppToast.error(
+                          context.l10n.purchDeleteFailed(
+                            friendlyError(context.l10n, e),
+                          ),
+                        );
                       }
                     }
                   },

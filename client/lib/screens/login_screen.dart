@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../state/auth_state.dart';
 import '../shared/app_colors.dart';
 import '../l10n/l10n.dart';
+import '../widgets/toast.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -50,7 +51,13 @@ class _LoginState extends ConsumerState<LoginScreen> {
     final email = _email.text.trim();
     final password = _pw.text;
 
+    // Read before the await: the screen may be gone by the time it returns.
+    final l10n = context.l10n;
     final ok = await ref.read(authProvider.notifier).login(email, password);
+    // Raised after the sign-in itself: the toast boundary clears toasts when the
+    // signed-in state flips, and the router may replace this screen right away,
+    // so it must not depend on the screen still being mounted.
+    if (ok) AppToast.success(l10n.authSignedIn);
     if (!mounted) return;
 
     final s = ref.read(authProvider);

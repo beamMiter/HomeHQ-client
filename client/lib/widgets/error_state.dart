@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/friendly_error.dart';
 import '../l10n/l10n.dart';
 
 class ErrorState extends StatelessWidget {
@@ -38,9 +39,7 @@ class ErrorState extends StatelessWidget {
           const SizedBox(height: 8),
           if (error != null)
             Text(
-              error is LocalizedError
-                  ? (error as LocalizedError).localized(context.l10n)
-                  : '$error',
+              friendlyError(context.l10n, error),
               textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.red),
             ),

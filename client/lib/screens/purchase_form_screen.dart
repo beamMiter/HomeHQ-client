@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../state/purchase_actions.dart'; 
 import '../widgets/toast.dart';
+import '../l10n/friendly_error.dart';
 import '../l10n/l10n.dart';
 
 enum PurchaseFormMode { create, edit }
@@ -92,15 +93,10 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
 
       context.go('/purchases/${created.id}');
     } catch (e) {
-      var message = context.l10n.purchFormError;
       final t = e.runtimeType.toString();
-      if (t == 'AuthRequired') {
-        message = context.l10n.purchFormSignIn;
-      } else if (t == 'ApiError') {
-        message = e.toString();
-      } else {
-        message = e.toString();
-      }
+      final message = t == 'AuthRequired'
+          ? context.l10n.purchFormSignIn
+          : friendlyError(context.l10n, e);
       if (mounted) {
         AppToast.error(message);
       }

@@ -4,6 +4,9 @@ import 'package:intl/intl.dart';
 
 import '../state/medicine_provider.dart';
 
+import '../widgets/txn_out_sheet.dart';
+import '../widgets/more_menu.dart';
+import '../widgets/detail_bottom_bar.dart';
 import '../widgets/batch_tile.dart';
 import '../widgets/qty_badge.dart' as q;
 import '../widgets/alert_badge.dart';
@@ -47,6 +50,15 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen> {
               'medicine:${widget.id}',
               () => ref.refresh(medicineDetailProvider(widget.id).future),
             ),
+          ),
+          MoreMenuButton(
+            items: [
+              MoreMenuItem(
+                label: context.l10n.medAlertTitle,
+                icon: Icons.notifications_active_outlined,
+                onSelected: () => _sheet(AlertSheet(id: widget.id)),
+              ),
+            ],
           ),
         ],
       ),
@@ -186,86 +198,24 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen> {
           ),
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: _ActionBar(
-        onOut: () async {
-          await showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            builder: (_) =>
-                AlertSheet(id: widget.id), // ถ้าจะเบิกยา ใช้ TxnOutSheet
-          );
-        },
-        onIn: () async {
-          await showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            builder: (_) => TxnInSheet(id: widget.id),
-          );
-        },
-        onAlert: () async {
-          await showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            builder: (_) => AlertSheet(id: widget.id),
-          );
-        },
+      bottomNavigationBar: DetailBottomBar(
+        primary: DetailAction(
+          label: context.l10n.medTxnOutTitle,
+          icon: Icons.remove_circle_outline,
+          onPressed: () => _sheet(TxnOutSheet(id: widget.id)),
+        ),
+        secondary: DetailAction(
+          label: context.l10n.medTxnInTitle,
+          icon: Icons.add_circle_outline,
+          onPressed: () => _sheet(TxnInSheet(id: widget.id)),
+        ),
       ),
     );
   }
-}
 
-class _ActionBar extends StatelessWidget {
-  final VoidCallback onOut;
-  final VoidCallback onIn;
-  final VoidCallback onAlert;
-
-  const _ActionBar({
-    required this.onOut,
-    required this.onIn,
-    required this.onAlert,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12),
-      padding: EdgeInsets.only(
-        top: 8,
-        left: 12,
-        right: 12,
-        bottom: 8 + MediaQuery.of(context).padding.bottom,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: const Color(0xFFE7ECF4)),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: FilledButton.icon(
-              onPressed: onOut,
-              icon: const Icon(Icons.remove_circle_outline),
-              label: Text(context.l10n.medTxnOutTitle),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: OutlinedButton.icon(
-              onPressed: onIn,
-              icon: const Icon(Icons.add_circle_outline),
-              label: Text(context.l10n.medTxnInTitle),
-            ),
-          ),
-          const SizedBox(width: 8),
-          IconButton.filledTonal(
-            onPressed: onAlert,
-            icon: const Icon(Icons.notifications_active_outlined),
-            tooltip: context.l10n.medAlertTitle,
-          ),
-        ],
-      ),
-    );
-  }
+  Future<void> _sheet(Widget sheet) => showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    builder: (_) => sheet,
+  );
 }

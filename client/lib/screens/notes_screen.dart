@@ -10,12 +10,16 @@ import '../state/notes_provider.dart';
 import '../repositories/notes_repository.dart';
 
 // ✅ ใช้ Header แบบเดียวกับหน้าอื่น
+import '../widgets/more_menu.dart';
+import '../widgets/list_empty_state.dart';
+import '../widgets/add_fab.dart';
 import '../widgets/top_nav_bar.dart';
 import '../widgets/header_row.dart';
 import '../widgets/error_state.dart';
 import '../widgets/page_loading.dart';
 import '../widgets/toast.dart';
 import '../widgets/refresh.dart';
+import '../l10n/friendly_error.dart';
 import '../l10n/l10n.dart';
 
 class NotesScreen extends ConsumerStatefulWidget {
@@ -84,12 +88,10 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
             ),
           ],
         ),
-        floatingActionButton: FloatingActionButton.extended(
-          backgroundColor: accent,
-          foregroundColor: Colors.white,
+        floatingActionButton: AddFab(
+          color: accent,
+          tooltip: context.l10n.notesNew,
           onPressed: () => _openEditor(context, ref),
-          icon: const Icon(Icons.add),
-          label: Text(context.l10n.notesNew),
         ),
         body: ReloadOverlay(
           active: reloading,
@@ -308,7 +310,8 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
         error: (e, _) => RefreshableFill(
           onRefresh: _pull,
           child: ErrorState(
-            title: '$e',
+            title: context.l10n.commonLoadFailed,
+            error: e,
             icon: Icons.error_outline,
             retryLabel: context.l10n.commonTryAgain,
             onRetry: () => ref.refresh(notesProvider(_query)),
@@ -338,11 +341,21 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
           }).toList();
 
           if (byStatus.isEmpty) {
+            // No notes at all is not the same as none matching the filters.
+            final none = items.isEmpty;
             return RefreshableFill(
               onRefresh: _pull,
-              child: Text(
-                context.l10n.notesNoMatch,
-                style: TextStyle(color: Color(0xFF6B7280)),
+              child: ListEmptyState(
+                centered: true,
+                icon: none
+                    ? Icons.event_note_outlined
+                    : Icons.search_off_rounded,
+                title: none
+                    ? context.l10n.notesEmptyTitle
+                    : context.l10n.notesNoMatch,
+                subtitle: none
+                    ? context.l10n.notesEmptyHint
+                    : context.l10n.notesNoMatchHint,
               ),
             );
           }
@@ -553,7 +566,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
     final sc = e.response?.statusCode;
     if (sc == 401) return context.l10n.notesErr401(what);
     if (sc == 404) return context.l10n.notesErr404(what);
-    return '$what${sc != null ? ' ($sc)' : ''}: ${e.message}';
+    return '$what: ${friendlyError(context.l10n, e)}';
   }
 }
 
@@ -718,6 +731,17 @@ class _NoteCard extends StatefulWidget {
 class _NoteCardState extends State<_NoteCard> with TickerProviderStateMixin {
   bool _expanded = false;
 
+  static const _previewChars = 140;
+  static const _previewLines = 3;
+
+  /// There is more to show than the preview does (the same limits the preview
+  /// itself uses), so the card can unfold.
+  bool get _canExpand {
+    final body = widget.note.body;
+    return body.length > _previewChars ||
+        '\n'.allMatches(body.trim()).length >= _previewLines;
+  }
+
   String _previewBody(String body, {int limit = 140}) {
     if (_expanded) return body;
     if (body.length <= limit) return body;
@@ -757,7 +781,8 @@ class _NoteCardState extends State<_NoteCard> with TickerProviderStateMixin {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () => setState(() => _expanded = !_expanded),
+        // Only a note with more to show reacts to a tap.
+        onTap: _canExpand ? () => setState(() => _expanded = !_expanded) : null,
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Column(
@@ -784,8 +809,18 @@ class _NoteCardState extends State<_NoteCard> with TickerProviderStateMixin {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(width: 2),
-                  const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF)),
+                  // This card unfolds in place (it does not open another page),
+                  // so it shows an arrow that turns, not a ">", and only when
+                  // there is something more to read.
+                  if (_canExpand) ...[
+                    const SizedBox(width: 2),
+                    Icon(
+                      _expanded
+                          ? Icons.expand_less_rounded
+                          : Icons.expand_more_rounded,
+                      color: const Color(0xFF6B7280),
+                    ),
+                  ],
                 ],
               ),
               const SizedBox(height: 6),
@@ -858,34 +893,30 @@ class _NoteCardState extends State<_NoteCard> with TickerProviderStateMixin {
                     ),
                   ),
                   const Spacer(),
-                  PopupMenuButton<String>(
-                    onSelected: (v) {
-                      if (v == 'pin') widget.onTogglePin();
-                      if (v == 'edit') widget.onEdit();
-                      if (v == 'delete') widget.onDelete();
-                    },
-                    itemBuilder: (_) => [
-                      PopupMenuItem(
-                        value: 'pin',
-                        child: Text(
-                          (n.pinned == true)
-                              ? context.l10n.notesUnpin
-                              : context.l10n.notesPin,
-                        ),
+                  // "⋯": the same place and look as on every detail page.
+                  MoreMenuButton(
+                    items: [
+                      MoreMenuItem(
+                        label: (n.pinned == true)
+                            ? context.l10n.notesUnpin
+                            : context.l10n.notesPin,
+                        icon: (n.pinned == true)
+                            ? Icons.push_pin
+                            : Icons.push_pin_outlined,
+                        onSelected: widget.onTogglePin,
                       ),
-                      PopupMenuItem(
-                        value: 'edit',
-                        child: Text(context.l10n.commonEdit),
+                      MoreMenuItem(
+                        label: context.l10n.commonEdit,
+                        icon: Icons.edit_outlined,
+                        onSelected: widget.onEdit,
                       ),
-                      PopupMenuItem(
-                        value: 'delete',
-                        child: Text(
-                          context.l10n.commonDelete,
-                          style: TextStyle(color: Colors.red),
-                        ),
+                      MoreMenuItem(
+                        label: context.l10n.commonDelete,
+                        icon: Icons.delete_outline,
+                        destructive: true,
+                        onSelected: widget.onDelete,
                       ),
                     ],
-                    icon: const Icon(Icons.more_horiz),
                   ),
                 ],
               ),

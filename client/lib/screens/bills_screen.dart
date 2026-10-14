@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 
 import '../models/bill.dart';
 import '../state/bills_provider.dart';
+import '../widgets/item_card.dart';
+import '../widgets/add_fab.dart';
 import '../widgets/top_nav_bar.dart';
 import '../widgets/search_bar_field.dart';
 import '../widgets/header_row.dart';
@@ -87,12 +89,10 @@ class _BillsScreenState extends ConsumerState<BillsScreen> {
             ),
           ],
         ),
-        floatingActionButton: FloatingActionButton.extended(
-          backgroundColor: accent,
-          foregroundColor: Colors.white,
+        floatingActionButton: AddFab(
+          color: accent,
+          tooltip: l10n.billsNew,
           onPressed: () => context.push('/bills/new'),
-          icon: const Icon(Icons.add),
-          label: Text(l10n.billsNew),
         ),
         body: ReloadOverlay(
           active: reloading,
@@ -154,33 +154,49 @@ class _BillsScreenState extends ConsumerState<BillsScreen> {
                     onRefresh: _pull,
                     child: ErrorState(
                       icon: Icons.error_outline,
-                      title: e is FormatException ? e.message : e.toString(),
+                      title: l10n.commonLoadFailed,
+                      error: e,
                       onRetry: () => ref.invalidate(billsProvider),
                     ),
                   ),
                   data: (items) {
                     if (items.isEmpty) {
+                      // Filtered to nothing is not the same as having none.
+                      final filtered =
+                          _q.text.trim().isNotEmpty ||
+                          filter != BillsStatusFilter.all;
                       return RefreshableFill(
                         onRefresh: _pull,
                         child: ListEmptyState(
                           centered: true,
-                          icon: Icons.receipt_long,
-                          title: l10n.billsEmptyTitle,
-                          subtitle: l10n.billsEmptyHint,
+                          icon: filtered
+                              ? Icons.search_off_rounded
+                              : Icons.receipt_long,
+                          title: filtered
+                              ? l10n.billsNoMatchTitle
+                              : l10n.billsEmptyTitle,
+                          subtitle: filtered
+                              ? l10n.billsNoMatchHint
+                              : l10n.billsEmptyHint,
                           action: Wrap(
                             spacing: 8,
                             children: [
-                              OutlinedButton.icon(
-                                onPressed: () {
-                                  _q.clear();
-                                  ref.read(billsQueryProvider.notifier).clear();
-                                  ref
-                                      .read(billsStatusFilterProvider.notifier)
-                                      .set(BillsStatusFilter.all);
-                                },
-                                icon: const Icon(Icons.refresh),
-                                label: Text(l10n.billsClearFilters),
-                              ),
+                              if (filtered)
+                                OutlinedButton.icon(
+                                  onPressed: () {
+                                    _q.clear();
+                                    ref
+                                        .read(billsQueryProvider.notifier)
+                                        .clear();
+                                    ref
+                                        .read(
+                                          billsStatusFilterProvider.notifier,
+                                        )
+                                        .set(BillsStatusFilter.all);
+                                  },
+                                  icon: const Icon(Icons.refresh),
+                                  label: Text(l10n.billsClearFilters),
+                                ),
                               FilledButton.icon(
                                 onPressed: () => context.push('/bills/new'),
                                 icon: const Icon(Icons.add),
@@ -310,113 +326,92 @@ class _BillCard extends StatelessWidget {
     final statusFg = _isPaid ? _green : _red;
     final statusBg = statusFg.withValues(alpha: 0.12);
 
-    return InkWell(
+    return ItemCard(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Card(
-        elevation: 0,
-        margin: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: Colors.black.withValues(alpha: 0.06)),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      bill.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontWeight: FontWeight.w800),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    money.format(bill.amount),
-                    style: const TextStyle(fontWeight: FontWeight.w800),
-                  ),
-                  const SizedBox(width: 2),
-                  if (onTap != null)
-                    const Icon(
-                      Icons.chevron_right,
-                      size: 18,
-                      color: Color(0xFF9CA3AF),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Wrap(
-                spacing: 6,
-                runSpacing: 4,
-                children: [
-                  _chip(
-                    context,
-                    fg: statusFg,
-                    bg: statusBg,
-                    border: statusFg.withValues(alpha: 0.35),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          _isPaid
-                              ? Icons.check_circle
-                              : Icons.radio_button_unchecked,
-                          size: 14,
-                          color: statusFg,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          _isPaid ? l10n.billStatusPaid : l10n.billStatusUnpaid,
-                        ),
-                      ],
-                    ),
-                  ),
-                  _chip(
-                    context,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(_iconByType(bill.type), size: 14),
-                        const SizedBox(width: 6),
-                        Text(billTypeLabel(l10n, bill.type)),
-                      ],
-                    ),
-                  ),
-                  _chip(
-                    context,
-                    fg: _dueColor(context, d),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          d < 0 ? Icons.error_outline : Icons.schedule,
-                          size: 14,
-                          color: _dueColor(context, d),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(_dueText(l10n, bill.dueDate)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              if ((bill.note ?? '').trim().isNotEmpty) ...[
-                const SizedBox(height: 6),
-                Text(
-                  bill.note!,
+              Expanded(
+                child: Text(
+                  bill.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: cs.onSurfaceVariant),
+                  style: const TextStyle(fontWeight: FontWeight.w800),
                 ),
-              ],
+              ),
+              const SizedBox(width: 8),
+              Text(
+                money.format(bill.amount),
+                style: const TextStyle(fontWeight: FontWeight.w800),
+              ),
             ],
           ),
-        ),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 6,
+            runSpacing: 4,
+            children: [
+              _chip(
+                context,
+                fg: statusFg,
+                bg: statusBg,
+                border: statusFg.withValues(alpha: 0.35),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      _isPaid
+                          ? Icons.check_circle
+                          : Icons.radio_button_unchecked,
+                      size: 14,
+                      color: statusFg,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(_isPaid ? l10n.billStatusPaid : l10n.billStatusUnpaid),
+                  ],
+                ),
+              ),
+              _chip(
+                context,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(_iconByType(bill.type), size: 14),
+                    const SizedBox(width: 6),
+                    Text(billTypeLabel(l10n, bill.type)),
+                  ],
+                ),
+              ),
+              _chip(
+                context,
+                fg: _dueColor(context, d),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      d < 0 ? Icons.error_outline : Icons.schedule,
+                      size: 14,
+                      color: _dueColor(context, d),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(_dueText(l10n, bill.dueDate)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if ((bill.note ?? '').trim().isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(
+              bill.note!,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: cs.onSurfaceVariant),
+            ),
+          ],
+        ],
       ),
     );
   }

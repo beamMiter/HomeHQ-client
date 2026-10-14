@@ -31,12 +31,13 @@ class ListFetch<T> {
   /// While set, the next fetch stays pending until it is completed.
   Completer<List<T>>? hold;
 
-  /// While true, fetches fail.
+  /// While true, fetches fail, with [error] (a plain exception by default).
   bool failing = false;
+  Object error = Exception('boom');
 
   Future<List<T>> next() {
     calls++;
-    if (failing) return Future.error(Exception('boom'));
+    if (failing) return Future.error(error);
     return hold?.future ?? Future.value(items);
   }
 }
@@ -116,6 +117,13 @@ final sampleNotes = [
       'content': '',
       'created_at': '2026-10-01T00:00:00Z',
     }),
+  // One that is longer than its preview, so it can unfold.
+  Note.fromJson({
+    'id': 'n3',
+    'title': 'Long note',
+    'content': List.filled(40, 'a long line of text').join(' '),
+    'created_at': '2026-10-01T00:00:00Z',
+  }),
 ];
 
 /// A list screen wired to a counting repository.
@@ -125,6 +133,7 @@ class BuiltScreen {
     required this.overrides,
     required this.calls,
     required this.setFailing,
+    required this.setError,
     required this.hold,
     required this.release,
   });
@@ -133,6 +142,9 @@ class BuiltScreen {
   final List<Override> overrides;
   final int Function() calls;
   final void Function(bool) setFailing;
+
+  /// What a failing fetch fails with.
+  final void Function(Object) setError;
 
   /// Makes the next fetch stay in flight until [release].
   final void Function() hold;
@@ -150,6 +162,7 @@ BuiltScreen buildScreen<T>({
     overrides: overrides(f),
     calls: () => f.calls,
     setFailing: (v) => f.failing = v,
+    setError: (e) => f.error = e,
     hold: () => f.hold = Completer<List<T>>(),
     release: () {
       final h = f.hold!;

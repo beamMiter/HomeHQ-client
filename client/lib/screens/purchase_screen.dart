@@ -9,12 +9,15 @@ import '../models/purchase_model.dart';
 import '../services/purchase_api.dart';
 
 // ✅ ใช้หัวแบบเดียวกับ Bills/Notes
+import '../widgets/item_card.dart';
+import '../widgets/add_fab.dart';
 import '../widgets/top_nav_bar.dart';
 import '../widgets/search_bar_field.dart';
 import '../widgets/header_row.dart';
 import '../widgets/list_empty_state.dart';
 import '../widgets/page_loading.dart';
 import '../widgets/refresh.dart';
+import '../l10n/friendly_error.dart';
 import '../l10n/l10n.dart';
 
 enum _StatusFilter { all, planned, ordered, bought, delivered, canceled }
@@ -87,12 +90,10 @@ class _PurchaseScreenState extends ConsumerState<PurchaseScreen> {
             ),
           ],
         ),
-        floatingActionButton: FloatingActionButton.extended(
-          backgroundColor: accent,
-          foregroundColor: Colors.white,
+        floatingActionButton: AddFab(
+          color: accent,
+          tooltip: context.l10n.purchNew,
           onPressed: () => context.push('/purchases/new'),
-          icon: const Icon(Icons.add),
-          label: Text(context.l10n.purchNew),
         ),
         body: ReloadOverlay(
           active: reloading,
@@ -430,96 +431,71 @@ class _PurchaseCard extends StatelessWidget {
         ? nf.format(p.amountEstimated)
         : '-';
 
-    return InkWell(
-      borderRadius: BorderRadius.circular(12),
-      onTap: () {
-        final id = p.id;
-        context.push('/purchases/$id');
-      },
-      child: Card(
-        elevation: 0,
-        margin: const EdgeInsets.symmetric(horizontal: 12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: Colors.black.withValues(alpha: 0.06)),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return ItemCard(
+      margin: const EdgeInsets.symmetric(horizontal: 12),
+      onTap: () => context.push('/purchases/${p.id}'),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // title + amount
+          Row(
             children: [
-              // title + amount
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      p.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontWeight: FontWeight.w800),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    amountText,
-                    style: const TextStyle(fontWeight: FontWeight.w800),
-                  ),
-                  const Icon(
-                    Icons.chevron_right,
-                    size: 18,
-                    color: Color(0xFF9CA3AF),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-
-              // chips
-              Wrap(
-                spacing: 6,
-                runSpacing: 4,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _statusBg(context),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Text(
-                      _statusLabel(context),
-                      style: TextStyle(
-                        color: _statusFg(context),
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                  if (p.category?.isNotEmpty == true)
-                    _TinyChip(icon: Icons.folder, label: p.category!),
-                  if (p.store?.isNotEmpty == true)
-                    _TinyChip(
-                      icon: Icons.store_mall_directory,
-                      label: p.store!,
-                    ),
-                ],
-              ),
-
-              if (p.note?.isNotEmpty == true) ...[
-                const SizedBox(height: 6),
-                Text(
-                  p.note!,
+              Expanded(
+                child: Text(
+                  p.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                  style: const TextStyle(fontWeight: FontWeight.w800),
                 ),
-              ],
+              ),
+              const SizedBox(width: 8),
+              Text(
+                amountText,
+                style: const TextStyle(fontWeight: FontWeight.w800),
+              ),
             ],
           ),
-        ),
+          const SizedBox(height: 6),
+
+          // chips
+          Wrap(
+            spacing: 6,
+            runSpacing: 4,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _statusBg(context),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  _statusLabel(context),
+                  style: TextStyle(
+                    color: _statusFg(context),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+              if (p.category?.isNotEmpty == true)
+                _TinyChip(icon: Icons.folder, label: p.category!),
+              if (p.store?.isNotEmpty == true)
+                _TinyChip(icon: Icons.store_mall_directory, label: p.store!),
+            ],
+          ),
+
+          if (p.note?.isNotEmpty == true) ...[
+            const SizedBox(height: 6),
+            Text(
+              p.note!,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -591,8 +567,8 @@ class _ErrorOrAuth extends StatelessWidget {
           Text(context.l10n.purchLoadFailed),
           const SizedBox(height: 4),
           Text(
-            e.toString(),
-            style: const TextStyle(color: Colors.grey, fontSize: 12),
+            friendlyError(context.l10n, e),
+            style: const TextStyle(color: Colors.grey, fontSize: 13),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 12),
