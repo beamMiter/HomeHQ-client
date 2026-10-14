@@ -1,11 +1,11 @@
 {
-    "name": "homeservice",
-    "short_name": "homeservice",
+    "name": "HomeHQ",
+    "short_name": "HomeHQ",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "HomeHQ: one place to run a household.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
