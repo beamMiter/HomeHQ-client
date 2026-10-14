@@ -45,7 +45,7 @@ type Purchase struct {
 	ID              string    `json:"id" db:"id"`
 	Title           string    `json:"title" db:"title"`
 	Note            string    `json:"note,omitempty" db:"note"`
-	Items           Items     `json:"items,omitempty" db:"items"`
+	Items           Items     `json:"items" db:"items"`
 	AmountEstimated *float64  `json:"amount_estimated,omitempty" db:"amount_estimated"`
 	AmountPaid      *float64  `json:"amount_paid,omitempty" db:"amount_paid"`
 	Currency        string    `json:"currency" db:"currency"`
