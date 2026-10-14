@@ -45,6 +45,9 @@ class Purchase {
   final String title;
   final String? note;
 
+  /// Missing or null in the JSON means no items (older servers left the key
+  /// out of a purchase without any).
+  @JsonKey(defaultValue: <PurchaseItem>[])
   final List<PurchaseItem> items;
 
   final double? amountEstimated;

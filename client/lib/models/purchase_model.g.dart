@@ -28,9 +28,11 @@ Purchase _$PurchaseFromJson(Map<String, dynamic> json) => Purchase(
   id: json['id'] as String,
   title: json['title'] as String,
   note: json['note'] as String?,
-  items: (json['items'] as List<dynamic>)
-      .map((e) => PurchaseItem.fromJson(e as Map<String, dynamic>))
-      .toList(),
+  items:
+      (json['items'] as List<dynamic>?)
+          ?.map((e) => PurchaseItem.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      [],
   amountEstimated: (json['amount_estimated'] as num?)?.toDouble(),
   amountPaid: (json['amount_paid'] as num?)?.toDouble(),
   currency: json['currency'] as String?,
