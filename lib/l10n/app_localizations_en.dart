@@ -1486,4 +1486,786 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get purchCancelled => 'Purchase cancelled';
+
+  @override
+  String get toolAppliancesCaption => 'Switch lights, plugs and aircon';
+
+  @override
+  String get applDisabledTitle => 'Appliances aren\'t set up yet';
+
+  @override
+  String get applDisabledHint =>
+      'The server needs an appliance source before they can show here.';
+
+  @override
+  String get applEmptyTitle => 'No appliances found';
+
+  @override
+  String get applEmptyHint =>
+      'Appliances connected to the server will show up here.';
+
+  @override
+  String get applLoadFailed => 'Couldn\'t load the appliances';
+
+  @override
+  String get applErrUnavailable => 'Couldn\'t reach the appliance service';
+
+  @override
+  String get applErrMisconfigured =>
+      'The appliance account details on the server were rejected';
+
+  @override
+  String get applErrLimit =>
+      'The appliance service has reached its call limit. Try again later.';
+
+  @override
+  String get applErrOffline => 'This appliance is offline';
+
+  @override
+  String get applErrNotSupported => 'This appliance doesn\'t support that';
+
+  @override
+  String get applErrInvalid => 'That value isn\'t accepted';
+
+  @override
+  String get applOfflineToast => 'This appliance is offline right now';
+
+  @override
+  String applSwitchFailed(String name) {
+    return 'Couldn\'t change $name';
+  }
+
+  @override
+  String get applOn => 'On';
+
+  @override
+  String get applOff => 'Off';
+
+  @override
+  String get applOffline => 'Offline';
+
+  @override
+  String get applNoRoom => 'Other';
+
+  @override
+  String get applCapPower => 'Power';
+
+  @override
+  String get applCapBrightness => 'Brightness';
+
+  @override
+  String get applCapTemperature => 'Temperature';
+
+  @override
+  String get applCapMode => 'Mode';
+
+  @override
+  String get applCapFanSpeed => 'Fan speed';
+
+  @override
+  String get applModeAuto => 'Auto';
+
+  @override
+  String get applModeCool => 'Cool';
+
+  @override
+  String get applModeDry => 'Dry';
+
+  @override
+  String get applModeFan => 'Fan';
+
+  @override
+  String get applModeHeat => 'Heat';
+
+  @override
+  String get applAdminOnly => 'Only an admin can change this';
+
+  @override
+  String get applHeaterNote =>
+      'For safety, this switches itself off after a while.';
+
+  @override
+  String get applActivityTitle => 'Recent activity';
+
+  @override
+  String get applActivityEmpty => 'Nothing yet';
+
+  @override
+  String get applActivityFailed => 'Couldn\'t load the activity';
+
+  @override
+  String get applAutoOffEvent => 'Switched off automatically';
+
+  @override
+  String get applSomeone => 'Someone';
+
+  @override
+  String applEventOn(String who) {
+    return '$who switched it on';
+  }
+
+  @override
+  String applEventOff(String who) {
+    return '$who switched it off';
+  }
+
+  @override
+  String applEventSet(String who, String what, String value) {
+    return '$who set $what to $value';
+  }
+
+  @override
+  String get applAddTitle => 'Add an appliance';
+
+  @override
+  String get applAddButton => 'Add appliance';
+
+  @override
+  String get applAddFirst => 'Add your first appliance';
+
+  @override
+  String get applAddAdminOnly => 'Only an admin can add appliances';
+
+  @override
+  String get applStepKind => 'What is it?';
+
+  @override
+  String get applStepDetails => 'About it';
+
+  @override
+  String get applStepConnect => 'How it connects';
+
+  @override
+  String applStepOf(String step, String total) {
+    return 'Step $step of $total';
+  }
+
+  @override
+  String get applNext => 'Next';
+
+  @override
+  String get applBack => 'Back';
+
+  @override
+  String get applKindAircon => 'Air conditioner';
+
+  @override
+  String get applKindLight => 'Light';
+
+  @override
+  String get applKindFan => 'Fan';
+
+  @override
+  String get applKindPlug => 'Smart plug';
+
+  @override
+  String get applKindHeater => 'Heater';
+
+  @override
+  String get applKindOther => 'Something else';
+
+  @override
+  String get applKindAirconHint =>
+      'Wind animation, temperature, mode, fan speed and swing';
+
+  @override
+  String get applKindLightHint => 'On, off and brightness';
+
+  @override
+  String get applKindFanHint => 'On, off and speed';
+
+  @override
+  String get applKindPlugHint => 'On and off';
+
+  @override
+  String get applKindHeaterHint => 'On and off, with a safety switch-off';
+
+  @override
+  String get applKindOtherHint => 'On and off';
+
+  @override
+  String get applFieldName => 'Name';
+
+  @override
+  String get applFieldNameHint => 'e.g. Bedroom aircon';
+
+  @override
+  String get applFieldRoom => 'Room';
+
+  @override
+  String get applFieldBrand => 'Brand';
+
+  @override
+  String get applFieldModel => 'Model';
+
+  @override
+  String get applFieldModelHint =>
+      'e.g. FTKM25: printed on the indoor unit or the remote';
+
+  @override
+  String get applFieldOptional => 'optional';
+
+  @override
+  String get applFieldRequired => 'Give it a name';
+
+  @override
+  String get applRoomLiving => 'Living room';
+
+  @override
+  String get applRoomBedroom => 'Bedroom';
+
+  @override
+  String get applRoomKitchen => 'Kitchen';
+
+  @override
+  String get applRoomBathroom => 'Bathroom';
+
+  @override
+  String get applRoomStudy => 'Study';
+
+  @override
+  String get applRoomGarage => 'Garage';
+
+  @override
+  String get applRoomOther => 'Other room…';
+
+  @override
+  String get applRoomCustomHint => 'Room name';
+
+  @override
+  String get applConnTitle => 'How will it be controlled?';
+
+  @override
+  String get applConnDemo => 'Simulated';
+
+  @override
+  String get applConnDemoSummary =>
+      'Try the controls and the animation. Nothing real is switched.';
+
+  @override
+  String get applConnWifi => 'Wi-Fi built in';
+
+  @override
+  String get applConnWifiSummary =>
+      'The air conditioner, or its Wi-Fi adapter, talks to its maker\'s cloud.';
+
+  @override
+  String get applConnIr => 'Smart IR remote';
+
+  @override
+  String get applConnIrSummary =>
+      'A Wi-Fi IR blaster sends the signals your remote would.';
+
+  @override
+  String get applConnHa => 'Home Assistant';
+
+  @override
+  String get applConnHaSummary =>
+      'Use an air conditioner you already added to Home Assistant.';
+
+  @override
+  String get applConnSoon => 'Coming soon';
+
+  @override
+  String get applConnNeed => 'What you need';
+
+  @override
+  String get applConnUnavailable =>
+      'This connection isn\'t available yet. Add it as simulated to try it out.';
+
+  @override
+  String get applReqDemo1 => 'Nothing. The server simulates it.';
+
+  @override
+  String get applReqWifi1 =>
+      'An air conditioner with Wi-Fi built in, or its maker\'s Wi-Fi adapter fitted';
+
+  @override
+  String get applReqWifi2 =>
+      'A 2.4 GHz Wi-Fi network (most air conditioners cannot use 5 GHz)';
+
+  @override
+  String get applReqWifi3 =>
+      'The maker\'s app set up with this air conditioner (Daikin Mobile, MELCloud, Comfort Cloud, ThinQ, SmartThings…)';
+
+  @override
+  String get applReqWifi4 => 'A HomeHQ driver for that maker on the server';
+
+  @override
+  String get applReqIr1 =>
+      'A Wi-Fi smart IR remote (Tuya / Smart Life, Broadlink, Sonoff, Xiaomi…)';
+
+  @override
+  String get applReqIr2 =>
+      'Placed in view of the air conditioner\'s receiver, within a few metres';
+
+  @override
+  String get applReqIr3 =>
+      'Your air conditioner\'s model in the remote\'s code library, or its codes learned from your own remote';
+
+  @override
+  String get applReqIr4 =>
+      'A 2.4 GHz Wi-Fi network and an account for the remote\'s app';
+
+  @override
+  String get applReqIrNote =>
+      'IR is one-way: the app cannot read what the air conditioner is really doing, only what it last sent.';
+
+  @override
+  String get applReqHa1 =>
+      'Home Assistant running on your network, with the air conditioner added as a climate device';
+
+  @override
+  String get applReqHa2 =>
+      'A long-lived access token from your Home Assistant profile';
+
+  @override
+  String get applReqHa3 => 'The HomeHQ server able to reach Home Assistant';
+
+  @override
+  String applAddedToast(String name) {
+    return '$name added';
+  }
+
+  @override
+  String get applAddFailed => 'Couldn\'t add the appliance';
+
+  @override
+  String get applRemove => 'Remove';
+
+  @override
+  String applRemoveAsk(String name) {
+    return 'Remove $name?';
+  }
+
+  @override
+  String get applRemoveBody =>
+      'It is forgotten here. Nothing is switched off or changed on a real device.';
+
+  @override
+  String applRemovedToast(String name) {
+    return '$name removed';
+  }
+
+  @override
+  String get applRemoveFailed => 'Couldn\'t remove it';
+
+  @override
+  String get applCapSwing => 'Swing';
+
+  @override
+  String get applSimulated => 'Simulated';
+
+  @override
+  String applAirconOn(String mode, String temp) {
+    return 'Air conditioner on, $mode, $temp';
+  }
+
+  @override
+  String get applAirconOff => 'Air conditioner off';
+
+  @override
+  String get toolDashboardCaption =>
+      'Where the money went: bills and purchases';
+
+  @override
+  String get dashTitle => 'Spending';
+
+  @override
+  String dashSpentIn(String month) {
+    return 'Spent in $month';
+  }
+
+  @override
+  String dashUp(String pct, String month) {
+    return 'Up $pct% on $month';
+  }
+
+  @override
+  String dashDown(String pct, String month) {
+    return 'Down $pct% on $month';
+  }
+
+  @override
+  String dashSame(String month) {
+    return 'The same as $month';
+  }
+
+  @override
+  String dashNoPrev(String month) {
+    return 'Nothing was spent in $month';
+  }
+
+  @override
+  String get dashBills => 'Bills';
+
+  @override
+  String get dashPurchases => 'Purchases';
+
+  @override
+  String get dashBillsPaid => 'Bills paid';
+
+  @override
+  String get dashBought => 'Bought';
+
+  @override
+  String get dashStillToPay => 'Still to pay';
+
+  @override
+  String dashBillCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count bills',
+      one: '1 bill',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dashOverdue => 'Overdue';
+
+  @override
+  String get dashNoneOverdue => 'Nothing overdue';
+
+  @override
+  String get dashPlanned => 'Planned purchases';
+
+  @override
+  String dashItemCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dashTrendTitle => 'Last 6 months';
+
+  @override
+  String get dashChartView => 'Chart';
+
+  @override
+  String get dashTableView => 'Table';
+
+  @override
+  String get dashColMonth => 'Month';
+
+  @override
+  String get dashColTotal => 'Total';
+
+  @override
+  String get dashByType => 'Bills paid, by type';
+
+  @override
+  String get dashByCategory => 'Bought, by category';
+
+  @override
+  String get dashNoBillsPaid => 'No bills paid this month';
+
+  @override
+  String get dashNoPurchases => 'Nothing bought this month';
+
+  @override
+  String get dashCategoryOther => 'No category';
+
+  @override
+  String get dashUpcomingTitle => 'Next bills to pay';
+
+  @override
+  String get dashNoUpcoming => 'No bills waiting';
+
+  @override
+  String get dashDueToday => 'Due today';
+
+  @override
+  String get dashDueTomorrow => 'Due tomorrow';
+
+  @override
+  String dashDueIn(int days) {
+    return 'Due in $days days';
+  }
+
+  @override
+  String dashOverdueBy(int days) {
+    return 'Overdue by $days days';
+  }
+
+  @override
+  String get dashViewAll => 'View all';
+
+  @override
+  String dashExcluded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count purchases in another currency are not included',
+      one: '1 purchase in another currency is not included',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dashLoadFailed => 'Couldn\'t load the spending figures';
+
+  @override
+  String dashEmptyTitle(String month) {
+    return 'Nothing spent in $month yet';
+  }
+
+  @override
+  String get dashEmptyHint =>
+      'Pay a bill or mark a purchase as bought and it shows up here.';
+
+  @override
+  String get dashThisMonth => 'This month';
+
+  @override
+  String get dashPrevMonth => 'Previous month';
+
+  @override
+  String get dashNextMonth => 'Next month';
+
+  @override
+  String dashChartLabel(String month, String bills, String purchases) {
+    return '$month: bills $bills, purchases $purchases';
+  }
+
+  @override
+  String get dashPaceTitle => 'Spending pace';
+
+  @override
+  String get dashPaceSub => 'Running total, day by day, against last month';
+
+  @override
+  String dashPaceNow(int day, String amount) {
+    return 'By day $day: $amount';
+  }
+
+  @override
+  String dashPaceMore(String amount) {
+    return '$amount more than at this point last month';
+  }
+
+  @override
+  String dashPaceLess(String amount) {
+    return '$amount less than at this point last month';
+  }
+
+  @override
+  String get dashPaceSame => 'The same as at this point last month';
+
+  @override
+  String dashPaceLabel(String now, String prev) {
+    return 'Running total: $now this month, $prev at the same point last month';
+  }
+
+  @override
+  String get dashDonutCenter => 'Paid';
+
+  @override
+  String get dashTrendEmpty =>
+      'Nothing yet. Pay a bill or mark a purchase as bought and it appears here.';
+
+  @override
+  String dashPaceAt(int day, String now, String prev) {
+    return 'Day $day: $now · last month $prev';
+  }
+
+  @override
+  String dashPaceAtPrev(int day, String prev) {
+    return 'Day $day: last month $prev';
+  }
+
+  @override
+  String get applStatusOn => 'On';
+
+  @override
+  String get applStatusOff => 'Off';
+
+  @override
+  String get applStatusTurningOn => 'Turning on…';
+
+  @override
+  String get applStatusTurningOff => 'Turning off…';
+
+  @override
+  String get applStatusUnconfirmed => 'Not confirmed';
+
+  @override
+  String applStatusOnSince(String time, String duration) {
+    return 'On since $time · $duration';
+  }
+
+  @override
+  String applStatusOffSince(String time, String duration) {
+    return 'Off since $time · $duration';
+  }
+
+  @override
+  String applStatusOfflineBody(String state) {
+    return 'Can\'t be reached right now. Last known: $state.';
+  }
+
+  @override
+  String applStatusAutoOff(String time, String left) {
+    return 'Switches itself off at $time (in $left)';
+  }
+
+  @override
+  String get applStatusUnconfirmedBody =>
+      'The command was sent, but the appliance didn\'t confirm it. Check again to be sure.';
+
+  @override
+  String get applCheckedJustNow => 'Checked just now';
+
+  @override
+  String applCheckedAgo(String ago) {
+    return 'Checked $ago ago';
+  }
+
+  @override
+  String applCheckFailed(String time) {
+    return 'Couldn\'t check just now. Showing what was known at $time.';
+  }
+
+  @override
+  String get applCheckNow => 'Check now';
+
+  @override
+  String applStatusFilterNone(String status) {
+    return 'Nothing is $status right now';
+  }
+
+  @override
+  String applStatusSummaryLabel(int onCount, int offCount, int offlineCount) {
+    return '$onCount on, $offCount off, $offlineCount offline';
+  }
+
+  @override
+  String applHomeOn(int count, int total) {
+    return '$count of $total on';
+  }
+
+  @override
+  String applHomeOffline(int count) {
+    return '$count offline';
+  }
+
+  @override
+  String get applDurUnderMinute => 'under a minute';
+
+  @override
+  String applDurSeconds(int n) {
+    return '$n s';
+  }
+
+  @override
+  String applDurMinutes(int n) {
+    return '$n min';
+  }
+
+  @override
+  String applDurHours(int h, int m) {
+    return '$h h $m min';
+  }
+
+  @override
+  String applDurHoursOnly(int h) {
+    return '$h h';
+  }
+
+  @override
+  String applDurDays(int d, int h) {
+    return '$d d $h h';
+  }
+
+  @override
+  String get applKindCooler => 'Air cooler';
+
+  @override
+  String get applKindCoolerHint =>
+      'Speed, left-right swing, water cooling and modes';
+
+  @override
+  String get applCapCooling => 'Cooling';
+
+  @override
+  String get applModeNormal => 'Normal';
+
+  @override
+  String get applModeNatural => 'Natural wind';
+
+  @override
+  String get applModeSleep => 'Sleep';
+
+  @override
+  String applLightOn(String brightness) {
+    return 'Light on, $brightness';
+  }
+
+  @override
+  String get applLightOff => 'Light off';
+
+  @override
+  String applCoolerOn(int speed) {
+    return 'Air cooler on, speed $speed';
+  }
+
+  @override
+  String applCoolerOnCooling(int speed) {
+    return 'Air cooler on, speed $speed, cooling';
+  }
+
+  @override
+  String get applCoolerOff => 'Air cooler off';
+
+  @override
+  String get applStatusAll => 'All';
+
+  @override
+  String applSinceShort(String time) {
+    return 'since $time';
+  }
+
+  @override
+  String applAutoOffShort(String left) {
+    return 'switches off in $left';
+  }
+
+  @override
+  String applLastKnown(String state) {
+    return 'last known: $state';
+  }
+
+  @override
+  String applOfflineAlert(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count appliances can\'t be reached',
+      one: '1 appliance can\'t be reached',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get applStatusTitle => 'Status';
+
+  @override
+  String get applHeaterOn => 'Heater on';
+
+  @override
+  String applHeaterOnAutoOff(String left) {
+    return 'Heater on, switches itself off in $left';
+  }
+
+  @override
+  String get applHeaterOff => 'Heater off';
+
+  @override
+  String get applHeaterOffIn => 'Off in';
 }

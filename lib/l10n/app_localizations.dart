@@ -2803,6 +2803,1266 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Purchase cancelled'**
   String get purchCancelled;
+
+  /// No description provided for @toolAppliancesCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch lights, plugs and aircon'**
+  String get toolAppliancesCaption;
+
+  /// No description provided for @applDisabledTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Appliances aren\'t set up yet'**
+  String get applDisabledTitle;
+
+  /// No description provided for @applDisabledHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The server needs an appliance source before they can show here.'**
+  String get applDisabledHint;
+
+  /// No description provided for @applEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No appliances found'**
+  String get applEmptyTitle;
+
+  /// No description provided for @applEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Appliances connected to the server will show up here.'**
+  String get applEmptyHint;
+
+  /// No description provided for @applLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load the appliances'**
+  String get applLoadFailed;
+
+  /// No description provided for @applErrUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t reach the appliance service'**
+  String get applErrUnavailable;
+
+  /// No description provided for @applErrMisconfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'The appliance account details on the server were rejected'**
+  String get applErrMisconfigured;
+
+  /// No description provided for @applErrLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'The appliance service has reached its call limit. Try again later.'**
+  String get applErrLimit;
+
+  /// No description provided for @applErrOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'This appliance is offline'**
+  String get applErrOffline;
+
+  /// No description provided for @applErrNotSupported.
+  ///
+  /// In en, this message translates to:
+  /// **'This appliance doesn\'t support that'**
+  String get applErrNotSupported;
+
+  /// No description provided for @applErrInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'That value isn\'t accepted'**
+  String get applErrInvalid;
+
+  /// No description provided for @applOfflineToast.
+  ///
+  /// In en, this message translates to:
+  /// **'This appliance is offline right now'**
+  String get applOfflineToast;
+
+  /// No description provided for @applSwitchFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t change {name}'**
+  String applSwitchFailed(String name);
+
+  /// No description provided for @applOn.
+  ///
+  /// In en, this message translates to:
+  /// **'On'**
+  String get applOn;
+
+  /// No description provided for @applOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get applOff;
+
+  /// No description provided for @applOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline'**
+  String get applOffline;
+
+  /// No description provided for @applNoRoom.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get applNoRoom;
+
+  /// No description provided for @applCapPower.
+  ///
+  /// In en, this message translates to:
+  /// **'Power'**
+  String get applCapPower;
+
+  /// No description provided for @applCapBrightness.
+  ///
+  /// In en, this message translates to:
+  /// **'Brightness'**
+  String get applCapBrightness;
+
+  /// No description provided for @applCapTemperature.
+  ///
+  /// In en, this message translates to:
+  /// **'Temperature'**
+  String get applCapTemperature;
+
+  /// No description provided for @applCapMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Mode'**
+  String get applCapMode;
+
+  /// No description provided for @applCapFanSpeed.
+  ///
+  /// In en, this message translates to:
+  /// **'Fan speed'**
+  String get applCapFanSpeed;
+
+  /// No description provided for @applModeAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get applModeAuto;
+
+  /// No description provided for @applModeCool.
+  ///
+  /// In en, this message translates to:
+  /// **'Cool'**
+  String get applModeCool;
+
+  /// No description provided for @applModeDry.
+  ///
+  /// In en, this message translates to:
+  /// **'Dry'**
+  String get applModeDry;
+
+  /// No description provided for @applModeFan.
+  ///
+  /// In en, this message translates to:
+  /// **'Fan'**
+  String get applModeFan;
+
+  /// No description provided for @applModeHeat.
+  ///
+  /// In en, this message translates to:
+  /// **'Heat'**
+  String get applModeHeat;
+
+  /// No description provided for @applAdminOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Only an admin can change this'**
+  String get applAdminOnly;
+
+  /// No description provided for @applHeaterNote.
+  ///
+  /// In en, this message translates to:
+  /// **'For safety, this switches itself off after a while.'**
+  String get applHeaterNote;
+
+  /// No description provided for @applActivityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent activity'**
+  String get applActivityTitle;
+
+  /// No description provided for @applActivityEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing yet'**
+  String get applActivityEmpty;
+
+  /// No description provided for @applActivityFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load the activity'**
+  String get applActivityFailed;
+
+  /// No description provided for @applAutoOffEvent.
+  ///
+  /// In en, this message translates to:
+  /// **'Switched off automatically'**
+  String get applAutoOffEvent;
+
+  /// No description provided for @applSomeone.
+  ///
+  /// In en, this message translates to:
+  /// **'Someone'**
+  String get applSomeone;
+
+  /// No description provided for @applEventOn.
+  ///
+  /// In en, this message translates to:
+  /// **'{who} switched it on'**
+  String applEventOn(String who);
+
+  /// No description provided for @applEventOff.
+  ///
+  /// In en, this message translates to:
+  /// **'{who} switched it off'**
+  String applEventOff(String who);
+
+  /// No description provided for @applEventSet.
+  ///
+  /// In en, this message translates to:
+  /// **'{who} set {what} to {value}'**
+  String applEventSet(String who, String what, String value);
+
+  /// No description provided for @applAddTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an appliance'**
+  String get applAddTitle;
+
+  /// No description provided for @applAddButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Add appliance'**
+  String get applAddButton;
+
+  /// No description provided for @applAddFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your first appliance'**
+  String get applAddFirst;
+
+  /// No description provided for @applAddAdminOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Only an admin can add appliances'**
+  String get applAddAdminOnly;
+
+  /// No description provided for @applStepKind.
+  ///
+  /// In en, this message translates to:
+  /// **'What is it?'**
+  String get applStepKind;
+
+  /// No description provided for @applStepDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'About it'**
+  String get applStepDetails;
+
+  /// No description provided for @applStepConnect.
+  ///
+  /// In en, this message translates to:
+  /// **'How it connects'**
+  String get applStepConnect;
+
+  /// No description provided for @applStepOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {step} of {total}'**
+  String applStepOf(String step, String total);
+
+  /// No description provided for @applNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get applNext;
+
+  /// No description provided for @applBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get applBack;
+
+  /// No description provided for @applKindAircon.
+  ///
+  /// In en, this message translates to:
+  /// **'Air conditioner'**
+  String get applKindAircon;
+
+  /// No description provided for @applKindLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get applKindLight;
+
+  /// No description provided for @applKindFan.
+  ///
+  /// In en, this message translates to:
+  /// **'Fan'**
+  String get applKindFan;
+
+  /// No description provided for @applKindPlug.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart plug'**
+  String get applKindPlug;
+
+  /// No description provided for @applKindHeater.
+  ///
+  /// In en, this message translates to:
+  /// **'Heater'**
+  String get applKindHeater;
+
+  /// No description provided for @applKindOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Something else'**
+  String get applKindOther;
+
+  /// No description provided for @applKindAirconHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Wind animation, temperature, mode, fan speed and swing'**
+  String get applKindAirconHint;
+
+  /// No description provided for @applKindLightHint.
+  ///
+  /// In en, this message translates to:
+  /// **'On, off and brightness'**
+  String get applKindLightHint;
+
+  /// No description provided for @applKindFanHint.
+  ///
+  /// In en, this message translates to:
+  /// **'On, off and speed'**
+  String get applKindFanHint;
+
+  /// No description provided for @applKindPlugHint.
+  ///
+  /// In en, this message translates to:
+  /// **'On and off'**
+  String get applKindPlugHint;
+
+  /// No description provided for @applKindHeaterHint.
+  ///
+  /// In en, this message translates to:
+  /// **'On and off, with a safety switch-off'**
+  String get applKindHeaterHint;
+
+  /// No description provided for @applKindOtherHint.
+  ///
+  /// In en, this message translates to:
+  /// **'On and off'**
+  String get applKindOtherHint;
+
+  /// No description provided for @applFieldName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get applFieldName;
+
+  /// No description provided for @applFieldNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Bedroom aircon'**
+  String get applFieldNameHint;
+
+  /// No description provided for @applFieldRoom.
+  ///
+  /// In en, this message translates to:
+  /// **'Room'**
+  String get applFieldRoom;
+
+  /// No description provided for @applFieldBrand.
+  ///
+  /// In en, this message translates to:
+  /// **'Brand'**
+  String get applFieldBrand;
+
+  /// No description provided for @applFieldModel.
+  ///
+  /// In en, this message translates to:
+  /// **'Model'**
+  String get applFieldModel;
+
+  /// No description provided for @applFieldModelHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. FTKM25: printed on the indoor unit or the remote'**
+  String get applFieldModelHint;
+
+  /// No description provided for @applFieldOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'optional'**
+  String get applFieldOptional;
+
+  /// No description provided for @applFieldRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Give it a name'**
+  String get applFieldRequired;
+
+  /// No description provided for @applRoomLiving.
+  ///
+  /// In en, this message translates to:
+  /// **'Living room'**
+  String get applRoomLiving;
+
+  /// No description provided for @applRoomBedroom.
+  ///
+  /// In en, this message translates to:
+  /// **'Bedroom'**
+  String get applRoomBedroom;
+
+  /// No description provided for @applRoomKitchen.
+  ///
+  /// In en, this message translates to:
+  /// **'Kitchen'**
+  String get applRoomKitchen;
+
+  /// No description provided for @applRoomBathroom.
+  ///
+  /// In en, this message translates to:
+  /// **'Bathroom'**
+  String get applRoomBathroom;
+
+  /// No description provided for @applRoomStudy.
+  ///
+  /// In en, this message translates to:
+  /// **'Study'**
+  String get applRoomStudy;
+
+  /// No description provided for @applRoomGarage.
+  ///
+  /// In en, this message translates to:
+  /// **'Garage'**
+  String get applRoomGarage;
+
+  /// No description provided for @applRoomOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other room…'**
+  String get applRoomOther;
+
+  /// No description provided for @applRoomCustomHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Room name'**
+  String get applRoomCustomHint;
+
+  /// No description provided for @applConnTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How will it be controlled?'**
+  String get applConnTitle;
+
+  /// No description provided for @applConnDemo.
+  ///
+  /// In en, this message translates to:
+  /// **'Simulated'**
+  String get applConnDemo;
+
+  /// No description provided for @applConnDemoSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Try the controls and the animation. Nothing real is switched.'**
+  String get applConnDemoSummary;
+
+  /// No description provided for @applConnWifi.
+  ///
+  /// In en, this message translates to:
+  /// **'Wi-Fi built in'**
+  String get applConnWifi;
+
+  /// No description provided for @applConnWifiSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'The air conditioner, or its Wi-Fi adapter, talks to its maker\'s cloud.'**
+  String get applConnWifiSummary;
+
+  /// No description provided for @applConnIr.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart IR remote'**
+  String get applConnIr;
+
+  /// No description provided for @applConnIrSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'A Wi-Fi IR blaster sends the signals your remote would.'**
+  String get applConnIrSummary;
+
+  /// No description provided for @applConnHa.
+  ///
+  /// In en, this message translates to:
+  /// **'Home Assistant'**
+  String get applConnHa;
+
+  /// No description provided for @applConnHaSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Use an air conditioner you already added to Home Assistant.'**
+  String get applConnHaSummary;
+
+  /// No description provided for @applConnSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get applConnSoon;
+
+  /// No description provided for @applConnNeed.
+  ///
+  /// In en, this message translates to:
+  /// **'What you need'**
+  String get applConnNeed;
+
+  /// No description provided for @applConnUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This connection isn\'t available yet. Add it as simulated to try it out.'**
+  String get applConnUnavailable;
+
+  /// No description provided for @applReqDemo1.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing. The server simulates it.'**
+  String get applReqDemo1;
+
+  /// No description provided for @applReqWifi1.
+  ///
+  /// In en, this message translates to:
+  /// **'An air conditioner with Wi-Fi built in, or its maker\'s Wi-Fi adapter fitted'**
+  String get applReqWifi1;
+
+  /// No description provided for @applReqWifi2.
+  ///
+  /// In en, this message translates to:
+  /// **'A 2.4 GHz Wi-Fi network (most air conditioners cannot use 5 GHz)'**
+  String get applReqWifi2;
+
+  /// No description provided for @applReqWifi3.
+  ///
+  /// In en, this message translates to:
+  /// **'The maker\'s app set up with this air conditioner (Daikin Mobile, MELCloud, Comfort Cloud, ThinQ, SmartThings…)'**
+  String get applReqWifi3;
+
+  /// No description provided for @applReqWifi4.
+  ///
+  /// In en, this message translates to:
+  /// **'A HomeHQ driver for that maker on the server'**
+  String get applReqWifi4;
+
+  /// No description provided for @applReqIr1.
+  ///
+  /// In en, this message translates to:
+  /// **'A Wi-Fi smart IR remote (Tuya / Smart Life, Broadlink, Sonoff, Xiaomi…)'**
+  String get applReqIr1;
+
+  /// No description provided for @applReqIr2.
+  ///
+  /// In en, this message translates to:
+  /// **'Placed in view of the air conditioner\'s receiver, within a few metres'**
+  String get applReqIr2;
+
+  /// No description provided for @applReqIr3.
+  ///
+  /// In en, this message translates to:
+  /// **'Your air conditioner\'s model in the remote\'s code library, or its codes learned from your own remote'**
+  String get applReqIr3;
+
+  /// No description provided for @applReqIr4.
+  ///
+  /// In en, this message translates to:
+  /// **'A 2.4 GHz Wi-Fi network and an account for the remote\'s app'**
+  String get applReqIr4;
+
+  /// No description provided for @applReqIrNote.
+  ///
+  /// In en, this message translates to:
+  /// **'IR is one-way: the app cannot read what the air conditioner is really doing, only what it last sent.'**
+  String get applReqIrNote;
+
+  /// No description provided for @applReqHa1.
+  ///
+  /// In en, this message translates to:
+  /// **'Home Assistant running on your network, with the air conditioner added as a climate device'**
+  String get applReqHa1;
+
+  /// No description provided for @applReqHa2.
+  ///
+  /// In en, this message translates to:
+  /// **'A long-lived access token from your Home Assistant profile'**
+  String get applReqHa2;
+
+  /// No description provided for @applReqHa3.
+  ///
+  /// In en, this message translates to:
+  /// **'The HomeHQ server able to reach Home Assistant'**
+  String get applReqHa3;
+
+  /// No description provided for @applAddedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} added'**
+  String applAddedToast(String name);
+
+  /// No description provided for @applAddFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t add the appliance'**
+  String get applAddFailed;
+
+  /// No description provided for @applRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get applRemove;
+
+  /// No description provided for @applRemoveAsk.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {name}?'**
+  String applRemoveAsk(String name);
+
+  /// No description provided for @applRemoveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It is forgotten here. Nothing is switched off or changed on a real device.'**
+  String get applRemoveBody;
+
+  /// No description provided for @applRemovedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} removed'**
+  String applRemovedToast(String name);
+
+  /// No description provided for @applRemoveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t remove it'**
+  String get applRemoveFailed;
+
+  /// No description provided for @applCapSwing.
+  ///
+  /// In en, this message translates to:
+  /// **'Swing'**
+  String get applCapSwing;
+
+  /// No description provided for @applSimulated.
+  ///
+  /// In en, this message translates to:
+  /// **'Simulated'**
+  String get applSimulated;
+
+  /// No description provided for @applAirconOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Air conditioner on, {mode}, {temp}'**
+  String applAirconOn(String mode, String temp);
+
+  /// No description provided for @applAirconOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Air conditioner off'**
+  String get applAirconOff;
+
+  /// No description provided for @toolDashboardCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Where the money went: bills and purchases'**
+  String get toolDashboardCaption;
+
+  /// No description provided for @dashTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Spending'**
+  String get dashTitle;
+
+  /// No description provided for @dashSpentIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Spent in {month}'**
+  String dashSpentIn(String month);
+
+  /// No description provided for @dashUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Up {pct}% on {month}'**
+  String dashUp(String pct, String month);
+
+  /// No description provided for @dashDown.
+  ///
+  /// In en, this message translates to:
+  /// **'Down {pct}% on {month}'**
+  String dashDown(String pct, String month);
+
+  /// No description provided for @dashSame.
+  ///
+  /// In en, this message translates to:
+  /// **'The same as {month}'**
+  String dashSame(String month);
+
+  /// No description provided for @dashNoPrev.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing was spent in {month}'**
+  String dashNoPrev(String month);
+
+  /// No description provided for @dashBills.
+  ///
+  /// In en, this message translates to:
+  /// **'Bills'**
+  String get dashBills;
+
+  /// No description provided for @dashPurchases.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchases'**
+  String get dashPurchases;
+
+  /// No description provided for @dashBillsPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Bills paid'**
+  String get dashBillsPaid;
+
+  /// No description provided for @dashBought.
+  ///
+  /// In en, this message translates to:
+  /// **'Bought'**
+  String get dashBought;
+
+  /// No description provided for @dashStillToPay.
+  ///
+  /// In en, this message translates to:
+  /// **'Still to pay'**
+  String get dashStillToPay;
+
+  /// No description provided for @dashBillCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 bill} other{{count} bills}}'**
+  String dashBillCount(int count);
+
+  /// No description provided for @dashOverdue.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue'**
+  String get dashOverdue;
+
+  /// No description provided for @dashNoneOverdue.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing overdue'**
+  String get dashNoneOverdue;
+
+  /// No description provided for @dashPlanned.
+  ///
+  /// In en, this message translates to:
+  /// **'Planned purchases'**
+  String get dashPlanned;
+
+  /// No description provided for @dashItemCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 item} other{{count} items}}'**
+  String dashItemCount(int count);
+
+  /// No description provided for @dashTrendTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 6 months'**
+  String get dashTrendTitle;
+
+  /// No description provided for @dashChartView.
+  ///
+  /// In en, this message translates to:
+  /// **'Chart'**
+  String get dashChartView;
+
+  /// No description provided for @dashTableView.
+  ///
+  /// In en, this message translates to:
+  /// **'Table'**
+  String get dashTableView;
+
+  /// No description provided for @dashColMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Month'**
+  String get dashColMonth;
+
+  /// No description provided for @dashColTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get dashColTotal;
+
+  /// No description provided for @dashByType.
+  ///
+  /// In en, this message translates to:
+  /// **'Bills paid, by type'**
+  String get dashByType;
+
+  /// No description provided for @dashByCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Bought, by category'**
+  String get dashByCategory;
+
+  /// No description provided for @dashNoBillsPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'No bills paid this month'**
+  String get dashNoBillsPaid;
+
+  /// No description provided for @dashNoPurchases.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing bought this month'**
+  String get dashNoPurchases;
+
+  /// No description provided for @dashCategoryOther.
+  ///
+  /// In en, this message translates to:
+  /// **'No category'**
+  String get dashCategoryOther;
+
+  /// No description provided for @dashUpcomingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Next bills to pay'**
+  String get dashUpcomingTitle;
+
+  /// No description provided for @dashNoUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'No bills waiting'**
+  String get dashNoUpcoming;
+
+  /// No description provided for @dashDueToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Due today'**
+  String get dashDueToday;
+
+  /// No description provided for @dashDueTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Due tomorrow'**
+  String get dashDueTomorrow;
+
+  /// No description provided for @dashDueIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Due in {days} days'**
+  String dashDueIn(int days);
+
+  /// No description provided for @dashOverdueBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue by {days} days'**
+  String dashOverdueBy(int days);
+
+  /// No description provided for @dashViewAll.
+  ///
+  /// In en, this message translates to:
+  /// **'View all'**
+  String get dashViewAll;
+
+  /// No description provided for @dashExcluded.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 purchase in another currency is not included} other{{count} purchases in another currency are not included}}'**
+  String dashExcluded(int count);
+
+  /// No description provided for @dashLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load the spending figures'**
+  String get dashLoadFailed;
+
+  /// No description provided for @dashEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing spent in {month} yet'**
+  String dashEmptyTitle(String month);
+
+  /// No description provided for @dashEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay a bill or mark a purchase as bought and it shows up here.'**
+  String get dashEmptyHint;
+
+  /// No description provided for @dashThisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'This month'**
+  String get dashThisMonth;
+
+  /// No description provided for @dashPrevMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous month'**
+  String get dashPrevMonth;
+
+  /// No description provided for @dashNextMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Next month'**
+  String get dashNextMonth;
+
+  /// No description provided for @dashChartLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{month}: bills {bills}, purchases {purchases}'**
+  String dashChartLabel(String month, String bills, String purchases);
+
+  /// No description provided for @dashPaceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Spending pace'**
+  String get dashPaceTitle;
+
+  /// No description provided for @dashPaceSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Running total, day by day, against last month'**
+  String get dashPaceSub;
+
+  /// No description provided for @dashPaceNow.
+  ///
+  /// In en, this message translates to:
+  /// **'By day {day}: {amount}'**
+  String dashPaceNow(int day, String amount);
+
+  /// No description provided for @dashPaceMore.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} more than at this point last month'**
+  String dashPaceMore(String amount);
+
+  /// No description provided for @dashPaceLess.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} less than at this point last month'**
+  String dashPaceLess(String amount);
+
+  /// No description provided for @dashPaceSame.
+  ///
+  /// In en, this message translates to:
+  /// **'The same as at this point last month'**
+  String get dashPaceSame;
+
+  /// No description provided for @dashPaceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Running total: {now} this month, {prev} at the same point last month'**
+  String dashPaceLabel(String now, String prev);
+
+  /// No description provided for @dashDonutCenter.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid'**
+  String get dashDonutCenter;
+
+  /// No description provided for @dashTrendEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing yet. Pay a bill or mark a purchase as bought and it appears here.'**
+  String get dashTrendEmpty;
+
+  /// No description provided for @dashPaceAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Day {day}: {now} · last month {prev}'**
+  String dashPaceAt(int day, String now, String prev);
+
+  /// No description provided for @dashPaceAtPrev.
+  ///
+  /// In en, this message translates to:
+  /// **'Day {day}: last month {prev}'**
+  String dashPaceAtPrev(int day, String prev);
+
+  /// No description provided for @applStatusOn.
+  ///
+  /// In en, this message translates to:
+  /// **'On'**
+  String get applStatusOn;
+
+  /// No description provided for @applStatusOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get applStatusOff;
+
+  /// No description provided for @applStatusTurningOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Turning on…'**
+  String get applStatusTurningOn;
+
+  /// No description provided for @applStatusTurningOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Turning off…'**
+  String get applStatusTurningOff;
+
+  /// No description provided for @applStatusUnconfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Not confirmed'**
+  String get applStatusUnconfirmed;
+
+  /// No description provided for @applStatusOnSince.
+  ///
+  /// In en, this message translates to:
+  /// **'On since {time} · {duration}'**
+  String applStatusOnSince(String time, String duration);
+
+  /// No description provided for @applStatusOffSince.
+  ///
+  /// In en, this message translates to:
+  /// **'Off since {time} · {duration}'**
+  String applStatusOffSince(String time, String duration);
+
+  /// No description provided for @applStatusOfflineBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t be reached right now. Last known: {state}.'**
+  String applStatusOfflineBody(String state);
+
+  /// No description provided for @applStatusAutoOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Switches itself off at {time} (in {left})'**
+  String applStatusAutoOff(String time, String left);
+
+  /// No description provided for @applStatusUnconfirmedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The command was sent, but the appliance didn\'t confirm it. Check again to be sure.'**
+  String get applStatusUnconfirmedBody;
+
+  /// No description provided for @applCheckedJustNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Checked just now'**
+  String get applCheckedJustNow;
+
+  /// No description provided for @applCheckedAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'Checked {ago} ago'**
+  String applCheckedAgo(String ago);
+
+  /// No description provided for @applCheckFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t check just now. Showing what was known at {time}.'**
+  String applCheckFailed(String time);
+
+  /// No description provided for @applCheckNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Check now'**
+  String get applCheckNow;
+
+  /// No description provided for @applStatusFilterNone.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is {status} right now'**
+  String applStatusFilterNone(String status);
+
+  /// No description provided for @applStatusSummaryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{onCount} on, {offCount} off, {offlineCount} offline'**
+  String applStatusSummaryLabel(int onCount, int offCount, int offlineCount);
+
+  /// No description provided for @applHomeOn.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} of {total} on'**
+  String applHomeOn(int count, int total);
+
+  /// No description provided for @applHomeOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} offline'**
+  String applHomeOffline(int count);
+
+  /// No description provided for @applDurUnderMinute.
+  ///
+  /// In en, this message translates to:
+  /// **'under a minute'**
+  String get applDurUnderMinute;
+
+  /// No description provided for @applDurSeconds.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} s'**
+  String applDurSeconds(int n);
+
+  /// No description provided for @applDurMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} min'**
+  String applDurMinutes(int n);
+
+  /// No description provided for @applDurHours.
+  ///
+  /// In en, this message translates to:
+  /// **'{h} h {m} min'**
+  String applDurHours(int h, int m);
+
+  /// No description provided for @applDurHoursOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'{h} h'**
+  String applDurHoursOnly(int h);
+
+  /// No description provided for @applDurDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{d} d {h} h'**
+  String applDurDays(int d, int h);
+
+  /// No description provided for @applKindCooler.
+  ///
+  /// In en, this message translates to:
+  /// **'Air cooler'**
+  String get applKindCooler;
+
+  /// No description provided for @applKindCoolerHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Speed, left-right swing, water cooling and modes'**
+  String get applKindCoolerHint;
+
+  /// No description provided for @applCapCooling.
+  ///
+  /// In en, this message translates to:
+  /// **'Cooling'**
+  String get applCapCooling;
+
+  /// No description provided for @applModeNormal.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get applModeNormal;
+
+  /// No description provided for @applModeNatural.
+  ///
+  /// In en, this message translates to:
+  /// **'Natural wind'**
+  String get applModeNatural;
+
+  /// No description provided for @applModeSleep.
+  ///
+  /// In en, this message translates to:
+  /// **'Sleep'**
+  String get applModeSleep;
+
+  /// No description provided for @applLightOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Light on, {brightness}'**
+  String applLightOn(String brightness);
+
+  /// No description provided for @applLightOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Light off'**
+  String get applLightOff;
+
+  /// No description provided for @applCoolerOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Air cooler on, speed {speed}'**
+  String applCoolerOn(int speed);
+
+  /// No description provided for @applCoolerOnCooling.
+  ///
+  /// In en, this message translates to:
+  /// **'Air cooler on, speed {speed}, cooling'**
+  String applCoolerOnCooling(int speed);
+
+  /// No description provided for @applCoolerOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Air cooler off'**
+  String get applCoolerOff;
+
+  /// No description provided for @applStatusAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get applStatusAll;
+
+  /// No description provided for @applSinceShort.
+  ///
+  /// In en, this message translates to:
+  /// **'since {time}'**
+  String applSinceShort(String time);
+
+  /// No description provided for @applAutoOffShort.
+  ///
+  /// In en, this message translates to:
+  /// **'switches off in {left}'**
+  String applAutoOffShort(String left);
+
+  /// No description provided for @applLastKnown.
+  ///
+  /// In en, this message translates to:
+  /// **'last known: {state}'**
+  String applLastKnown(String state);
+
+  /// No description provided for @applOfflineAlert.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 appliance can\'t be reached} other{{count} appliances can\'t be reached}}'**
+  String applOfflineAlert(int count);
+
+  /// No description provided for @applStatusTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get applStatusTitle;
+
+  /// No description provided for @applHeaterOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Heater on'**
+  String get applHeaterOn;
+
+  /// No description provided for @applHeaterOnAutoOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Heater on, switches itself off in {left}'**
+  String applHeaterOnAutoOff(String left);
+
+  /// No description provided for @applHeaterOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Heater off'**
+  String get applHeaterOff;
+
+  /// No description provided for @applHeaterOffIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Off in'**
+  String get applHeaterOffIn;
 }
 
 class _AppLocalizationsDelegate

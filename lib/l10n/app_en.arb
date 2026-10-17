@@ -733,5 +733,628 @@
   "purchCancelAsk": "Cancel this purchase?",
   "purchCancelKeep": "Keep it",
   "purchStatusUpdated": "Status updated",
-  "purchCancelled": "Purchase cancelled"
+  "purchCancelled": "Purchase cancelled",
+  "toolAppliancesCaption": "Switch lights, plugs and aircon",
+  "applDisabledTitle": "Appliances aren't set up yet",
+  "applDisabledHint": "The server needs an appliance source before they can show here.",
+  "applEmptyTitle": "No appliances found",
+  "applEmptyHint": "Appliances connected to the server will show up here.",
+  "applLoadFailed": "Couldn't load the appliances",
+  "applErrUnavailable": "Couldn't reach the appliance service",
+  "applErrMisconfigured": "The appliance account details on the server were rejected",
+  "applErrLimit": "The appliance service has reached its call limit. Try again later.",
+  "applErrOffline": "This appliance is offline",
+  "applErrNotSupported": "This appliance doesn't support that",
+  "applErrInvalid": "That value isn't accepted",
+  "applOfflineToast": "This appliance is offline right now",
+  "applSwitchFailed": "Couldn't change {name}",
+  "@applSwitchFailed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "applOn": "On",
+  "applOff": "Off",
+  "applOffline": "Offline",
+  "applNoRoom": "Other",
+  "applCapPower": "Power",
+  "applCapBrightness": "Brightness",
+  "applCapTemperature": "Temperature",
+  "applCapMode": "Mode",
+  "applCapFanSpeed": "Fan speed",
+  "applModeAuto": "Auto",
+  "applModeCool": "Cool",
+  "applModeDry": "Dry",
+  "applModeFan": "Fan",
+  "applModeHeat": "Heat",
+  "applAdminOnly": "Only an admin can change this",
+  "applHeaterNote": "For safety, this switches itself off after a while.",
+  "applActivityTitle": "Recent activity",
+  "applActivityEmpty": "Nothing yet",
+  "applActivityFailed": "Couldn't load the activity",
+  "applAutoOffEvent": "Switched off automatically",
+  "applSomeone": "Someone",
+  "applEventOn": "{who} switched it on",
+  "@applEventOn": {
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "applEventOff": "{who} switched it off",
+  "@applEventOff": {
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "applEventSet": "{who} set {what} to {value}",
+  "@applEventSet": {
+    "placeholders": {
+      "who": {
+        "type": "String"
+      },
+      "what": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "applAddTitle": "Add an appliance",
+  "applAddButton": "Add appliance",
+  "applAddFirst": "Add your first appliance",
+  "applAddAdminOnly": "Only an admin can add appliances",
+  "applStepKind": "What is it?",
+  "applStepDetails": "About it",
+  "applStepConnect": "How it connects",
+  "applStepOf": "Step {step} of {total}",
+  "@applStepOf": {
+    "placeholders": {
+      "step": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "applNext": "Next",
+  "applBack": "Back",
+  "applKindAircon": "Air conditioner",
+  "applKindLight": "Light",
+  "applKindFan": "Fan",
+  "applKindPlug": "Smart plug",
+  "applKindHeater": "Heater",
+  "applKindOther": "Something else",
+  "applKindAirconHint": "Wind animation, temperature, mode, fan speed and swing",
+  "applKindLightHint": "On, off and brightness",
+  "applKindFanHint": "On, off and speed",
+  "applKindPlugHint": "On and off",
+  "applKindHeaterHint": "On and off, with a safety switch-off",
+  "applKindOtherHint": "On and off",
+  "applFieldName": "Name",
+  "applFieldNameHint": "e.g. Bedroom aircon",
+  "applFieldRoom": "Room",
+  "applFieldBrand": "Brand",
+  "applFieldModel": "Model",
+  "applFieldModelHint": "e.g. FTKM25: printed on the indoor unit or the remote",
+  "applFieldOptional": "optional",
+  "applFieldRequired": "Give it a name",
+  "applRoomLiving": "Living room",
+  "applRoomBedroom": "Bedroom",
+  "applRoomKitchen": "Kitchen",
+  "applRoomBathroom": "Bathroom",
+  "applRoomStudy": "Study",
+  "applRoomGarage": "Garage",
+  "applRoomOther": "Other room…",
+  "applRoomCustomHint": "Room name",
+  "applConnTitle": "How will it be controlled?",
+  "applConnDemo": "Simulated",
+  "applConnDemoSummary": "Try the controls and the animation. Nothing real is switched.",
+  "applConnWifi": "Wi-Fi built in",
+  "applConnWifiSummary": "The air conditioner, or its Wi-Fi adapter, talks to its maker's cloud.",
+  "applConnIr": "Smart IR remote",
+  "applConnIrSummary": "A Wi-Fi IR blaster sends the signals your remote would.",
+  "applConnHa": "Home Assistant",
+  "applConnHaSummary": "Use an air conditioner you already added to Home Assistant.",
+  "applConnSoon": "Coming soon",
+  "applConnNeed": "What you need",
+  "applConnUnavailable": "This connection isn't available yet. Add it as simulated to try it out.",
+  "applReqDemo1": "Nothing. The server simulates it.",
+  "applReqWifi1": "An air conditioner with Wi-Fi built in, or its maker's Wi-Fi adapter fitted",
+  "applReqWifi2": "A 2.4 GHz Wi-Fi network (most air conditioners cannot use 5 GHz)",
+  "applReqWifi3": "The maker's app set up with this air conditioner (Daikin Mobile, MELCloud, Comfort Cloud, ThinQ, SmartThings…)",
+  "applReqWifi4": "A HomeHQ driver for that maker on the server",
+  "applReqIr1": "A Wi-Fi smart IR remote (Tuya / Smart Life, Broadlink, Sonoff, Xiaomi…)",
+  "applReqIr2": "Placed in view of the air conditioner's receiver, within a few metres",
+  "applReqIr3": "Your air conditioner's model in the remote's code library, or its codes learned from your own remote",
+  "applReqIr4": "A 2.4 GHz Wi-Fi network and an account for the remote's app",
+  "applReqIrNote": "IR is one-way: the app cannot read what the air conditioner is really doing, only what it last sent.",
+  "applReqHa1": "Home Assistant running on your network, with the air conditioner added as a climate device",
+  "applReqHa2": "A long-lived access token from your Home Assistant profile",
+  "applReqHa3": "The HomeHQ server able to reach Home Assistant",
+  "applAddedToast": "{name} added",
+  "@applAddedToast": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "applAddFailed": "Couldn't add the appliance",
+  "applRemove": "Remove",
+  "applRemoveAsk": "Remove {name}?",
+  "@applRemoveAsk": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "applRemoveBody": "It is forgotten here. Nothing is switched off or changed on a real device.",
+  "applRemovedToast": "{name} removed",
+  "@applRemovedToast": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "applRemoveFailed": "Couldn't remove it",
+  "applCapSwing": "Swing",
+  "applSimulated": "Simulated",
+  "applAirconOn": "Air conditioner on, {mode}, {temp}",
+  "@applAirconOn": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      },
+      "temp": {
+        "type": "String"
+      }
+    }
+  },
+  "applAirconOff": "Air conditioner off",
+  "toolDashboardCaption": "Where the money went: bills and purchases",
+  "dashTitle": "Spending",
+  "dashSpentIn": "Spent in {month}",
+  "@dashSpentIn": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "dashUp": "Up {pct}% on {month}",
+  "@dashUp": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      },
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "dashDown": "Down {pct}% on {month}",
+  "@dashDown": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      },
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "dashSame": "The same as {month}",
+  "@dashSame": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "dashNoPrev": "Nothing was spent in {month}",
+  "@dashNoPrev": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "dashBills": "Bills",
+  "dashPurchases": "Purchases",
+  "dashBillsPaid": "Bills paid",
+  "dashBought": "Bought",
+  "dashStillToPay": "Still to pay",
+  "dashBillCount": "{count, plural, =1{1 bill} other{{count} bills}}",
+  "@dashBillCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashOverdue": "Overdue",
+  "dashNoneOverdue": "Nothing overdue",
+  "dashPlanned": "Planned purchases",
+  "dashItemCount": "{count, plural, =1{1 item} other{{count} items}}",
+  "@dashItemCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashTrendTitle": "Last 6 months",
+  "dashChartView": "Chart",
+  "dashTableView": "Table",
+  "dashColMonth": "Month",
+  "dashColTotal": "Total",
+  "dashByType": "Bills paid, by type",
+  "dashByCategory": "Bought, by category",
+  "dashNoBillsPaid": "No bills paid this month",
+  "dashNoPurchases": "Nothing bought this month",
+  "dashCategoryOther": "No category",
+  "dashUpcomingTitle": "Next bills to pay",
+  "dashNoUpcoming": "No bills waiting",
+  "dashDueToday": "Due today",
+  "dashDueTomorrow": "Due tomorrow",
+  "dashDueIn": "Due in {days} days",
+  "@dashDueIn": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "dashOverdueBy": "Overdue by {days} days",
+  "@dashOverdueBy": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "dashViewAll": "View all",
+  "dashExcluded": "{count, plural, =1{1 purchase in another currency is not included} other{{count} purchases in another currency are not included}}",
+  "@dashExcluded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashLoadFailed": "Couldn't load the spending figures",
+  "dashEmptyTitle": "Nothing spent in {month} yet",
+  "@dashEmptyTitle": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "dashEmptyHint": "Pay a bill or mark a purchase as bought and it shows up here.",
+  "dashThisMonth": "This month",
+  "dashPrevMonth": "Previous month",
+  "dashNextMonth": "Next month",
+  "dashChartLabel": "{month}: bills {bills}, purchases {purchases}",
+  "@dashChartLabel": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      },
+      "bills": {
+        "type": "String"
+      },
+      "purchases": {
+        "type": "String"
+      }
+    }
+  },
+  "dashPaceTitle": "Spending pace",
+  "dashPaceSub": "Running total, day by day, against last month",
+  "dashPaceNow": "By day {day}: {amount}",
+  "@dashPaceNow": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "dashPaceMore": "{amount} more than at this point last month",
+  "@dashPaceMore": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "dashPaceLess": "{amount} less than at this point last month",
+  "@dashPaceLess": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "dashPaceSame": "The same as at this point last month",
+  "dashPaceLabel": "Running total: {now} this month, {prev} at the same point last month",
+  "@dashPaceLabel": {
+    "placeholders": {
+      "now": {
+        "type": "String"
+      },
+      "prev": {
+        "type": "String"
+      }
+    }
+  },
+  "dashDonutCenter": "Paid",
+  "dashTrendEmpty": "Nothing yet. Pay a bill or mark a purchase as bought and it appears here.",
+  "dashPaceAt": "Day {day}: {now} · last month {prev}",
+  "@dashPaceAt": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      },
+      "now": {
+        "type": "String"
+      },
+      "prev": {
+        "type": "String"
+      }
+    }
+  },
+  "dashPaceAtPrev": "Day {day}: last month {prev}",
+  "@dashPaceAtPrev": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      },
+      "prev": {
+        "type": "String"
+      }
+    }
+  },
+  "applStatusOn": "On",
+  "applStatusOff": "Off",
+  "applStatusTurningOn": "Turning on…",
+  "applStatusTurningOff": "Turning off…",
+  "applStatusUnconfirmed": "Not confirmed",
+  "applStatusOnSince": "On since {time} · {duration}",
+  "@applStatusOnSince": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "applStatusOffSince": "Off since {time} · {duration}",
+  "@applStatusOffSince": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "applStatusOfflineBody": "Can't be reached right now. Last known: {state}.",
+  "@applStatusOfflineBody": {
+    "placeholders": {
+      "state": {
+        "type": "String"
+      }
+    }
+  },
+  "applStatusAutoOff": "Switches itself off at {time} (in {left})",
+  "@applStatusAutoOff": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "applStatusUnconfirmedBody": "The command was sent, but the appliance didn't confirm it. Check again to be sure.",
+  "applCheckedJustNow": "Checked just now",
+  "applCheckedAgo": "Checked {ago} ago",
+  "@applCheckedAgo": {
+    "placeholders": {
+      "ago": {
+        "type": "String"
+      }
+    }
+  },
+  "applCheckFailed": "Couldn't check just now. Showing what was known at {time}.",
+  "@applCheckFailed": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "applCheckNow": "Check now",
+  "applStatusFilterNone": "Nothing is {status} right now",
+  "@applStatusFilterNone": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "applStatusSummaryLabel": "{onCount} on, {offCount} off, {offlineCount} offline",
+  "@applStatusSummaryLabel": {
+    "placeholders": {
+      "onCount": {
+        "type": "int"
+      },
+      "offCount": {
+        "type": "int"
+      },
+      "offlineCount": {
+        "type": "int"
+      }
+    }
+  },
+  "applHomeOn": "{count} of {total} on",
+  "@applHomeOn": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "applHomeOffline": "{count} offline",
+  "@applHomeOffline": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "applDurUnderMinute": "under a minute",
+  "applDurSeconds": "{n} s",
+  "@applDurSeconds": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "applDurMinutes": "{n} min",
+  "@applDurMinutes": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "applDurHours": "{h} h {m} min",
+  "@applDurHours": {
+    "placeholders": {
+      "h": {
+        "type": "int"
+      },
+      "m": {
+        "type": "int"
+      }
+    }
+  },
+  "applDurHoursOnly": "{h} h",
+  "@applDurHoursOnly": {
+    "placeholders": {
+      "h": {
+        "type": "int"
+      }
+    }
+  },
+  "applDurDays": "{d} d {h} h",
+  "@applDurDays": {
+    "placeholders": {
+      "d": {
+        "type": "int"
+      },
+      "h": {
+        "type": "int"
+      }
+    }
+  },
+  "applKindCooler": "Air cooler",
+  "applKindCoolerHint": "Speed, left-right swing, water cooling and modes",
+  "applCapCooling": "Cooling",
+  "applModeNormal": "Normal",
+  "applModeNatural": "Natural wind",
+  "applModeSleep": "Sleep",
+  "applLightOn": "Light on, {brightness}",
+  "@applLightOn": {
+    "placeholders": {
+      "brightness": {
+        "type": "String"
+      }
+    }
+  },
+  "applLightOff": "Light off",
+  "applCoolerOn": "Air cooler on, speed {speed}",
+  "@applCoolerOn": {
+    "placeholders": {
+      "speed": {
+        "type": "int"
+      }
+    }
+  },
+  "applCoolerOnCooling": "Air cooler on, speed {speed}, cooling",
+  "@applCoolerOnCooling": {
+    "placeholders": {
+      "speed": {
+        "type": "int"
+      }
+    }
+  },
+  "applCoolerOff": "Air cooler off",
+  "applStatusAll": "All",
+  "applSinceShort": "since {time}",
+  "@applSinceShort": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "applAutoOffShort": "switches off in {left}",
+  "@applAutoOffShort": {
+    "placeholders": {
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "applLastKnown": "last known: {state}",
+  "@applLastKnown": {
+    "placeholders": {
+      "state": {
+        "type": "String"
+      }
+    }
+  },
+  "applOfflineAlert": "{count, plural, =1{1 appliance can't be reached} other{{count} appliances can't be reached}}",
+  "@applOfflineAlert": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "applStatusTitle": "Status",
+  "applHeaterOn": "Heater on",
+  "applHeaterOnAutoOff": "Heater on, switches itself off in {left}",
+  "@applHeaterOnAutoOff": {
+    "placeholders": {
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "applHeaterOff": "Heater off",
+  "applHeaterOffIn": "Off in"
 }

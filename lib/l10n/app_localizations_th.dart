@@ -1452,4 +1452,761 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get purchCancelled => 'ยกเลิกรายการแล้ว';
+
+  @override
+  String get toolAppliancesCaption => 'สั่งเปิด-ปิดไฟ ปลั๊ก และแอร์';
+
+  @override
+  String get applDisabledTitle => 'ยังไม่ได้ตั้งค่าเครื่องใช้ไฟฟ้า';
+
+  @override
+  String get applDisabledHint =>
+      'server ต้องเชื่อมต่อแหล่งข้อมูลเครื่องใช้ไฟฟ้าก่อน จึงจะแสดงที่นี่ได้';
+
+  @override
+  String get applEmptyTitle => 'ไม่พบเครื่องใช้ไฟฟ้า';
+
+  @override
+  String get applEmptyHint =>
+      'เครื่องใช้ไฟฟ้าที่เชื่อมต่อกับ server จะแสดงที่นี่';
+
+  @override
+  String get applLoadFailed => 'โหลดรายการเครื่องใช้ไฟฟ้าไม่สำเร็จ';
+
+  @override
+  String get applErrUnavailable => 'เชื่อมต่อบริการเครื่องใช้ไฟฟ้าไม่ได้';
+
+  @override
+  String get applErrMisconfigured =>
+      'บัญชีเครื่องใช้ไฟฟ้าบน server ถูกปฏิเสธ กรุณาตรวจสอบการตั้งค่า';
+
+  @override
+  String get applErrLimit =>
+      'บริการเครื่องใช้ไฟฟ้าถึงขีดจำกัดการเรียกใช้แล้ว ลองใหม่ภายหลัง';
+
+  @override
+  String get applErrOffline => 'เครื่องนี้ออฟไลน์อยู่';
+
+  @override
+  String get applErrNotSupported => 'เครื่องนี้ไม่รองรับคำสั่งนี้';
+
+  @override
+  String get applErrInvalid => 'ค่านี้ไม่ถูกต้อง';
+
+  @override
+  String get applOfflineToast => 'เครื่องนี้ออฟไลน์อยู่';
+
+  @override
+  String applSwitchFailed(String name) {
+    return 'สั่ง $name ไม่สำเร็จ';
+  }
+
+  @override
+  String get applOn => 'เปิด';
+
+  @override
+  String get applOff => 'ปิด';
+
+  @override
+  String get applOffline => 'ออฟไลน์';
+
+  @override
+  String get applNoRoom => 'อื่น ๆ';
+
+  @override
+  String get applCapPower => 'เปิด/ปิด';
+
+  @override
+  String get applCapBrightness => 'ความสว่าง';
+
+  @override
+  String get applCapTemperature => 'อุณหภูมิ';
+
+  @override
+  String get applCapMode => 'โหมด';
+
+  @override
+  String get applCapFanSpeed => 'ความแรงลม';
+
+  @override
+  String get applModeAuto => 'อัตโนมัติ';
+
+  @override
+  String get applModeCool => 'เย็น';
+
+  @override
+  String get applModeDry => 'ลดความชื้น';
+
+  @override
+  String get applModeFan => 'พัดลม';
+
+  @override
+  String get applModeHeat => 'ร้อน';
+
+  @override
+  String get applAdminOnly =>
+      'เฉพาะผู้ดูแล (admin) เท่านั้นที่เปลี่ยนค่านี้ได้';
+
+  @override
+  String get applHeaterNote =>
+      'เพื่อความปลอดภัย เครื่องนี้จะปิดเองหลังเปิดไว้สักพัก';
+
+  @override
+  String get applActivityTitle => 'กิจกรรมล่าสุด';
+
+  @override
+  String get applActivityEmpty => 'ยังไม่มีกิจกรรม';
+
+  @override
+  String get applActivityFailed => 'โหลดกิจกรรมไม่สำเร็จ';
+
+  @override
+  String get applAutoOffEvent => 'ระบบปิดให้อัตโนมัติ';
+
+  @override
+  String get applSomeone => 'ใครสักคน';
+
+  @override
+  String applEventOn(String who) {
+    return '$who เปิดเครื่อง';
+  }
+
+  @override
+  String applEventOff(String who) {
+    return '$who ปิดเครื่อง';
+  }
+
+  @override
+  String applEventSet(String who, String what, String value) {
+    return '$who ตั้ง$whatเป็น $value';
+  }
+
+  @override
+  String get applAddTitle => 'เพิ่มเครื่องใช้ไฟฟ้า';
+
+  @override
+  String get applAddButton => 'เพิ่มเครื่อง';
+
+  @override
+  String get applAddFirst => 'เพิ่มเครื่องแรกของคุณ';
+
+  @override
+  String get applAddAdminOnly =>
+      'เฉพาะผู้ดูแล (admin) เท่านั้นที่เพิ่มเครื่องได้';
+
+  @override
+  String get applStepKind => 'เป็นเครื่องอะไร';
+
+  @override
+  String get applStepDetails => 'รายละเอียด';
+
+  @override
+  String get applStepConnect => 'การเชื่อมต่อ';
+
+  @override
+  String applStepOf(String step, String total) {
+    return 'ขั้นที่ $step จาก $total';
+  }
+
+  @override
+  String get applNext => 'ถัดไป';
+
+  @override
+  String get applBack => 'ย้อนกลับ';
+
+  @override
+  String get applKindAircon => 'แอร์';
+
+  @override
+  String get applKindLight => 'ไฟ';
+
+  @override
+  String get applKindFan => 'พัดลม';
+
+  @override
+  String get applKindPlug => 'ปลั๊กอัจฉริยะ';
+
+  @override
+  String get applKindHeater => 'เครื่องทำความร้อน';
+
+  @override
+  String get applKindOther => 'อื่น ๆ';
+
+  @override
+  String get applKindAirconHint =>
+      'มีภาพลมเคลื่อนไหว อุณหภูมิ โหมด ความแรงลม และการส่ายลม';
+
+  @override
+  String get applKindLightHint => 'เปิด ปิด และปรับความสว่าง';
+
+  @override
+  String get applKindFanHint => 'เปิด ปิด และปรับความแรง';
+
+  @override
+  String get applKindPlugHint => 'เปิดและปิด';
+
+  @override
+  String get applKindHeaterHint => 'เปิดและปิด พร้อมระบบปิดเองเพื่อความปลอดภัย';
+
+  @override
+  String get applKindOtherHint => 'เปิดและปิด';
+
+  @override
+  String get applFieldName => 'ชื่อ';
+
+  @override
+  String get applFieldNameHint => 'เช่น แอร์ห้องนอน';
+
+  @override
+  String get applFieldRoom => 'ห้อง';
+
+  @override
+  String get applFieldBrand => 'ยี่ห้อ';
+
+  @override
+  String get applFieldModel => 'รุ่น';
+
+  @override
+  String get applFieldModelHint =>
+      'เช่น FTKM25 ดูได้จากสติกเกอร์ที่เครื่องในห้องหรือที่รีโมท';
+
+  @override
+  String get applFieldOptional => 'ไม่บังคับ';
+
+  @override
+  String get applFieldRequired => 'ตั้งชื่อให้เครื่องด้วย';
+
+  @override
+  String get applRoomLiving => 'ห้องนั่งเล่น';
+
+  @override
+  String get applRoomBedroom => 'ห้องนอน';
+
+  @override
+  String get applRoomKitchen => 'ห้องครัว';
+
+  @override
+  String get applRoomBathroom => 'ห้องน้ำ';
+
+  @override
+  String get applRoomStudy => 'ห้องทำงาน';
+
+  @override
+  String get applRoomGarage => 'โรงรถ';
+
+  @override
+  String get applRoomOther => 'ห้องอื่น…';
+
+  @override
+  String get applRoomCustomHint => 'ชื่อห้อง';
+
+  @override
+  String get applConnTitle => 'จะควบคุมเครื่องนี้อย่างไร';
+
+  @override
+  String get applConnDemo => 'จำลอง';
+
+  @override
+  String get applConnDemoSummary =>
+      'ลองปุ่มควบคุมและภาพเคลื่อนไหว ไม่ได้สั่งเครื่องจริง';
+
+  @override
+  String get applConnWifi => 'แอร์มี Wi-Fi ในตัว';
+
+  @override
+  String get applConnWifiSummary =>
+      'แอร์ หรืออะแดปเตอร์ Wi-Fi ของแอร์ คุยกับคลาวด์ของยี่ห้อนั้น';
+
+  @override
+  String get applConnIr => 'รีโมทอินฟราเรดอัจฉริยะ';
+
+  @override
+  String get applConnIrSummary =>
+      'ตัวส่งสัญญาณ IR ผ่าน Wi-Fi ส่งคำสั่งแทนรีโมท';
+
+  @override
+  String get applConnHa => 'Home Assistant';
+
+  @override
+  String get applConnHaSummary =>
+      'ใช้แอร์ที่เพิ่มไว้ใน Home Assistant อยู่แล้ว';
+
+  @override
+  String get applConnSoon => 'เร็ว ๆ นี้';
+
+  @override
+  String get applConnNeed => 'สิ่งที่ต้องมี';
+
+  @override
+  String get applConnUnavailable =>
+      'การเชื่อมต่อนี้ยังไม่พร้อมใช้งาน เพิ่มแบบจำลองเพื่อลองใช้ไปก่อนได้';
+
+  @override
+  String get applReqDemo1 => 'ไม่ต้องมีอะไร server จำลองให้';
+
+  @override
+  String get applReqWifi1 =>
+      'แอร์ที่มี Wi-Fi ในตัว หรือติดอะแดปเตอร์ Wi-Fi ของยี่ห้อนั้น';
+
+  @override
+  String get applReqWifi2 =>
+      'เครือข่าย Wi-Fi 2.4 GHz (แอร์ส่วนใหญ่ใช้ 5 GHz ไม่ได้)';
+
+  @override
+  String get applReqWifi3 =>
+      'แอปของยี่ห้อนั้นที่ตั้งค่าแอร์เครื่องนี้แล้ว (Daikin Mobile, MELCloud, Comfort Cloud, ThinQ, SmartThings…)';
+
+  @override
+  String get applReqWifi4 => 'ไดรเวอร์ของ HomeHQ สำหรับยี่ห้อนั้นบน server';
+
+  @override
+  String get applReqIr1 =>
+      'รีโมท IR อัจฉริยะแบบ Wi-Fi (Tuya / Smart Life, Broadlink, Sonoff, Xiaomi…)';
+
+  @override
+  String get applReqIr2 =>
+      'วางให้เห็นช่องรับสัญญาณของแอร์ ห่างไม่เกินไม่กี่เมตร';
+
+  @override
+  String get applReqIr3 =>
+      'รุ่นแอร์ของคุณอยู่ในคลังรหัสของรีโมท หรือเรียนรู้รหัสจากรีโมทเดิมได้';
+
+  @override
+  String get applReqIr4 => 'เครือข่าย Wi-Fi 2.4 GHz และบัญชีของแอปรีโมทตัวนั้น';
+
+  @override
+  String get applReqIrNote =>
+      'IR ส่งทางเดียว แอปจึงอ่านไม่ได้ว่าแอร์ทำอะไรอยู่จริง รู้แค่ว่าสั่งอะไรไปล่าสุด';
+
+  @override
+  String get applReqHa1 =>
+      'Home Assistant ที่รันอยู่ในเครือข่ายของคุณ และเพิ่มแอร์เป็นอุปกรณ์ climate แล้ว';
+
+  @override
+  String get applReqHa2 =>
+      'Long-lived access token จากโปรไฟล์ใน Home Assistant';
+
+  @override
+  String get applReqHa3 => 'server ของ HomeHQ ต้องเข้าถึง Home Assistant ได้';
+
+  @override
+  String applAddedToast(String name) {
+    return 'เพิ่ม $name แล้ว';
+  }
+
+  @override
+  String get applAddFailed => 'เพิ่มเครื่องไม่สำเร็จ';
+
+  @override
+  String get applRemove => 'ลบเครื่องนี้';
+
+  @override
+  String applRemoveAsk(String name) {
+    return 'ลบ $name ใช่ไหม';
+  }
+
+  @override
+  String get applRemoveBody =>
+      'แอปจะลืมเครื่องนี้ ไม่ได้ปิดหรือเปลี่ยนค่าอะไรบนเครื่องจริง';
+
+  @override
+  String applRemovedToast(String name) {
+    return 'ลบ $name แล้ว';
+  }
+
+  @override
+  String get applRemoveFailed => 'ลบไม่สำเร็จ';
+
+  @override
+  String get applCapSwing => 'ส่ายลม';
+
+  @override
+  String get applSimulated => 'จำลอง';
+
+  @override
+  String applAirconOn(String mode, String temp) {
+    return 'แอร์เปิดอยู่ โหมด$mode $temp';
+  }
+
+  @override
+  String get applAirconOff => 'แอร์ปิดอยู่';
+
+  @override
+  String get toolDashboardCaption => 'เงินไปไหนบ้าง รวมบิลและของที่ซื้อ';
+
+  @override
+  String get dashTitle => 'รายจ่าย';
+
+  @override
+  String dashSpentIn(String month) {
+    return 'ใช้จ่ายใน$month';
+  }
+
+  @override
+  String dashUp(String pct, String month) {
+    return 'เพิ่มขึ้น $pct% จาก$month';
+  }
+
+  @override
+  String dashDown(String pct, String month) {
+    return 'ลดลง $pct% จาก$month';
+  }
+
+  @override
+  String dashSame(String month) {
+    return 'เท่ากับ$month';
+  }
+
+  @override
+  String dashNoPrev(String month) {
+    return '$monthไม่มีรายจ่าย';
+  }
+
+  @override
+  String get dashBills => 'บิล';
+
+  @override
+  String get dashPurchases => 'ของที่ซื้อ';
+
+  @override
+  String get dashBillsPaid => 'บิลที่จ่ายแล้ว';
+
+  @override
+  String get dashBought => 'ซื้อแล้ว';
+
+  @override
+  String get dashStillToPay => 'ค้างจ่าย';
+
+  @override
+  String dashBillCount(int count) {
+    return '$count บิล';
+  }
+
+  @override
+  String get dashOverdue => 'เลยกำหนด';
+
+  @override
+  String get dashNoneOverdue => 'ไม่มีบิลเลยกำหนด';
+
+  @override
+  String get dashPlanned => 'ของที่วางแผนจะซื้อ';
+
+  @override
+  String dashItemCount(int count) {
+    return '$count รายการ';
+  }
+
+  @override
+  String get dashTrendTitle => '6 เดือนล่าสุด';
+
+  @override
+  String get dashChartView => 'กราฟ';
+
+  @override
+  String get dashTableView => 'ตาราง';
+
+  @override
+  String get dashColMonth => 'เดือน';
+
+  @override
+  String get dashColTotal => 'รวม';
+
+  @override
+  String get dashByType => 'บิลที่จ่ายแล้ว แยกตามประเภท';
+
+  @override
+  String get dashByCategory => 'ของที่ซื้อ แยกตามหมวด';
+
+  @override
+  String get dashNoBillsPaid => 'เดือนนี้ยังไม่ได้จ่ายบิล';
+
+  @override
+  String get dashNoPurchases => 'เดือนนี้ยังไม่ได้ซื้อของ';
+
+  @override
+  String get dashCategoryOther => 'ไม่ระบุหมวด';
+
+  @override
+  String get dashUpcomingTitle => 'บิลที่ต้องจ่ายถัดไป';
+
+  @override
+  String get dashNoUpcoming => 'ไม่มีบิลค้างจ่าย';
+
+  @override
+  String get dashDueToday => 'ครบกำหนดวันนี้';
+
+  @override
+  String get dashDueTomorrow => 'ครบกำหนดพรุ่งนี้';
+
+  @override
+  String dashDueIn(int days) {
+    return 'อีก $days วัน';
+  }
+
+  @override
+  String dashOverdueBy(int days) {
+    return 'เลยกำหนด $days วัน';
+  }
+
+  @override
+  String get dashViewAll => 'ดูทั้งหมด';
+
+  @override
+  String dashExcluded(int count) {
+    return '$count รายการที่ซื้อเป็นสกุลเงินอื่น ไม่รวมในยอด';
+  }
+
+  @override
+  String get dashLoadFailed => 'โหลดตัวเลขรายจ่ายไม่สำเร็จ';
+
+  @override
+  String dashEmptyTitle(String month) {
+    return '$monthยังไม่มีรายจ่าย';
+  }
+
+  @override
+  String get dashEmptyHint => 'จ่ายบิลหรือบันทึกว่าซื้อของแล้ว จะแสดงที่นี่';
+
+  @override
+  String get dashThisMonth => 'เดือนนี้';
+
+  @override
+  String get dashPrevMonth => 'เดือนก่อน';
+
+  @override
+  String get dashNextMonth => 'เดือนถัดไป';
+
+  @override
+  String dashChartLabel(String month, String bills, String purchases) {
+    return '$month: บิล $bills ของที่ซื้อ $purchases';
+  }
+
+  @override
+  String get dashPaceTitle => 'จังหวะการใช้จ่าย';
+
+  @override
+  String get dashPaceSub => 'ยอดสะสมรายวัน เทียบกับเดือนก่อน';
+
+  @override
+  String dashPaceNow(int day, String amount) {
+    return 'ถึงวันที่ $day: $amount';
+  }
+
+  @override
+  String dashPaceMore(String amount) {
+    return 'มากกว่าช่วงเดียวกันของเดือนก่อน $amount';
+  }
+
+  @override
+  String dashPaceLess(String amount) {
+    return 'น้อยกว่าช่วงเดียวกันของเดือนก่อน $amount';
+  }
+
+  @override
+  String get dashPaceSame => 'เท่ากับช่วงเดียวกันของเดือนก่อน';
+
+  @override
+  String dashPaceLabel(String now, String prev) {
+    return 'ยอดสะสม: เดือนนี้ $now ช่วงเดียวกันของเดือนก่อน $prev';
+  }
+
+  @override
+  String get dashDonutCenter => 'จ่ายแล้ว';
+
+  @override
+  String get dashTrendEmpty =>
+      'ยังไม่มีข้อมูล จ่ายบิลหรือบันทึกว่าซื้อของแล้ว จะแสดงที่นี่';
+
+  @override
+  String dashPaceAt(int day, String now, String prev) {
+    return 'วันที่ $day: $now · เดือนก่อน $prev';
+  }
+
+  @override
+  String dashPaceAtPrev(int day, String prev) {
+    return 'วันที่ $day: เดือนก่อน $prev';
+  }
+
+  @override
+  String get applStatusOn => 'เปิดอยู่';
+
+  @override
+  String get applStatusOff => 'ปิดอยู่';
+
+  @override
+  String get applStatusTurningOn => 'กำลังเปิด…';
+
+  @override
+  String get applStatusTurningOff => 'กำลังปิด…';
+
+  @override
+  String get applStatusUnconfirmed => 'ยังไม่ยืนยัน';
+
+  @override
+  String applStatusOnSince(String time, String duration) {
+    return 'เปิดตั้งแต่ $time · $duration';
+  }
+
+  @override
+  String applStatusOffSince(String time, String duration) {
+    return 'ปิดตั้งแต่ $time · $duration';
+  }
+
+  @override
+  String applStatusOfflineBody(String state) {
+    return 'ติดต่อเครื่องไม่ได้ตอนนี้ สถานะล่าสุดที่รู้: $state';
+  }
+
+  @override
+  String applStatusAutoOff(String time, String left) {
+    return 'จะปิดเองเวลา $time (อีก $left)';
+  }
+
+  @override
+  String get applStatusUnconfirmedBody =>
+      'ส่งคำสั่งแล้ว แต่เครื่องยังไม่ยืนยัน กดตรวจสอบอีกครั้งเพื่อความแน่ใจ';
+
+  @override
+  String get applCheckedJustNow => 'ตรวจสอบเมื่อสักครู่';
+
+  @override
+  String applCheckedAgo(String ago) {
+    return 'ตรวจสอบเมื่อ $ago ที่แล้ว';
+  }
+
+  @override
+  String applCheckFailed(String time) {
+    return 'ตรวจสอบไม่สำเร็จ กำลังแสดงสถานะล่าสุดเมื่อ $time';
+  }
+
+  @override
+  String get applCheckNow => 'ตรวจสอบตอนนี้';
+
+  @override
+  String applStatusFilterNone(String status) {
+    return 'ตอนนี้ไม่มีเครื่องที่$status';
+  }
+
+  @override
+  String applStatusSummaryLabel(int onCount, int offCount, int offlineCount) {
+    return 'เปิดอยู่ $onCount ปิดอยู่ $offCount ออฟไลน์ $offlineCount';
+  }
+
+  @override
+  String applHomeOn(int count, int total) {
+    return 'เปิดอยู่ $count จาก $total เครื่อง';
+  }
+
+  @override
+  String applHomeOffline(int count) {
+    return 'ออฟไลน์ $count';
+  }
+
+  @override
+  String get applDurUnderMinute => 'ไม่ถึงนาที';
+
+  @override
+  String applDurSeconds(int n) {
+    return '$n วินาที';
+  }
+
+  @override
+  String applDurMinutes(int n) {
+    return '$n นาที';
+  }
+
+  @override
+  String applDurHours(int h, int m) {
+    return '$h ชม. $m นาที';
+  }
+
+  @override
+  String applDurHoursOnly(int h) {
+    return '$h ชม.';
+  }
+
+  @override
+  String applDurDays(int d, int h) {
+    return '$d วัน $h ชม.';
+  }
+
+  @override
+  String get applKindCooler => 'พัดลมไอเย็น';
+
+  @override
+  String get applKindCoolerHint =>
+      'ปรับแรงลม ส่ายซ้าย–ขวา เปิดน้ำทำความเย็น และโหมด';
+
+  @override
+  String get applCapCooling => 'ทำความเย็น';
+
+  @override
+  String get applModeNormal => 'ปกติ';
+
+  @override
+  String get applModeNatural => 'ลมธรรมชาติ';
+
+  @override
+  String get applModeSleep => 'นอนหลับ';
+
+  @override
+  String applLightOn(String brightness) {
+    return 'ไฟเปิดอยู่ ความสว่าง $brightness';
+  }
+
+  @override
+  String get applLightOff => 'ไฟปิดอยู่';
+
+  @override
+  String applCoolerOn(int speed) {
+    return 'พัดลมไอเย็นเปิดอยู่ แรงลม $speed';
+  }
+
+  @override
+  String applCoolerOnCooling(int speed) {
+    return 'พัดลมไอเย็นเปิดอยู่ แรงลม $speed ทำความเย็นอยู่';
+  }
+
+  @override
+  String get applCoolerOff => 'พัดลมไอเย็นปิดอยู่';
+
+  @override
+  String get applStatusAll => 'ทั้งหมด';
+
+  @override
+  String applSinceShort(String time) {
+    return 'ตั้งแต่ $time';
+  }
+
+  @override
+  String applAutoOffShort(String left) {
+    return 'ปิดเองใน $left';
+  }
+
+  @override
+  String applLastKnown(String state) {
+    return 'ล่าสุด: $state';
+  }
+
+  @override
+  String applOfflineAlert(int count) {
+    return 'ติดต่อไม่ได้ $count เครื่อง';
+  }
+
+  @override
+  String get applStatusTitle => 'สถานะ';
+
+  @override
+  String get applHeaterOn => 'ฮีตเตอร์เปิดอยู่';
+
+  @override
+  String applHeaterOnAutoOff(String left) {
+    return 'ฮีตเตอร์เปิดอยู่ จะปิดเองในอีก $left';
+  }
+
+  @override
+  String get applHeaterOff => 'ฮีตเตอร์ปิดอยู่';
+
+  @override
+  String get applHeaterOffIn => 'ปิดเองใน';
 }
