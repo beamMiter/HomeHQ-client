@@ -28,7 +28,8 @@ Future<void> main() async {
   };
 
   PlatformDispatcher.instance.onError = (Object error, StackTrace stack) {
-    if (kDebugMode) debugPrint('🛑 [platform] $error');
+    // With the stack: an async error says nothing about where it came from.
+    if (kDebugMode) debugPrint('🛑 [platform] $error\n$stack');
     return true;
   };
 

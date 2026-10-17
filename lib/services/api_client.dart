@@ -42,6 +42,11 @@ class ApiClient {
   }
 
   static String _baseUrl() {
+    // A build can be pointed at another server without touching the .env:
+    // `--dart-define=API_BASE_URL=http://127.0.0.1:18082/api/v1`.
+    const override = String.fromEnvironment('API_BASE_URL');
+    if (override.isNotEmpty) return _normalizeBaseUrl(override);
+
     final env = dotenv.env;
     final configured = env['API_BASE_URL'] ?? env['API_BASE'];
     if (configured != null && configured.isNotEmpty) {
