@@ -78,6 +78,8 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   generate: true # gen-l10n: lib/l10n/*.arb -> AppLocalizations
+  shaders:
+    - shaders/aircon_air.frag # the air the drawn air conditioner blows
 
   assets:
     - .env.development
