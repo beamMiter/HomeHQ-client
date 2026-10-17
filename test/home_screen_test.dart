@@ -69,7 +69,9 @@ class _Auth extends AuthNotifier {
 const _tools = {
   'Home Cameras': '/cameras',
   'Contractors': '/contractors',
+  'Home Appliances': '/appliances',
   'Important Notes': '/notes',
+  'Spending Dashboard': '/dashboard',
   'Purchases': '/purchases',
   'Bills': '/bills',
   'Medicine Stock': '/medicine',
@@ -339,6 +341,43 @@ void main() {
           scrollable: find.byType(Scrollable).first,
         );
         expect(find.text(name), findsOneWidget, reason: name);
+      }
+    });
+
+    testWidgets('contractors and appliances share a row, the rest are wide', (
+      t,
+    ) async {
+      await _open(t);
+      Size tile(String name) => t.getSize(
+        find
+            .ancestor(of: find.text(name), matching: find.byType(Material))
+            .first,
+      );
+      final contractors = t.getTopLeft(find.text('Contractors'));
+      final appliances = t.getTopLeft(find.text('Home Appliances'));
+      expect(appliances.dy, contractors.dy, reason: 'same row');
+      expect(
+        appliances.dx,
+        greaterThan(contractors.dx),
+        reason: 'on the right',
+      );
+
+      // Half the width each...
+      final half = tile('Contractors').width;
+      expect(tile('Home Appliances').width, half);
+      // ...and every other tool is a full-width card, in this order, below.
+      var above = appliances.dy;
+      for (final name in [
+        'Important Notes',
+        'Spending Dashboard',
+        'Purchases',
+        'Bills',
+        'Medicine Stock',
+      ]) {
+        expect(tile(name).width, greaterThan(half * 1.8), reason: name);
+        final y = t.getTopLeft(find.text(name)).dy;
+        expect(y, greaterThan(above), reason: '$name sits below the previous');
+        above = y;
       }
     });
 

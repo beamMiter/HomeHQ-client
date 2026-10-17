@@ -7,9 +7,11 @@ import 'package:intl/intl.dart';
 
 import '../l10n/friendly_error.dart';
 import '../l10n/l10n.dart';
+import '../models/appliance.dart';
 import '../models/home_camera.dart';
 import '../models/weather.dart';
 import '../shared/app_colors.dart';
+import '../state/appliances_provider.dart';
 import '../state/auth_state.dart';
 import '../state/cameras_provider.dart';
 import '../state/last_tool_provider.dart';
@@ -52,6 +54,7 @@ class HomeScreen extends ConsumerWidget {
             ref.invalidate(camerasProvider);
             ref.invalidate(cameraSnapshotProvider);
             await ref.read(locationControllerProvider.notifier).refresh();
+            if (!context.mounted) return;
             ref.invalidate(currentWeatherProvider);
             await ref.read(currentWeatherProvider.future);
           },
@@ -529,26 +532,34 @@ class _ToolsSection extends StatefulWidget {
 
 class _ToolsSectionState extends State<_ToolsSection>
     with SingleTickerProviderStateMixin {
-  static const _count = 6;
-
   late final AnimationController _reveal = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 750),
   );
 
   /// One slice of the reveal per tile, so they come in one after another.
-  late final List<CurvedAnimation> _slots = [
-    for (var i = 0; i < _count; i++)
-      CurvedAnimation(
-        parent: _reveal,
-        curve: Interval(
-          i / _count * .55,
-          i / _count * .55 + .45,
-          curve: Curves.easeOutCubic,
-        ),
-      ),
-  ];
+  /// Sized from the tiles that are actually shown (see [_ensureSlots]), so
+  /// adding or removing a tile never needs a count kept in step by hand.
+  List<CurvedAnimation> _slots = const [];
   bool _started = false;
+
+  void _ensureSlots(int n) {
+    if (_slots.length == n) return;
+    for (final s in _slots) {
+      s.dispose();
+    }
+    _slots = [
+      for (var i = 0; i < n; i++)
+        CurvedAnimation(
+          parent: _reveal,
+          curve: Interval(
+            i / n * .55,
+            i / n * .55 + .45,
+            curve: Curves.easeOutCubic,
+          ),
+        ),
+    ];
+  }
 
   @override
   void didChangeDependencies() {
@@ -600,18 +611,31 @@ class _ToolsSectionState extends State<_ToolsSection>
       '/cameras',
       l10n.toolCamerasCaption,
     );
-    final grid = <_ToolItem>[
-      _ToolItem(
-        Icons.handyman_rounded,
-        'Contractors',
-        '/contractors',
-        l10n.toolContractorsCaption,
-      ),
+    final contractors = _ToolItem(
+      Icons.handyman_rounded,
+      'Contractors',
+      '/contractors',
+      l10n.toolContractorsCaption,
+    );
+    final appliances = _ToolItem(
+      Icons.electrical_services_rounded,
+      'Home Appliances',
+      '/appliances',
+      l10n.toolAppliancesCaption,
+    );
+    // The rest, one wide tile each, in the order they sit on the screen.
+    final wide = <_ToolItem>[
       _ToolItem(
         Icons.event_note_rounded,
         'Important Notes',
         '/notes',
         l10n.toolNotesCaption,
+      ),
+      _ToolItem(
+        Icons.insights_rounded,
+        'Spending Dashboard',
+        '/dashboard',
+        l10n.toolDashboardCaption,
       ),
       _ToolItem(
         Icons.shopping_cart_checkout_rounded,
@@ -625,59 +649,36 @@ class _ToolsSectionState extends State<_ToolsSection>
         '/bills',
         l10n.toolBillsCaption,
       ),
-    ];
-    final medicine = _ToolItem(
-      Icons.medical_services_rounded,
-      'Medicine Stock',
-      '/medicine',
-      l10n.toolMedicineCaption,
-    );
-
-    Widget pair(int a) => IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(child: _entrance(a, _ToolTile(item: grid[a - 1]))),
-          const SizedBox(width: 12),
-          Expanded(child: _entrance(a + 1, _ToolTile(item: grid[a]))),
-        ],
+      _ToolItem(
+        Icons.medical_services_rounded,
+        'Medicine Stock',
+        '/medicine',
+        l10n.toolMedicineCaption,
       ),
-    );
+    ];
+
+    // The cameras tile, the contractors/appliances pair, then the wide ones.
+    _ensureSlots(3 + wide.length);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(4, 0, 4, 14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        _entrance(0, _CamerasTile(item: cameras)),
+        const SizedBox(height: 12),
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                l10n.homeToolsTitle,
-                style: const TextStyle(
-                  color: AppColors.deepNavy,
-                  fontSize: 19,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                l10n.homeToolsSubtitle,
-                style: const TextStyle(
-                  color: AppColors.textMuted,
-                  fontSize: 13,
-                ),
-              ),
+              Expanded(child: _entrance(1, _ToolTile(item: contractors))),
+              const SizedBox(width: 12),
+              Expanded(child: _entrance(2, _AppliancesTile(item: appliances))),
             ],
           ),
         ),
-        _entrance(0, _CamerasTile(item: cameras)),
-        const SizedBox(height: 12),
-        pair(1),
-        const SizedBox(height: 12),
-        pair(3),
-        const SizedBox(height: 12),
-        _entrance(5, _ToolTile(item: medicine, wide: true)),
+        for (var i = 0; i < wide.length; i++) ...[
+          const SizedBox(height: 12),
+          _entrance(3 + i, _ToolTile(item: wide[i], wide: true)),
+        ],
       ],
     );
   }
@@ -830,6 +831,31 @@ class _LastUsedChip extends StatelessWidget {
 void _open(BuildContext context, WidgetRef ref, _ToolItem item) {
   ref.read(lastToolProvider.notifier).opened(item.route);
   context.push(item.route);
+}
+
+/// The appliances tile, saying how many are on (and offline, if any)
+/// once the server has told us; until then, or when appliances aren't set
+/// up, its usual caption.
+class _AppliancesTile extends ConsumerWidget {
+  const _AppliancesTile({required this.item});
+  final _ToolItem item;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final enabled = ref.watch(appliancesStatusProvider).value?.enabled == true;
+    final list = enabled ? ref.watch(appliancesProvider).value : null;
+    if (list == null || list.isEmpty) return _ToolTile(item: item);
+    int count(ApplianceStatus s) => list.where((a) => a.status == s).length;
+    final offline = count(ApplianceStatus.offline);
+    final caption = [
+      l10n.applHomeOn(count(ApplianceStatus.on), list.length),
+      if (offline > 0) l10n.applHomeOffline(offline),
+    ].join(' · ');
+    return _ToolTile(
+      item: _ToolItem(item.icon, item.label, item.route, caption),
+    );
+  }
 }
 
 class _ToolTile extends ConsumerWidget {

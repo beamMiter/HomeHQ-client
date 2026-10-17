@@ -24,6 +24,11 @@ import 'screens/medicine_form_screen.dart';
 import 'screens/medicine_detail_screen.dart';
 import 'screens/camera_player_screen.dart';
 import 'screens/cameras_screen.dart';
+import 'screens/appliances_screen.dart';
+import 'screens/appliance_add_screen.dart';
+import 'screens/dashboard_screen.dart';
+import 'screens/appliance_detail_screen.dart';
+import 'models/appliance.dart';
 import 'models/home_camera.dart';
 import 'l10n/l10n.dart';
 
@@ -149,6 +154,27 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (_, st) => CameraPlayerScreen(
               id: st.pathParameters['id']!,
               camera: st.extra is HomeCamera ? st.extra as HomeCamera : null,
+            ),
+          ),
+        ],
+      ),
+
+      // Where the money went: what bills and purchases add up to.
+      GoRoute(path: '/dashboard', builder: (_, __) => const DashboardScreen()),
+
+      // Home appliances: a list with a power switch each, and a page per
+      // appliance with its other controls.
+      GoRoute(
+        path: '/appliances',
+        builder: (_, __) => const AppliancesScreen(),
+        routes: [
+          // Before ':id', or "new" would be taken for an appliance's id.
+          GoRoute(path: 'new', builder: (_, __) => const ApplianceAddScreen()),
+          GoRoute(
+            path: ':id',
+            builder: (_, st) => ApplianceDetailScreen(
+              id: st.pathParameters['id']!,
+              appliance: st.extra is Appliance ? st.extra as Appliance : null,
             ),
           ),
         ],
