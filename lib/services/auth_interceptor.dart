@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'token_storage.dart';
 import '../providers.dart' show authServiceProvider;
+import '../state/auth_state.dart' show authProvider;
 
 class AuthInterceptor extends Interceptor {
   AuthInterceptor({required this.storage, required this.ref});
@@ -69,13 +70,16 @@ class AuthInterceptor extends Interceptor {
       final req = err.requestOptions;
       req.headers['Authorization'] = 'Bearer $newToken';
       req.extra['__ret'] = true;
-      
+
       final auth = ref.read(authServiceProvider);
       final cloned = await auth.dio.fetch(req);
       return handler.resolve(cloned);
     } catch (_) {
       // refresh fail → ลบ token แล้วให้ upstream จัดการ (เช่นเด้งไปหน้า Login)
       await storage.clear();
+      // And say so to the app, which otherwise goes on as signed in (with
+      // no token left) until it is restarted.
+      ref.read(authProvider.notifier).sessionEnded();
       return handler.next(err);
     }
   }

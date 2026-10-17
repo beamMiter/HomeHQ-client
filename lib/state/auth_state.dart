@@ -108,6 +108,15 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
+  /// The server ended the session (the account is gone, or the login could
+  /// not be renewed) and the tokens are already wiped: back to signing in,
+  /// rather than staying "signed in" with every request failing.
+  void sessionEnded() {
+    if (state.isAuthenticated || state.user != null) {
+      state = const AuthState(loading: false);
+    }
+  }
+
   Future<void> tryLoadSession() async {
     if (_booting) return;
     _booting = true;

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:homehq/l10n/l10n.dart';
 import 'package:homehq/models/user.dart';
+import 'package:homehq/providers.dart' show tokenStorageProvider;
 import 'package:homehq/screens/account_screen.dart';
 import 'package:homehq/services/auth_interceptor.dart';
 import 'package:homehq/services/token_storage.dart';
@@ -280,7 +281,53 @@ void main() {
 
       expect(storage.cleared, isFalse);
     });
+
+    test('an account that is gone ends the session, back to sign in', () async {
+      final storage = _SpyStorage();
+      final container = ProviderContainer(
+        overrides: [
+          tokenStorageProvider.overrideWithValue(storage),
+          authProvider.overrideWith(() => _SignedIn()),
+        ],
+      );
+      addTearDown(container.dispose);
+      expect(container.read(authProvider).isAuthenticated, isTrue);
+      final interceptor = AuthInterceptor(
+        storage: storage,
+        ref: container.read(_refProvider),
+      );
+
+      // The server: valid token, but no account behind it (a database reset
+      // under a running app). The refresh can't help.
+      final req = RequestOptions(path: '/appliances');
+      final handler = _Handler();
+      final passedOn = expectLater(handler.done, throwsA(isA<Object>()));
+      interceptor.onError(
+        DioException(
+          requestOptions: req,
+          response: Response(
+            requestOptions: req,
+            statusCode: 401,
+            data: {'error': 'account_not_found'},
+          ),
+        ),
+        handler,
+      );
+      await passedOn;
+
+      expect(storage.cleared, isTrue);
+      expect(container.read(authProvider).isAuthenticated, isFalse);
+    });
   });
+}
+
+class _SignedIn extends AuthNotifier {
+  @override
+  AuthState build() => const AuthState(
+    loading: false,
+    isAuthenticated: true,
+    user: User(id: 'gone', name: 'Somchai', email: 'a@x.io'),
+  );
 }
 
 final _refProvider = Provider<Ref>((ref) => ref);
@@ -296,6 +343,9 @@ class _SpyStorage extends TokenStorage {
 
   @override
   Future<String?> getAccessToken() async => 'token';
+
+  @override
+  Future<String?> getRefreshToken() async => null;
 
   @override
   Future<void> clear() async => cleared = true;
