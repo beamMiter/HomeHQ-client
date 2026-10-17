@@ -50,9 +50,16 @@ class AppToast {
 
     // Latest wins. Stacking a queue of stale messages is worse than replacing
     // one: by the time the 4th is shown the user has long moved on.
-    messenger
-      ..clearSnackBars()
-      ..showSnackBar(_build(message.trim(), type, duration));
+    try {
+      messenger
+        ..clearSnackBars()
+        ..showSnackBar(_build(message.trim(), type, duration));
+    } catch (e, stack) {
+      // A message is never worth breaking what it reports on: the caller
+      // goes on (to the next page, say) whatever happens here. (Seen after a
+      // hot reload left a page half torn down.)
+      debugPrint('⚠️ toast not shown: $e\n$stack');
+    }
   }
 
   static SnackBar _build(String message, ToastType type, Duration? duration) {
