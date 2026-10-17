@@ -1,5 +1,0 @@
-* text=auto
-*.go text eol=lf
-*.sql text eol=lf
-*.md text eol=lf
-*.env text eol=lf
