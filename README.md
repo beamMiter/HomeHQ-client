@@ -25,8 +25,16 @@ flutter pub get
 flutter run                      # several devices: flutter devices, then flutter run -d <id>
 ```
 
-- **API address:** the `API_BASE_URL` key in `.env.development` (an asset of the
-  app, read by `lib/config/env.dart`).
+- **API address:** the `API_BASE_URL` key in your own `.env.development` (an asset
+  of the app, read by `lib/config/env.dart`). The file is git-ignored, so create
+  it once after cloning, with one line:
+
+  ```
+  API_BASE_URL=http://127.0.0.1:8080/api/v1
+  ```
+
+  Without it `flutter analyze` warns and `flutter test` and builds stop (`Failed to
+  build asset bundle`), because `pubspec.yaml` lists it as an asset.
 
   | Running on | Value |
   | --- | --- |
@@ -34,9 +42,8 @@ flutter run                      # several devices: flutter devices, then flutte
   | Android emulator | `http://10.0.2.2:8080/api/v1` |
   | Physical device | `http://<your machine's LAN IP>:8080/api/v1` |
 
-  Keep only public values in that file: it ships inside the app. Files for
-  other environments (`.env.production`, `.env.staging`, `.env.*.local`) are
-  git-ignored.
+  Keep only public values in that file: it ships inside the app, and anyone
+  can unpack an app. Anything private belongs on the server.
 
 - **Account:** on a database seeded by the server (`make seed`, empty or
   throwaway database only) sign in with `admin@example.com` / `admin2026` or

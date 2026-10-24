@@ -40,8 +40,11 @@ windows/flutter/ephemeral/
 .idea/
 # .vscode/   # ถ้าไม่อยาก commit ก็ uncomment บรรทัดนี้
 
-# --- App configuration for other environments (yours, never committed) ---
-# .env.development is the app's shipped, public-values-only asset.
+# --- App configuration (yours, never committed) ---
+# Each machine keeps its own .env.development (see the README). The app lists it
+# as an asset, so it must exist locally, and CI creates one. It is packed INTO
+# the app: never put a secret in it, anyone can unpack an app.
+.env.development
 .env.production
 .env.staging
 .env.*.local
