@@ -480,6 +480,101 @@ void main() {
     });
   });
 
+  group('AppToast across pages', () {
+    /// The top of the highest copy of the toast on screen. During a page
+    /// change each page, and the hero flight between them, can draw its own
+    /// copy; what the eye follows is the one that is up.
+    double highestTop(WidgetTester t) {
+      var best = double.infinity;
+      for (final e in _card.evaluate()) {
+        final b = e.renderObject! as RenderBox;
+        final top = b.localToGlobal(Offset.zero).dy;
+        if (top < best) best = top;
+      }
+      return best;
+    }
+
+    Future<GlobalKey<NavigatorState>> pumpPages(WidgetTester t) async {
+      final nav = GlobalKey<NavigatorState>();
+      await t.pumpWidget(
+        MaterialApp(
+          navigatorKey: nav,
+          scaffoldMessengerKey: AppToast.messengerKey,
+          home: const Scaffold(body: Center(child: Text('PAGE A'))),
+        ),
+      );
+      return nav;
+    }
+
+    for (final change in ['push', 'pop']) {
+      testWidgets('a $change does not make it come up again', (t) async {
+        final nav = await pumpPages(t);
+        if (change == 'pop') {
+          nav.currentState!.push(
+            MaterialPageRoute<void>(
+              builder: (_) =>
+                  const Scaffold(body: Center(child: Text('PAGE B'))),
+            ),
+          );
+          await t.pumpAndSettle();
+        }
+        AppToast.success('saved', duration: const Duration(seconds: 3));
+        await t.pump();
+        await t.pump(const Duration(milliseconds: 500)); // fully up
+
+        if (change == 'push') {
+          nav.currentState!.push(
+            MaterialPageRoute<void>(
+              builder: (_) =>
+                  const Scaffold(body: Center(child: Text('PAGE B'))),
+            ),
+          );
+        } else {
+          nav.currentState!.pop();
+        }
+
+        // Through the page change and after it, the toast stays where it is:
+        // it never drops back toward the edge and comes up again.
+        final rest = highestTop(t);
+        final seen = <double>[];
+        for (var i = 0; i < 40; i++) {
+          await t.pump(const Duration(milliseconds: 20));
+          seen.add(highestTop(t) - rest);
+        }
+        expect(
+          seen.every((dy) => dy.abs() < 1),
+          isTrue,
+          reason: 'it moved (px below its place) on the $change: $seen',
+        );
+        expect(find.text('saved'), findsOneWidget);
+        await t.pumpAndSettle(const Duration(seconds: 5));
+        expect(find.text('saved'), findsNothing);
+      });
+    }
+
+    testWidgets('after a page change it still leaves by sliding, once', (
+      t,
+    ) async {
+      final nav = await pumpPages(t);
+      AppToast.info('moved', duration: const Duration(seconds: 2));
+      await t.pump();
+      await t.pump(const Duration(milliseconds: 500));
+      nav.currentState!.push(
+        MaterialPageRoute<void>(
+          builder: (_) => const Scaffold(body: Center(child: Text('PAGE B'))),
+        ),
+      );
+      await t.pumpAndSettle(const Duration(milliseconds: 100));
+      expect(find.text('moved'), findsOneWidget);
+
+      AppToast.clear();
+      await t.pump();
+      _expectSmoothExit(await _leaving(t, 'moved'));
+      await t.pumpAndSettle();
+      expect(find.text('moved'), findsNothing);
+    });
+  });
+
   group('AppToast leaving', () {
     testWidgets('by itself it leaves over several frames, not in one jump', (
       t,

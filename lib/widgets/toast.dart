@@ -90,15 +90,19 @@ class AppToast {
     // Latest wins. Stacking a queue of stale messages is worse than replacing
     // one: by the time the 4th is shown the user has long moved on.
     try {
+      // The one being replaced will never leave by itself now.
+      _current?._retire();
       final handle = _ToastHandle();
+      final stay = _stayFor(type, duration);
       messenger
         ..removeCurrentSnackBar()
         ..showSnackBar(
-          _build(message.trim(), type, duration, handle),
+          _build(message.trim(), type, stay, handle),
           // The carrier itself does not animate: the toast does.
           snackBarAnimationStyle: AnimationStyle.noAnimation,
         );
       _current = handle;
+      handle._leaveAfter(enterDuration + stay);
     } catch (e, stack) {
       // A message is never worth breaking what it reports on: the caller
       // goes on (to the next page, say) whatever happens here. (Seen after a
@@ -107,10 +111,20 @@ class AppToast {
     }
   }
 
+  /// How long a toast stays up once it has arrived.
+  static Duration _stayFor(ToastType type, Duration? duration) =>
+      duration ??
+      switch (type) {
+        // Material: at least 4 s. Errors get longer, they are read, not
+        // glanced at.
+        ToastType.error => const Duration(seconds: 6),
+        _ => const Duration(seconds: 4),
+      };
+
   static SnackBar _build(
     String message,
     ToastType type,
-    Duration? duration,
+    Duration stay,
     _ToastHandle handle,
   ) {
     // The status shows in the icon only; the container stays one neutral tone.
@@ -119,14 +133,6 @@ class AppToast {
       ToastType.error => (Icons.error_rounded, _red),
       ToastType.info => (Icons.info_rounded, _blue),
     };
-    final stay =
-        duration ??
-        switch (type) {
-          // Material: at least 4 s. Errors get longer, they are read, not
-          // glanced at.
-          ToastType.error => const Duration(seconds: 6),
-          _ => const Duration(seconds: 4),
-        };
 
     return SnackBar(
       behavior: SnackBarBehavior.floating,
@@ -147,7 +153,6 @@ class AppToast {
           stay + enterDuration + exitDuration + const Duration(seconds: 1),
       content: _ToastBody(
         handle: handle,
-        stay: stay,
         icon: icon,
         tint: tint,
         message: message,
@@ -163,26 +168,64 @@ class AppToast {
   static const _blue = Color(0xFF93C5FD);
 }
 
-/// What [AppToast] keeps of the toast on screen, so it can be told to leave.
+/// One toast, however many copies of it are on screen.
+///
+/// The messenger draws the toast on every page that is showing, so a page
+/// change (a push, a pop, the hero flight between them) makes new copies of
+/// [_ToastBody] while the old ones are still there. Each copy starts from this
+/// shared state instead of from the bottom edge, so the toast does not come up
+/// again; the timer and the decision to leave are here too, so every copy
+/// leaves together.
 class _ToastHandle {
-  _ToastBodyState? _state;
+  final _states = <_ToastBodyState>{};
 
-  void _attach(_ToastBodyState state) => _state = state;
+  /// Where the toast is: 0 under the edge, 1 up. Kept by every copy.
+  double value = 0;
+
+  /// It has started to leave.
+  bool leaving = false;
+
+  Timer? _leaveTimer;
+
+  void _leaveAfter(Duration delay) {
+    _leaveTimer?.cancel();
+    _leaveTimer = Timer(delay, leave);
+  }
+
+  /// Replaced by a newer toast: stop its timer (its copies are taken away
+  /// with the carrier).
+  void _retire() => _leaveTimer?.cancel();
+
+  void _attach(_ToastBodyState state) => _states.add(state);
 
   void _detach(_ToastBodyState state) {
-    if (identical(_state, state)) _state = null;
+    _states.remove(state);
+    if (_states.isNotEmpty) return;
+    // No copy left (taken away, swiped off, replaced): nothing more to time.
+    _leaveTimer?.cancel();
     if (identical(AppToast._current, this)) AppToast._current = null;
   }
 
-  /// Start fading out. False when there is nothing on screen to fade.
-  bool dismiss() => _state?.leave() ?? false;
+  /// Start leaving, on every copy. False when it is not on screen.
+  bool leave() {
+    if (_states.isEmpty) return false;
+    if (leaving) return true;
+    leaving = true;
+    _leaveTimer?.cancel();
+    for (final state in _states.toList()) {
+      state._leave();
+    }
+    return true;
+  }
+
+  /// The same as [leave], for [AppToast.clear].
+  bool dismiss() => leave();
 }
 
 /// The dark container, its content, and its way out.
 class _ToastBody extends StatefulWidget {
   const _ToastBody({
     required this.handle,
-    required this.stay,
     required this.icon,
     required this.tint,
     required this.message,
@@ -190,7 +233,6 @@ class _ToastBody extends StatefulWidget {
   });
 
   final _ToastHandle handle;
-  final Duration stay;
   final IconData icon;
   final Color tint;
   final String message;
@@ -208,9 +250,13 @@ class _ToastBodyState extends State<_ToastBody>
   /// Arriving slows down into place (ease-out); leaving speeds up (ease-in),
   /// the way things enter and leave the screen in Material motion.
   late final CurvedAnimation _curve;
-  Timer? _leaveTimer;
-  bool _leaving = false;
   bool _started = false;
+
+  /// This copy's page is on screen, so its ticker runs. A copy on a page that
+  /// is covered by another (the page under a pushed one) is frozen by Flutter;
+  /// when that page shows again the copy catches up with the shared state
+  /// instead of starting over from where it froze.
+  bool _active = true;
 
   /// The device asks for no motion (Reduce Motion).
   bool _reduceMotion = false;
@@ -218,11 +264,16 @@ class _ToastBodyState extends State<_ToastBody>
   @override
   void initState() {
     super.initState();
-    _shown = AnimationController(
-      vsync: this,
-      duration: AppToast.enterDuration,
-      reverseDuration: AppToast.exitDuration,
-    );
+    // A copy made by a page change picks up where the toast already is.
+    _shown =
+        AnimationController(
+          vsync: this,
+          value: widget.handle.value,
+          duration: AppToast.enterDuration,
+          reverseDuration: AppToast.exitDuration,
+        )..addListener(() {
+          if (_active) widget.handle.value = _shown.value;
+        });
     _curve = CurvedAnimation(
       parent: _shown,
       // Gentle curves, not cubic ones: the card is only seen while it crosses
@@ -231,42 +282,52 @@ class _ToastBodyState extends State<_ToastBody>
       reverseCurve: Curves.easeIn.flipped,
     );
     widget.handle._attach(this);
-    _leaveTimer = Timer(AppToast.enterDuration + widget.stay, leave);
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _reduceMotion = MediaQuery.disableAnimationsOf(context);
-    if (_started) return;
-    _started = true;
+    final active = TickerMode.valuesOf(context).enabled;
+    final woke = _started && active && !_active;
+    _active = active;
+    if (!_started) {
+      _started = true;
+      if (active) _follow();
+    } else if (woke) {
+      _follow();
+    }
+  }
+
+  /// Take up the toast's shared state: where it is and which way it is going.
+  void _follow() {
     if (_reduceMotion) {
-      _shown.value = 1;
-    } else {
-      _shown.forward();
+      _shown.value = widget.handle.leaving ? 0 : 1;
+      return;
+    }
+    _shown.value = widget.handle.value;
+    if (widget.handle.leaving) {
+      _leave(); // the other copies are already on their way down
+    } else if (_shown.value < 1) {
+      _shown.forward(); // arriving, or a copy joining part-way in
     }
   }
 
   /// Slide down into the edge, from wherever it has got to, then take the
-  /// carrier away. False when it cannot.
-  bool leave() {
-    if (!mounted) return false;
-    if (_leaving) return true;
-    _leaving = true;
-    _leaveTimer?.cancel();
+  /// carrier away. Called through [_ToastHandle.leave], for every copy.
+  void _leave() {
+    if (!mounted) return;
     if (_reduceMotion) {
       AppToast._gone(widget.handle);
-      return true;
+      return;
     }
     _shown.reverse().whenComplete(() {
       if (mounted) AppToast._gone(widget.handle);
     });
-    return true;
   }
 
   @override
   void dispose() {
-    _leaveTimer?.cancel();
     widget.handle._detach(this);
     _curve.dispose();
     _shown.dispose();
@@ -311,7 +372,7 @@ class _ToastBodyState extends State<_ToastBody>
               if (widget.closable) ...[
                 const SizedBox(width: 4),
                 IconButton(
-                  onPressed: leave,
+                  onPressed: widget.handle.leave,
                   icon: const Icon(Icons.close),
                   iconSize: 18,
                   color: Colors.white70,
