@@ -34,27 +34,27 @@ enum ToastType { success, error, info }
 /// which reads as popping in and jumping out. So the snack bar here is only a
 /// see-through carrier with no animation of its own (it still does the placing,
 /// the announcing and the swipe), and the dark container the user sees is drawn
-/// by the toast itself: it fades in while rising over [enterDuration], stays
-/// for its time, then fades out while sinking over [exitDuration]. Clearing or
-/// closing it leaves the same way, from wherever it had got to. A toast that is
-/// replaced by a newer one is swapped at once, and with the device's Reduce
-/// Motion on there is no movement at all.
+/// by the toast itself. Like a tab tucking away, it slides up out of the bottom
+/// edge over [enterDuration], stays for its time, then slides back down into
+/// that edge over [exitDuration]; it does not fade. The edge is the bottom of
+/// the carrier (the top of a bottom bar or button, when there is one), which
+/// clips what passes below it. Clearing or closing it leaves the same way, from
+/// wherever it had got to. A toast that is replaced by a newer one is swapped
+/// at once, and with the device's Reduce Motion on there is no movement at all.
 class AppToast {
   AppToast._();
 
   /// Hand this to the root [MaterialApp].
   static final messengerKey = GlobalKey<ScaffoldMessengerState>();
 
-  /// How long the fade-and-rise on arriving takes.
-  static const enterDuration = Duration(milliseconds: 250);
+  /// How long sliding up out of the bottom edge takes.
+  static const enterDuration = Duration(milliseconds: 300);
 
-  /// How long the fade-and-sink at the end takes.
+  /// How long sliding back down into it takes.
   static const exitDuration = Duration(milliseconds: 300);
 
-  /// How far the container travels while it fades: up into place on arriving,
-  /// down and away on leaving. The carrier has this much room below the
-  /// container, so nothing is clipped on the way.
-  static const _travel = 12.0;
+  /// How far above the bottom edge the container rests.
+  static const _gap = 16.0;
 
   /// The toast on screen now, if any.
   static _ToastHandle? _current;
@@ -130,14 +130,17 @@ class AppToast {
 
     return SnackBar(
       behavior: SnackBarBehavior.floating,
-      // 4 + the carrier's own bottom room = the 16 the container sits above
-      // the edge.
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 4),
-      padding: const EdgeInsets.only(bottom: _travel),
+      // No bottom margin: the carrier's bottom is the edge the toast slides
+      // into, so it sits right on the bottom bar (or the screen's edge). The
+      // gap above it is inside, in [_ToastBody].
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+      padding: EdgeInsets.zero,
       // A see-through carrier with no shadow: what is seen is drawn by
-      // [_ToastBody], which is what lets it fade out.
+      // [_ToastBody]. Square, so the edge it clips at is a straight line.
       elevation: 0,
       backgroundColor: Colors.transparent,
+      shape: const RoundedRectangleBorder(),
+      clipBehavior: Clip.hardEdge,
       // The carrier's own timer is only a backstop, later than the toast's whole
       // life (entrance, stay, exit): the toast takes itself away when it is done.
       duration:
@@ -203,7 +206,7 @@ class _ToastBodyState extends State<_ToastBody>
   late final AnimationController _shown;
 
   /// Arriving slows down into place (ease-out); leaving speeds up (ease-in),
-  /// the way things arrive and leave in Material motion.
+  /// the way things enter and leave the screen in Material motion.
   late final CurvedAnimation _curve;
   Timer? _leaveTimer;
   bool _leaving = false;
@@ -222,7 +225,9 @@ class _ToastBodyState extends State<_ToastBody>
     );
     _curve = CurvedAnimation(
       parent: _shown,
-      curve: Curves.easeOutCubic,
+      // Gentle curves, not cubic ones: the card is only seen while it crosses
+      // the edge, and a sharp curve would make that part a blink.
+      curve: Curves.easeOut,
       reverseCurve: Curves.easeIn.flipped,
     );
     widget.handle._attach(this);
@@ -242,8 +247,8 @@ class _ToastBodyState extends State<_ToastBody>
     }
   }
 
-  /// Fade out and sink, from wherever it has got to, then take the carrier
-  /// away. False when it cannot.
+  /// Slide down into the edge, from wherever it has got to, then take the
+  /// carrier away. False when it cannot.
   bool leave() {
     if (!mounted) return false;
     if (_leaving) return true;
@@ -270,14 +275,16 @@ class _ToastBodyState extends State<_ToastBody>
 
   @override
   Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _curve,
-      child: AnimatedBuilder(
-        animation: _curve,
-        builder: (context, child) => Transform.translate(
-          offset: Offset(0, (1 - _curve.value) * AppToast._travel),
-          child: child,
-        ),
+    // The container and the gap under it move as one, by their own height:
+    // at 0 the whole of it is below the carrier's bottom edge, clipped away.
+    return AnimatedBuilder(
+      animation: _curve,
+      builder: (context, child) => FractionalTranslation(
+        translation: Offset(0, 1 - _curve.value),
+        child: child,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: AppToast._gap),
         child: Container(
           decoration: BoxDecoration(
             color: AppColors.deepNavy,

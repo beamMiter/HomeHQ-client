@@ -47,9 +47,17 @@ Finder get _card => find.byWidgetPredicate(
       (w.decoration as BoxDecoration).color == AppColors.deepNavy,
 );
 
-/// How visible [text] is right now (0 to 1): every fade above it multiplied
-/// together. Null once it is no longer on screen.
-double? _visibility(WidgetTester t, String text) {
+/// The edge the toast slides down into and up out of: the bottom of the
+/// carrier snack bar, which clips what passes below it.
+double _floor(WidgetTester t) => t
+    .getRect(
+      find.descendant(of: _snackBar, matching: find.byType(Material)).first,
+    )
+    .bottom;
+
+/// How opaque [text] is (every fade above it multiplied together), or null
+/// once it is no longer on screen.
+double? _opacity(WidgetTester t, String text) {
   final f = find.text(text);
   if (f.evaluate().isEmpty) return null;
   var v = 1.0;
@@ -60,6 +68,16 @@ double? _visibility(WidgetTester t, String text) {
     v *= (e.widget as FadeTransition).opacity.value;
   }
   return v;
+}
+
+/// How much of the toast can be seen right now (0 to 1): the share of the card
+/// above the floor, times its opacity. Null once it is no longer on screen.
+double? _visibility(WidgetTester t, String text) {
+  final opacity = _opacity(t, text);
+  if (opacity == null) return null;
+  final card = t.getRect(_card);
+  final shown = ((_floor(t) - card.top) / card.height).clamp(0.0, 1.0);
+  return opacity * shown;
 }
 
 /// Pumps in [step]s and records how visible [text] is, until it is gone or
@@ -80,9 +98,9 @@ Future<List<double>> _leaving(
   return seen;
 }
 
-/// The mirror of [_expectSmoothFade] for arriving: never less visible than the
+/// The mirror of [_expectSmoothExit] for arriving: never less visible than the
 /// frame before, several frames in between, ending fully visible.
-void _expectSmoothFadeIn(List<double> seen, {int minSteps = 6}) {
+void _expectSmoothEntry(List<double> seen, {int minSteps = 6}) {
   expect(seen, isNotEmpty);
   for (var i = 1; i < seen.length; i++) {
     expect(
@@ -96,15 +114,15 @@ void _expectSmoothFadeIn(List<double> seen, {int minSteps = 6}) {
     between,
     greaterThanOrEqualTo(minSteps),
     reason:
-        'it popped in instead of fading in (only $between frames in between): $seen',
+        'it popped in instead of coming in (only $between frames in between): $seen',
   );
   expect(seen.first, lessThan(0.2), reason: 'it did not start hidden: $seen');
   expect(seen.last, greaterThan(0.99), reason: 'it never got fully visible');
 }
 
-/// A sequence that fades smoothly: it never goes back up, and it spends
+/// A sequence that leaves smoothly: it never goes back up, and it spends
 /// several frames on the way instead of dropping from full to nothing at once.
-void _expectSmoothFade(List<double> seen, {int minSteps = 6}) {
+void _expectSmoothExit(List<double> seen, {int minSteps = 6}) {
   expect(seen, isNotEmpty);
   for (var i = 1; i < seen.length; i++) {
     expect(
@@ -118,7 +136,7 @@ void _expectSmoothFade(List<double> seen, {int minSteps = 6}) {
     between,
     greaterThanOrEqualTo(minSteps),
     reason:
-        'it jumped away instead of fading (only $between frames in between): $seen',
+        'it jumped away instead of moving away (only $between frames in between): $seen',
   );
 }
 
@@ -388,30 +406,28 @@ void main() {
   });
 
   group('AppToast arriving', () {
-    testWidgets('it fades in over several frames while rising into place', (
+    testWidgets('it slides up out of the bottom edge over several frames', (
       t,
     ) async {
       await pumpApp(t);
       AppToast.success('hi');
-      await t.pump(); // built, nothing shown yet
+      await t.pump(); // built, still below the edge
 
       final seen = <double>[];
-      final tops = <double>[];
       for (var i = 0; i < 20; i++) {
         final v = _visibility(t, 'hi');
         if (v != null) {
           seen.add(v);
-          tops.add(t.getRect(_card).top);
+          expect(
+            _opacity(t, 'hi'),
+            closeTo(1, 1e-6),
+            reason: 'it faded in instead of sliding up',
+          );
         }
         await t.pump(const Duration(milliseconds: 20));
       }
 
-      _expectSmoothFadeIn(seen);
-      expect(
-        tops.first - tops.last,
-        greaterThan(4),
-        reason: 'it appeared in place instead of rising',
-      );
+      _expectSmoothEntry(seen);
       await t.pumpAndSettle(const Duration(seconds: 8));
     });
 
@@ -465,7 +481,7 @@ void main() {
   });
 
   group('AppToast leaving', () {
-    testWidgets('by itself it fades out over several frames, not in one jump', (
+    testWidgets('by itself it leaves over several frames, not in one jump', (
       t,
     ) async {
       await pumpApp(t);
@@ -475,35 +491,36 @@ void main() {
       await t.pump(const Duration(milliseconds: 800)); // just before it leaves
 
       final seen = await _leaving(t, 'bye');
-      _expectSmoothFade(seen);
+      _expectSmoothExit(seen);
 
       await t.pumpAndSettle();
       expect(find.text('bye'), findsNothing);
       expect(_snackBar, findsNothing);
     });
 
-    testWidgets('it sinks a little while it fades', (t) async {
+    testWidgets('it slides down into the bottom edge instead of fading', (
+      t,
+    ) async {
       await pumpApp(t);
       AppToast.success('bye', duration: const Duration(seconds: 1));
       await t.pump();
       await t.pump(const Duration(milliseconds: 400));
-      await t.pump(const Duration(milliseconds: 800));
+      await t.pump(const Duration(milliseconds: 800)); // just before it leaves
 
-      final before = t.getRect(_card).top;
-      // Step to where it is about half gone.
-      var lowest = before;
+      var wentUnder = false;
       for (var i = 0; i < 40 && find.text('bye').evaluate().isNotEmpty; i++) {
-        lowest = t.getRect(_card).top;
+        expect(
+          _opacity(t, 'bye'),
+          closeTo(1, 1e-6),
+          reason: 'it faded instead of sliding away',
+        );
+        if (_visibility(t, 'bye')! <= 0.15) wentUnder = true;
         await t.pump(const Duration(milliseconds: 20));
       }
-      expect(
-        lowest - before,
-        greaterThan(4),
-        reason: 'it faded in place instead of moving away',
-      );
+      expect(wentUnder, isTrue, reason: 'it never went all the way down');
     });
 
-    testWidgets('clear() fades it out too', (t) async {
+    testWidgets('clear() slides it away too', (t) async {
       await pumpApp(t);
       AppToast.info('cleared');
       await t.pump();
@@ -511,12 +528,12 @@ void main() {
 
       AppToast.clear();
       await t.pump();
-      _expectSmoothFade(await _leaving(t, 'cleared'));
+      _expectSmoothExit(await _leaving(t, 'cleared'));
       await t.pumpAndSettle();
       expect(find.text('cleared'), findsNothing);
     });
 
-    testWidgets('the close button fades it out too', (t) async {
+    testWidgets('the close button slides it away too', (t) async {
       await pumpApp(t);
       AppToast.error('closing');
       await t.pump();
@@ -524,7 +541,7 @@ void main() {
 
       await t.tap(find.byIcon(Icons.close));
       await t.pump();
-      _expectSmoothFade(await _leaving(t, 'closing'));
+      _expectSmoothExit(await _leaving(t, 'closing'));
       await t.pumpAndSettle();
       expect(find.text('closing'), findsNothing);
     });
