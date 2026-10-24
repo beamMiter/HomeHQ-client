@@ -18,6 +18,9 @@ jobs:
           channel: stable
           flutter-version: 3.47.1
           cache: true
+      # .env.development is git-ignored (every machine has its own) but the app
+      # lists it as an asset, so the checkout needs one.
+      - run: printf 'API_BASE_URL=http://127.0.0.1:8080/api/v1\n' > .env.development
       - run: flutter pub get
       - run: flutter analyze
       - run: flutter test
