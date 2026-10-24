@@ -39,6 +39,67 @@ class _TestApp extends ConsumerWidget {
 
 Finder get _snackBar => find.byType(SnackBar);
 
+/// The dark rounded container the user sees.
+Finder get _card => find.byWidgetPredicate(
+  (w) =>
+      w is DecoratedBox &&
+      w.decoration is BoxDecoration &&
+      (w.decoration as BoxDecoration).color == AppColors.deepNavy,
+);
+
+/// How visible [text] is right now (0 to 1): every fade above it multiplied
+/// together. Null once it is no longer on screen.
+double? _visibility(WidgetTester t, String text) {
+  final f = find.text(text);
+  if (f.evaluate().isEmpty) return null;
+  var v = 1.0;
+  for (final e
+      in find
+          .ancestor(of: f, matching: find.byType(FadeTransition))
+          .evaluate()) {
+    v *= (e.widget as FadeTransition).opacity.value;
+  }
+  return v;
+}
+
+/// Pumps in [step]s and records how visible [text] is, until it is gone or
+/// [limit] has passed. This is what the eye sees as "the way it leaves".
+Future<List<double>> _leaving(
+  WidgetTester t,
+  String text, {
+  Duration step = const Duration(milliseconds: 20),
+  Duration limit = const Duration(milliseconds: 900),
+}) async {
+  final seen = <double>[];
+  for (var spent = Duration.zero; spent <= limit; spent += step) {
+    final v = _visibility(t, text);
+    if (v == null) break;
+    seen.add(v);
+    await t.pump(step);
+  }
+  return seen;
+}
+
+/// A sequence that fades smoothly: it never goes back up, and it spends
+/// several frames on the way instead of dropping from full to nothing at once.
+void _expectSmoothFade(List<double> seen, {int minSteps = 6}) {
+  expect(seen, isNotEmpty);
+  for (var i = 1; i < seen.length; i++) {
+    expect(
+      seen[i],
+      lessThanOrEqualTo(seen[i - 1] + 1e-9),
+      reason: 'it got more visible again: $seen',
+    );
+  }
+  final between = seen.where((v) => v > 0.05 && v < 0.95).length;
+  expect(
+    between,
+    greaterThanOrEqualTo(minSteps),
+    reason:
+        'it jumped away instead of fading (only $between frames in between): $seen',
+  );
+}
+
 /// How many pixels in a thin ring just outside [box] are not the plain white
 /// page behind it. A drop shadow shows up as exactly these pixels, so this
 /// checks what is really painted, not just what the SnackBar was configured
@@ -141,11 +202,14 @@ void main() {
       await t.pump(const Duration(milliseconds: 400));
       final bar = t.widget<SnackBar>(_snackBar);
 
-      // Opaque dark container with light text, no shadow.
-      expect(bar.backgroundColor, AppColors.deepNavy);
+      // Opaque dark container with light text, no shadow. The container is
+      // drawn by the toast itself (so it can fade out), the SnackBar around it
+      // is see-through.
+      expect(_card, findsOneWidget);
+      expect(bar.backgroundColor, Colors.transparent);
       expect(bar.elevation, 0);
       // Material: on screen for at least 4 seconds; errors longer.
-      expect(bar.duration, const Duration(seconds: 4));
+      expect(bar.duration, greaterThanOrEqualTo(const Duration(seconds: 4)));
       final text = t.widget<Text>(find.text('ok'));
       expect(text.maxLines, 2);
 
@@ -298,6 +362,113 @@ void main() {
       AppToast.clear();
       await t.pumpAndSettle(const Duration(milliseconds: 500));
       expect(find.text('hello'), findsNothing);
+    });
+  });
+
+  group('AppToast leaving', () {
+    testWidgets('by itself it fades out over several frames, not in one jump', (
+      t,
+    ) async {
+      await pumpApp(t);
+      AppToast.success('bye', duration: const Duration(seconds: 1));
+      await t.pump();
+      await t.pump(const Duration(milliseconds: 400)); // entrance done
+      await t.pump(const Duration(milliseconds: 800)); // just before it leaves
+
+      final seen = await _leaving(t, 'bye');
+      _expectSmoothFade(seen);
+
+      await t.pumpAndSettle();
+      expect(find.text('bye'), findsNothing);
+      expect(_snackBar, findsNothing);
+    });
+
+    testWidgets('it sinks a little while it fades', (t) async {
+      await pumpApp(t);
+      AppToast.success('bye', duration: const Duration(seconds: 1));
+      await t.pump();
+      await t.pump(const Duration(milliseconds: 400));
+      await t.pump(const Duration(milliseconds: 800));
+
+      final before = t.getRect(_card).top;
+      // Step to where it is about half gone.
+      var lowest = before;
+      for (var i = 0; i < 40 && find.text('bye').evaluate().isNotEmpty; i++) {
+        lowest = t.getRect(_card).top;
+        await t.pump(const Duration(milliseconds: 20));
+      }
+      expect(
+        lowest - before,
+        greaterThan(4),
+        reason: 'it faded in place instead of moving away',
+      );
+    });
+
+    testWidgets('clear() fades it out too', (t) async {
+      await pumpApp(t);
+      AppToast.info('cleared');
+      await t.pump();
+      await t.pump(const Duration(milliseconds: 400));
+
+      AppToast.clear();
+      await t.pump();
+      _expectSmoothFade(await _leaving(t, 'cleared'));
+      await t.pumpAndSettle();
+      expect(find.text('cleared'), findsNothing);
+    });
+
+    testWidgets('the close button fades it out too', (t) async {
+      await pumpApp(t);
+      AppToast.error('closing');
+      await t.pump();
+      await t.pump(const Duration(milliseconds: 400));
+
+      await t.tap(find.byIcon(Icons.close));
+      await t.pump();
+      _expectSmoothFade(await _leaving(t, 'closing'));
+      await t.pumpAndSettle();
+      expect(find.text('closing'), findsNothing);
+    });
+
+    testWidgets('a new toast takes the place of one that is leaving at once', (
+      t,
+    ) async {
+      await pumpApp(t);
+      AppToast.info('old');
+      await t.pump();
+      await t.pump(const Duration(milliseconds: 400));
+      AppToast.clear(); // starts to leave
+      await t.pump(const Duration(milliseconds: 100));
+      expect(find.text('old'), findsOneWidget);
+
+      AppToast.success('new');
+      await t.pump();
+      await t.pump(const Duration(milliseconds: 50));
+
+      expect(find.text('old'), findsNothing);
+      expect(find.text('new'), findsOneWidget);
+      expect(_snackBar, findsOneWidget);
+      await t.pumpAndSettle(const Duration(seconds: 1));
+    });
+
+    testWidgets('it stays the full time it was asked for before leaving', (
+      t,
+    ) async {
+      await pumpApp(t);
+      AppToast.success('stay', duration: const Duration(seconds: 2));
+      await t.pump();
+      await t.pump(const Duration(milliseconds: 400)); // entrance done
+
+      // Fully visible for the whole stay, not fading early.
+      for (var ms = 0; ms < 1900; ms += 100) {
+        expect(
+          _visibility(t, 'stay'),
+          closeTo(1, 1e-6),
+          reason: 'faded early at ${ms}ms of a 2 s stay',
+        );
+        await t.pump(const Duration(milliseconds: 100));
+      }
+      await t.pumpAndSettle();
     });
   });
 
