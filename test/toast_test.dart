@@ -47,9 +47,17 @@ Finder get _card => find.byWidgetPredicate(
       (w.decoration as BoxDecoration).color == AppColors.deepNavy,
 );
 
-/// How visible [text] is right now (0 to 1): every fade above it multiplied
-/// together. Null once it is no longer on screen.
-double? _visibility(WidgetTester t, String text) {
+/// The edge the toast slides down into and up out of: the bottom of the
+/// carrier snack bar, which clips what passes below it.
+double _floor(WidgetTester t) => t
+    .getRect(
+      find.descendant(of: _snackBar, matching: find.byType(Material)).first,
+    )
+    .bottom;
+
+/// How opaque [text] is (every fade above it multiplied together), or null
+/// once it is no longer on screen.
+double? _opacity(WidgetTester t, String text) {
   final f = find.text(text);
   if (f.evaluate().isEmpty) return null;
   var v = 1.0;
@@ -60,6 +68,16 @@ double? _visibility(WidgetTester t, String text) {
     v *= (e.widget as FadeTransition).opacity.value;
   }
   return v;
+}
+
+/// How much of the toast can be seen right now (0 to 1): the share of the card
+/// above the floor, times its opacity. Null once it is no longer on screen.
+double? _visibility(WidgetTester t, String text) {
+  final opacity = _opacity(t, text);
+  if (opacity == null) return null;
+  final card = t.getRect(_card);
+  final shown = ((_floor(t) - card.top) / card.height).clamp(0.0, 1.0);
+  return opacity * shown;
 }
 
 /// Pumps in [step]s and records how visible [text] is, until it is gone or
@@ -80,9 +98,31 @@ Future<List<double>> _leaving(
   return seen;
 }
 
-/// A sequence that fades smoothly: it never goes back up, and it spends
+/// The mirror of [_expectSmoothExit] for arriving: never less visible than the
+/// frame before, several frames in between, ending fully visible.
+void _expectSmoothEntry(List<double> seen, {int minSteps = 6}) {
+  expect(seen, isNotEmpty);
+  for (var i = 1; i < seen.length; i++) {
+    expect(
+      seen[i],
+      greaterThanOrEqualTo(seen[i - 1] - 1e-9),
+      reason: 'it got less visible while arriving: $seen',
+    );
+  }
+  final between = seen.where((v) => v > 0.05 && v < 0.95).length;
+  expect(
+    between,
+    greaterThanOrEqualTo(minSteps),
+    reason:
+        'it popped in instead of coming in (only $between frames in between): $seen',
+  );
+  expect(seen.first, lessThan(0.2), reason: 'it did not start hidden: $seen');
+  expect(seen.last, greaterThan(0.99), reason: 'it never got fully visible');
+}
+
+/// A sequence that leaves smoothly: it never goes back up, and it spends
 /// several frames on the way instead of dropping from full to nothing at once.
-void _expectSmoothFade(List<double> seen, {int minSteps = 6}) {
+void _expectSmoothExit(List<double> seen, {int minSteps = 6}) {
   expect(seen, isNotEmpty);
   for (var i = 1; i < seen.length; i++) {
     expect(
@@ -96,7 +136,7 @@ void _expectSmoothFade(List<double> seen, {int minSteps = 6}) {
     between,
     greaterThanOrEqualTo(minSteps),
     reason:
-        'it jumped away instead of fading (only $between frames in between): $seen',
+        'it jumped away instead of moving away (only $between frames in between): $seen',
   );
 }
 
@@ -365,8 +405,178 @@ void main() {
     });
   });
 
+  group('AppToast arriving', () {
+    testWidgets('it slides up out of the bottom edge over several frames', (
+      t,
+    ) async {
+      await pumpApp(t);
+      AppToast.success('hi');
+      await t.pump(); // built, still below the edge
+
+      final seen = <double>[];
+      for (var i = 0; i < 20; i++) {
+        final v = _visibility(t, 'hi');
+        if (v != null) {
+          seen.add(v);
+          expect(
+            _opacity(t, 'hi'),
+            closeTo(1, 1e-6),
+            reason: 'it faded in instead of sliding up',
+          );
+        }
+        await t.pump(const Duration(milliseconds: 20));
+      }
+
+      _expectSmoothEntry(seen);
+      await t.pumpAndSettle(const Duration(seconds: 8));
+    });
+
+    testWidgets(
+      'a toast closed while it is still arriving leaves from where it is',
+      (t) async {
+        await pumpApp(t);
+        AppToast.info('quick');
+        await t.pump();
+        await t.pump(const Duration(milliseconds: 100)); // part-way in
+
+        AppToast.clear();
+        await t.pump();
+        final seen = await _leaving(t, 'quick');
+        for (var i = 1; i < seen.length; i++) {
+          expect(
+            seen[i],
+            lessThanOrEqualTo(seen[i - 1] + 1e-9),
+            reason: '$seen',
+          );
+        }
+        await t.pumpAndSettle();
+        expect(find.text('quick'), findsNothing);
+      },
+    );
+
+    testWidgets('with reduce motion on it appears and leaves at once', (
+      t,
+    ) async {
+      await t.pumpWidget(
+        MaterialApp(
+          scaffoldMessengerKey: AppToast.messengerKey,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(disableAnimations: true),
+            child: child!,
+          ),
+          home: const Scaffold(body: SizedBox.expand()),
+        ),
+      );
+
+      AppToast.success('still');
+      await t.pump();
+      await t.pump(const Duration(milliseconds: 1));
+      expect(_visibility(t, 'still'), closeTo(1, 1e-6));
+
+      AppToast.clear();
+      await t.pump();
+      await t.pump(const Duration(milliseconds: 1));
+      expect(find.text('still'), findsNothing);
+    });
+  });
+
+  group('AppToast across pages', () {
+    /// The top of the highest copy of the toast on screen. During a page
+    /// change each page, and the hero flight between them, can draw its own
+    /// copy; what the eye follows is the one that is up.
+    double highestTop(WidgetTester t) {
+      var best = double.infinity;
+      for (final e in _card.evaluate()) {
+        final b = e.renderObject! as RenderBox;
+        final top = b.localToGlobal(Offset.zero).dy;
+        if (top < best) best = top;
+      }
+      return best;
+    }
+
+    Future<GlobalKey<NavigatorState>> pumpPages(WidgetTester t) async {
+      final nav = GlobalKey<NavigatorState>();
+      await t.pumpWidget(
+        MaterialApp(
+          navigatorKey: nav,
+          scaffoldMessengerKey: AppToast.messengerKey,
+          home: const Scaffold(body: Center(child: Text('PAGE A'))),
+        ),
+      );
+      return nav;
+    }
+
+    for (final change in ['push', 'pop']) {
+      testWidgets('a $change does not make it come up again', (t) async {
+        final nav = await pumpPages(t);
+        if (change == 'pop') {
+          nav.currentState!.push(
+            MaterialPageRoute<void>(
+              builder: (_) =>
+                  const Scaffold(body: Center(child: Text('PAGE B'))),
+            ),
+          );
+          await t.pumpAndSettle();
+        }
+        AppToast.success('saved', duration: const Duration(seconds: 3));
+        await t.pump();
+        await t.pump(const Duration(milliseconds: 500)); // fully up
+
+        if (change == 'push') {
+          nav.currentState!.push(
+            MaterialPageRoute<void>(
+              builder: (_) =>
+                  const Scaffold(body: Center(child: Text('PAGE B'))),
+            ),
+          );
+        } else {
+          nav.currentState!.pop();
+        }
+
+        // Through the page change and after it, the toast stays where it is:
+        // it never drops back toward the edge and comes up again.
+        final rest = highestTop(t);
+        final seen = <double>[];
+        for (var i = 0; i < 40; i++) {
+          await t.pump(const Duration(milliseconds: 20));
+          seen.add(highestTop(t) - rest);
+        }
+        expect(
+          seen.every((dy) => dy.abs() < 1),
+          isTrue,
+          reason: 'it moved (px below its place) on the $change: $seen',
+        );
+        expect(find.text('saved'), findsOneWidget);
+        await t.pumpAndSettle(const Duration(seconds: 5));
+        expect(find.text('saved'), findsNothing);
+      });
+    }
+
+    testWidgets('after a page change it still leaves by sliding, once', (
+      t,
+    ) async {
+      final nav = await pumpPages(t);
+      AppToast.info('moved', duration: const Duration(seconds: 2));
+      await t.pump();
+      await t.pump(const Duration(milliseconds: 500));
+      nav.currentState!.push(
+        MaterialPageRoute<void>(
+          builder: (_) => const Scaffold(body: Center(child: Text('PAGE B'))),
+        ),
+      );
+      await t.pumpAndSettle(const Duration(milliseconds: 100));
+      expect(find.text('moved'), findsOneWidget);
+
+      AppToast.clear();
+      await t.pump();
+      _expectSmoothExit(await _leaving(t, 'moved'));
+      await t.pumpAndSettle();
+      expect(find.text('moved'), findsNothing);
+    });
+  });
+
   group('AppToast leaving', () {
-    testWidgets('by itself it fades out over several frames, not in one jump', (
+    testWidgets('by itself it leaves over several frames, not in one jump', (
       t,
     ) async {
       await pumpApp(t);
@@ -376,35 +586,36 @@ void main() {
       await t.pump(const Duration(milliseconds: 800)); // just before it leaves
 
       final seen = await _leaving(t, 'bye');
-      _expectSmoothFade(seen);
+      _expectSmoothExit(seen);
 
       await t.pumpAndSettle();
       expect(find.text('bye'), findsNothing);
       expect(_snackBar, findsNothing);
     });
 
-    testWidgets('it sinks a little while it fades', (t) async {
+    testWidgets('it slides down into the bottom edge instead of fading', (
+      t,
+    ) async {
       await pumpApp(t);
       AppToast.success('bye', duration: const Duration(seconds: 1));
       await t.pump();
       await t.pump(const Duration(milliseconds: 400));
-      await t.pump(const Duration(milliseconds: 800));
+      await t.pump(const Duration(milliseconds: 800)); // just before it leaves
 
-      final before = t.getRect(_card).top;
-      // Step to where it is about half gone.
-      var lowest = before;
+      var wentUnder = false;
       for (var i = 0; i < 40 && find.text('bye').evaluate().isNotEmpty; i++) {
-        lowest = t.getRect(_card).top;
+        expect(
+          _opacity(t, 'bye'),
+          closeTo(1, 1e-6),
+          reason: 'it faded instead of sliding away',
+        );
+        if (_visibility(t, 'bye')! <= 0.15) wentUnder = true;
         await t.pump(const Duration(milliseconds: 20));
       }
-      expect(
-        lowest - before,
-        greaterThan(4),
-        reason: 'it faded in place instead of moving away',
-      );
+      expect(wentUnder, isTrue, reason: 'it never went all the way down');
     });
 
-    testWidgets('clear() fades it out too', (t) async {
+    testWidgets('clear() slides it away too', (t) async {
       await pumpApp(t);
       AppToast.info('cleared');
       await t.pump();
@@ -412,12 +623,12 @@ void main() {
 
       AppToast.clear();
       await t.pump();
-      _expectSmoothFade(await _leaving(t, 'cleared'));
+      _expectSmoothExit(await _leaving(t, 'cleared'));
       await t.pumpAndSettle();
       expect(find.text('cleared'), findsNothing);
     });
 
-    testWidgets('the close button fades it out too', (t) async {
+    testWidgets('the close button slides it away too', (t) async {
       await pumpApp(t);
       AppToast.error('closing');
       await t.pump();
@@ -425,7 +636,7 @@ void main() {
 
       await t.tap(find.byIcon(Icons.close));
       await t.pump();
-      _expectSmoothFade(await _leaving(t, 'closing'));
+      _expectSmoothExit(await _leaving(t, 'closing'));
       await t.pumpAndSettle();
       expect(find.text('closing'), findsNothing);
     });
