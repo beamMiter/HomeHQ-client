@@ -80,6 +80,28 @@ Future<List<double>> _leaving(
   return seen;
 }
 
+/// The mirror of [_expectSmoothFade] for arriving: never less visible than the
+/// frame before, several frames in between, ending fully visible.
+void _expectSmoothFadeIn(List<double> seen, {int minSteps = 6}) {
+  expect(seen, isNotEmpty);
+  for (var i = 1; i < seen.length; i++) {
+    expect(
+      seen[i],
+      greaterThanOrEqualTo(seen[i - 1] - 1e-9),
+      reason: 'it got less visible while arriving: $seen',
+    );
+  }
+  final between = seen.where((v) => v > 0.05 && v < 0.95).length;
+  expect(
+    between,
+    greaterThanOrEqualTo(minSteps),
+    reason:
+        'it popped in instead of fading in (only $between frames in between): $seen',
+  );
+  expect(seen.first, lessThan(0.2), reason: 'it did not start hidden: $seen');
+  expect(seen.last, greaterThan(0.99), reason: 'it never got fully visible');
+}
+
 /// A sequence that fades smoothly: it never goes back up, and it spends
 /// several frames on the way instead of dropping from full to nothing at once.
 void _expectSmoothFade(List<double> seen, {int minSteps = 6}) {
@@ -362,6 +384,83 @@ void main() {
       AppToast.clear();
       await t.pumpAndSettle(const Duration(milliseconds: 500));
       expect(find.text('hello'), findsNothing);
+    });
+  });
+
+  group('AppToast arriving', () {
+    testWidgets('it fades in over several frames while rising into place', (
+      t,
+    ) async {
+      await pumpApp(t);
+      AppToast.success('hi');
+      await t.pump(); // built, nothing shown yet
+
+      final seen = <double>[];
+      final tops = <double>[];
+      for (var i = 0; i < 20; i++) {
+        final v = _visibility(t, 'hi');
+        if (v != null) {
+          seen.add(v);
+          tops.add(t.getRect(_card).top);
+        }
+        await t.pump(const Duration(milliseconds: 20));
+      }
+
+      _expectSmoothFadeIn(seen);
+      expect(
+        tops.first - tops.last,
+        greaterThan(4),
+        reason: 'it appeared in place instead of rising',
+      );
+      await t.pumpAndSettle(const Duration(seconds: 8));
+    });
+
+    testWidgets(
+      'a toast closed while it is still arriving leaves from where it is',
+      (t) async {
+        await pumpApp(t);
+        AppToast.info('quick');
+        await t.pump();
+        await t.pump(const Duration(milliseconds: 100)); // part-way in
+
+        AppToast.clear();
+        await t.pump();
+        final seen = await _leaving(t, 'quick');
+        for (var i = 1; i < seen.length; i++) {
+          expect(
+            seen[i],
+            lessThanOrEqualTo(seen[i - 1] + 1e-9),
+            reason: '$seen',
+          );
+        }
+        await t.pumpAndSettle();
+        expect(find.text('quick'), findsNothing);
+      },
+    );
+
+    testWidgets('with reduce motion on it appears and leaves at once', (
+      t,
+    ) async {
+      await t.pumpWidget(
+        MaterialApp(
+          scaffoldMessengerKey: AppToast.messengerKey,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(disableAnimations: true),
+            child: child!,
+          ),
+          home: const Scaffold(body: SizedBox.expand()),
+        ),
+      );
+
+      AppToast.success('still');
+      await t.pump();
+      await t.pump(const Duration(milliseconds: 1));
+      expect(_visibility(t, 'still'), closeTo(1, 1e-6));
+
+      AppToast.clear();
+      await t.pump();
+      await t.pump(const Duration(milliseconds: 1));
+      expect(find.text('still'), findsNothing);
     });
   });
 

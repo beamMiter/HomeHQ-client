@@ -29,29 +29,32 @@ enum ToastType { success, error, info }
 ///
 /// Requires `MaterialApp(scaffoldMessengerKey: AppToast.messengerKey)`.
 ///
-/// **How it leaves.** A Material 3 floating snack bar leaves with a fade of
-/// about 50 ms and no movement, which reads as a jump. So the snack bar here is
-/// only a see-through carrier (it still does the placing, the announcing and
-/// the swipe), and the dark container the user sees is drawn by the toast
-/// itself: it stays for its time, then fades and sinks over [exitDuration].
-/// The same happens when it is cleared or closed. A toast that is replaced by
-/// a newer one is swapped at once.
+/// **How it arrives and leaves.** A Material 3 floating snack bar fades in over
+/// about 50 ms after a 100 ms wait and out in about 50 ms, without moving,
+/// which reads as popping in and jumping out. So the snack bar here is only a
+/// see-through carrier with no animation of its own (it still does the placing,
+/// the announcing and the swipe), and the dark container the user sees is drawn
+/// by the toast itself: it fades in while rising over [enterDuration], stays
+/// for its time, then fades out while sinking over [exitDuration]. Clearing or
+/// closing it leaves the same way, from wherever it had got to. A toast that is
+/// replaced by a newer one is swapped at once, and with the device's Reduce
+/// Motion on there is no movement at all.
 class AppToast {
   AppToast._();
 
   /// Hand this to the root [MaterialApp].
   static final messengerKey = GlobalKey<ScaffoldMessengerState>();
 
-  /// How long the entrance takes. Set explicitly so the stay can be counted
-  /// from the end of it.
+  /// How long the fade-and-rise on arriving takes.
   static const enterDuration = Duration(milliseconds: 250);
 
   /// How long the fade-and-sink at the end takes.
   static const exitDuration = Duration(milliseconds: 300);
 
-  /// How far the container sinks while it fades. The carrier has this much
-  /// room below the container, so nothing is clipped on the way.
-  static const _sink = 12.0;
+  /// How far the container travels while it fades: up into place on arriving,
+  /// down and away on leaving. The carrier has this much room below the
+  /// container, so nothing is clipped on the way.
+  static const _travel = 12.0;
 
   /// The toast on screen now, if any.
   static _ToastHandle? _current;
@@ -92,7 +95,8 @@ class AppToast {
         ..removeCurrentSnackBar()
         ..showSnackBar(
           _build(message.trim(), type, duration, handle),
-          snackBarAnimationStyle: AnimationStyle(duration: enterDuration),
+          // The carrier itself does not animate: the toast does.
+          snackBarAnimationStyle: AnimationStyle.noAnimation,
         );
       _current = handle;
     } catch (e, stack) {
@@ -129,14 +133,15 @@ class AppToast {
       // 4 + the carrier's own bottom room = the 16 the container sits above
       // the edge.
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 4),
-      padding: const EdgeInsets.only(bottom: _sink),
+      padding: const EdgeInsets.only(bottom: _travel),
       // A see-through carrier with no shadow: what is seen is drawn by
       // [_ToastBody], which is what lets it fade out.
       elevation: 0,
       backgroundColor: Colors.transparent,
-      // The carrier's own timer is only a backstop: the toast takes itself
-      // away when its exit has finished.
-      duration: stay + exitDuration + const Duration(milliseconds: 300),
+      // The carrier's own timer is only a backstop, later than the toast's whole
+      // life (entrance, stay, exit): the toast takes itself away when it is done.
+      duration:
+          stay + enterDuration + exitDuration + const Duration(seconds: 1),
       content: _ToastBody(
         handle: handle,
         stay: stay,
@@ -194,38 +199,60 @@ class _ToastBody extends StatefulWidget {
 
 class _ToastBodyState extends State<_ToastBody>
     with SingleTickerProviderStateMixin {
-  /// 1 while it is on screen, down to 0 as it leaves.
+  /// 0 before it arrives, 1 while it is on screen, back down to 0 as it leaves.
   late final AnimationController _shown;
 
-  /// Leaving speeds up (ease-in), the way things leave in Material motion.
+  /// Arriving slows down into place (ease-out); leaving speeds up (ease-in),
+  /// the way things arrive and leave in Material motion.
   late final CurvedAnimation _curve;
   Timer? _leaveTimer;
   bool _leaving = false;
+  bool _started = false;
+
+  /// The device asks for no motion (Reduce Motion).
+  bool _reduceMotion = false;
 
   @override
   void initState() {
     super.initState();
     _shown = AnimationController(
       vsync: this,
-      value: 1,
-      duration: AppToast.exitDuration,
+      duration: AppToast.enterDuration,
+      reverseDuration: AppToast.exitDuration,
     );
     _curve = CurvedAnimation(
       parent: _shown,
-      curve: Curves.easeOut,
+      curve: Curves.easeOutCubic,
       reverseCurve: Curves.easeIn.flipped,
     );
     widget.handle._attach(this);
-    // The carrier's entrance runs first; the stay is counted from its end.
     _leaveTimer = Timer(AppToast.enterDuration + widget.stay, leave);
   }
 
-  /// Fade out and sink, then take the carrier away. False when it cannot.
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _reduceMotion = MediaQuery.disableAnimationsOf(context);
+    if (_started) return;
+    _started = true;
+    if (_reduceMotion) {
+      _shown.value = 1;
+    } else {
+      _shown.forward();
+    }
+  }
+
+  /// Fade out and sink, from wherever it has got to, then take the carrier
+  /// away. False when it cannot.
   bool leave() {
     if (!mounted) return false;
     if (_leaving) return true;
     _leaving = true;
     _leaveTimer?.cancel();
+    if (_reduceMotion) {
+      AppToast._gone(widget.handle);
+      return true;
+    }
     _shown.reverse().whenComplete(() {
       if (mounted) AppToast._gone(widget.handle);
     });
@@ -248,7 +275,7 @@ class _ToastBodyState extends State<_ToastBody>
       child: AnimatedBuilder(
         animation: _curve,
         builder: (context, child) => Transform.translate(
-          offset: Offset(0, (1 - _curve.value) * AppToast._sink),
+          offset: Offset(0, (1 - _curve.value) * AppToast._travel),
           child: child,
         ),
         child: Container(
